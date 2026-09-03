@@ -143,11 +143,15 @@ PROJECT_GROUP_BINDINGS = [
 ]
 
 # Custom (non-built-in) roles to exercise the Roles page, custom-role bindings,
-# Access review, and Effective access. Each rule is (resources, verbs).
+# Access review, and Effective access. Each entry is (name, description,
+# scopes, rules); scopes lists the scope_kind values the role may be bound
+# at (enforced by rbac.validate_binding_scope). Each rule is
+# (resources, verbs).
 CUSTOM_ROLES = [
     (
         "secrets-operator",
         "Reveal and update secrets in assigned projects",
+        ["project", "secret"],
         [
             (["secrets"], ["get", "list", "reveal", "update"]),
             (["machine_tokens"], ["get", "list"]),
@@ -156,16 +160,19 @@ CUSTOM_ROLES = [
     (
         "audit-reader",
         "Read audit logs at team scope",
+        ["team"],
         [(["audit"], ["get", "list"])],
     ),
     (
         "infra-viewer",
         "Read-only view of projects and secret metadata",
+        ["team"],
         [(["projects", "secrets"], ["get", "list"])],
     ),
     (
         "payments-reviewer",
         "Reveal-only access to payments secrets",
+        ["project"],
         [(["secrets"], ["get", "list", "reveal"])],
     ),
 ]
@@ -399,16 +406,18 @@ def main() -> None:
                 (rid, token_id, scope_kind, scope_id, by),
             )
 
-        # Custom roles (idempotent by name)
-        for name, description, rules in CUSTOM_ROLES:
+        # Custom roles (idempotent by name; scopes repair earlier seeds
+        # that stored the '{}' default, which validate_binding_scope rejects)
+        for name, description, scopes, rules in CUSTOM_ROLES:
             cur.execute(
                 """
-                INSERT INTO rbac.roles (name, description, built_in)
-                VALUES (%s, %s, false)
-                ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description
+                INSERT INTO rbac.roles (name, description, built_in, scopes)
+                VALUES (%s, %s, false, %s)
+                ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description,
+                                                 scopes = EXCLUDED.scopes
                 RETURNING id
                 """,
-                (name, description),
+                (name, description, list(scopes)),
             )
             rid = str(cur.fetchone()["id"])
             cur.execute("DELETE FROM rbac.role_rules WHERE role_id = %s::uuid", (rid,))
@@ -775,7 +784,7 @@ def main() -> None:
     print()
     print("All accounts password: (see PASSWORD in scripts/seed_mock.py)")
     print("Log in at http://127.0.0.1:8080  e.g. admin@example.com")
-    print("Custom roles:", ", ".join(name for name, _, _ in CUSTOM_ROLES))
+    print("Custom roles:", ", ".join(name for name, _, _, _ in CUSTOM_ROLES))
     print("Machine tokens (raw, shown once):")
     for team_name, proj_name, name, _role, _keys in MACHINE_TOKENS:
         print(f"  {team_name}/{proj_name}/{name}")
