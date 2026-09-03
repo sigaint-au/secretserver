@@ -1,7 +1,38 @@
-/* CSRF header for HTMX requests */
-document.addEventListener('htmx:configRequest', function (e) {
+/* CSRF header for HTMX requests (htmx 4: detail carries ctx) */
+document.addEventListener('htmx:config:request', function (e) {
   var m = document.querySelector('meta[name="csrf-token"]');
-  if (m) e.detail.headers['X-CSRF-Token'] = m.content;
+  var headers = (((e.detail || {}).ctx || {}).request || {}).headers;
+  if (m && headers) headers['X-CSRF-Token'] = m.content;
+});
+
+/* Resolve the swapped content root for htmx 4 events. htmx 4 dispatches on
+   the requesting element and carries the hx-target selector on detail.ctx,
+   so e.target alone no longer points at fresh content. */
+function htmxSwapRoot(e) {
+  var ctx = (e && e.detail && e.detail.ctx) || {};
+  var t = ctx.target;
+  var el = null;
+  if (typeof t === 'string' && t.charAt(0) === '#'
+      && t.indexOf(' ') < 0 && t.indexOf('.') < 0
+      && t.indexOf('[') < 0 && t.indexOf(':') < 0 && t.length > 1) {
+    el = document.getElementById(t.slice(1));
+  }
+  if (!el && e && e.target && e.target !== document && e.target !== document.body
+      && e.target.querySelectorAll) {
+    el = e.target;
+  }
+  return el || document;
+}
+
+/* Never swap machine-readable error bodies into content panels: the error
+   toast below already tells the user what happened. */
+document.body.addEventListener('htmx:before:swap', function (e) {
+  var ctx = (e.detail || {}).ctx || {};
+  var type = '';
+  try {
+    type = (ctx.response && ctx.response.headers && ctx.response.headers.get('content-type')) || '';
+  } catch (err) { type = ''; }
+  if (type.indexOf('json') !== -1 && e.preventDefault) e.preventDefault();
 });
 
 
@@ -55,8 +86,7 @@ document.addEventListener('htmx:configRequest', function (e) {
       bind(root);
     }
     sync(document);
-    document.addEventListener('htmx:afterSwap', function (e) {
-      sync(e && e.target ? e.target : document);
+    document.addEventListener('htmx:after:swap', function (e) {
       // OOB swaps may replace nodes outside the swap target
       sync(document);
     });
@@ -225,8 +255,8 @@ document.addEventListener('htmx:configRequest', function (e) {
     } else {
       boot(document);
     }
-    document.addEventListener('htmx:afterSwap', function (e) {
-      boot(e && e.target ? e.target : document);
+    document.addEventListener('htmx:after:swap', function (e) {
+      boot(htmxSwapRoot(e));
     });
   })();
 
@@ -250,12 +280,14 @@ document.addEventListener('htmx:configRequest', function (e) {
     function scan(root) {
       (root || document).querySelectorAll('form[data-dirty-guard]').forEach(function (f) {
         if (!f._clean) f._clean = snapshot(f);
+        if (f._dirtyBound) return;
+        f._dirtyBound = true;
         f.addEventListener('input', function () { f._dirty = !same(f._clean, snapshot(f)); });
       });
     }
     scan(document);
-    document.addEventListener('htmx:afterSwap', function (e) {
-      scan(e && e.target ? e.target : document);
+    document.addEventListener('htmx:after:swap', function (e) {
+      scan(htmxSwapRoot(e));
     });
     window.addEventListener('beforeunload', function (e) {
       var dirty = null;
@@ -296,17 +328,20 @@ document.addEventListener('htmx:configRequest', function (e) {
       if (window.console) console.info(msg);
     }
     window.ssToast = toast;
-    document.body.addEventListener('htmx:responseError', function () {
+    document.body.addEventListener('htmx:response:error', function () {
       toast('The action failed. Please try again.', 'Error', { duration: 5000 });
     });
-    document.body.addEventListener('htmx:sendError', function () {
+    document.body.addEventListener('htmx:error', function () {
       toast('The server could not be reached. Please try again.', 'Error', { duration: 5000 });
     });
-    document.body.addEventListener('htmx:afterRequest', function (e) {
-      var detail = e.detail || {};
-      var request = detail.requestConfig || {};
-      if (request.verb === 'POST' && detail.successful && detail.elt && detail.elt.dataset.toastSuccess) {
-        toast(detail.elt.dataset.toastSuccess, 'Done');
+    document.body.addEventListener('htmx:after:request', function (e) {
+      var ctx = (e.detail || {}).ctx || {};
+      var request = ctx.request || {};
+      var status = (ctx.response || {}).status || 0;
+      var elt = ctx.sourceElement;
+      if (request.method === 'POST' && status >= 200 && status < 400
+          && elt && elt.dataset && elt.dataset.toastSuccess) {
+        toast(elt.dataset.toastSuccess, 'Done');
       }
     });
     function readCopyText(el, attrText) {
@@ -435,8 +470,8 @@ document.addEventListener('htmx:configRequest', function (e) {
       tickGrantCountdowns(document);
       startCountdownTimer();
     });
-    document.body.addEventListener('htmx:afterSwap', function (e) {
-      tickGrantCountdowns(e.target || document);
+    document.body.addEventListener('htmx:after:swap', function (e) {
+      tickGrantCountdowns(htmxSwapRoot(e));
       startCountdownTimer();
     });
 
@@ -503,8 +538,8 @@ document.addEventListener('htmx:configRequest', function (e) {
         }
       }, secs * 1000);
     }
-    document.addEventListener('htmx:afterSwap', function (e) {
-      var root = (e && e.detail && e.detail.target) ? e.detail.target : document;
+    document.addEventListener('htmx:after:swap', function (e) {
+      var root = htmxSwapRoot(e);
       root.querySelectorAll && root.querySelectorAll('.reveal-wrap[data-auto-hide]').forEach(scheduleAutoHide);
       if (root.classList && root.classList.contains('reveal-wrap')) {
         scheduleAutoHide(root);
@@ -645,8 +680,8 @@ document.addEventListener('htmx:configRequest', function (e) {
         return;
       }
     });
-    document.body.addEventListener('htmx:afterSwap', function (e) {
-      var t = e.target;
+    document.body.addEventListener('htmx:after:swap', function (e) {
+      var t = htmxSwapRoot(e);
       if (!t) return;
       /* After access-request POST into a dialog, keep it open */
       if (t.matches && t.matches('dialog') && t.open === false) oatOpenDialog(t);
@@ -733,7 +768,7 @@ document.addEventListener('htmx:configRequest', function (e) {
         form.method = 'post';
         form.submit();
       });
-      document.addEventListener('htmx:afterSwap', function () {
+      document.addEventListener('htmx:after:swap', function () {
         syncBulkToolbar();
       });
       if (document.readyState === 'loading') {

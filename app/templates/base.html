@@ -9,8 +9,9 @@
         integrity="sha384-JgFR/WT/tNMyAymGWeBuTU40xLejiR+zesrbgrnn0BGwfiojII7kU3jkZ9obHFha">
   <script src="{{ url_for('static', filename='vendor/oat.min.js') }}" defer
         integrity="sha384-eJVbbdVUAZ/FEhLkv5jBwfngbELmd929nOOAH6CbbJpNb6MZga0aYEEd+VgaJV+O"></script>
-  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}"
-        integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"></script>
+  {# htmx 4.0.0 (2026): https://github.com/bigskysoftware/htmx/releases/tag/v4.0.0 #}
+  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer
+        integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>
   <meta name="csrf-token" content="{{ csrf_token }}">
   
   

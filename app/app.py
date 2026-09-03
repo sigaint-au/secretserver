@@ -65,6 +65,9 @@ def _error_wants_json() -> bool:
         path.startswith(("/api/", "/eso/", "/mgmt/"))
         or "application/json" in accept
         or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        # htmx swaps every non-204 response in v4, so error pages must stay
+        # out of swap targets: HTMX callers get JSON (surfaced as a toast).
+        or request.headers.get("HX-Request") == "true"
     )
 
 

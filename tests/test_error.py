@@ -59,3 +59,13 @@ class TestErrorPages:
         body = r.get_json(silent=True)
         assert body is not None and body["error"] == "Not found"
         assert b"error-code" not in r.data
+
+    def test_404_hx_request_returns_json_not_html(self):
+        # htmx v4 swaps every non-204 response, so HTMX callers must get
+        # JSON (surfaced as a toast) instead of an error page in the target.
+        c = store.app.test_client()
+        r = c.get("/nope/nope", headers={"HX-Request": "true"})
+        assert r.status_code == 404
+        body = r.get_json(silent=True)
+        assert body is not None and body["error"] == "Not found"
+        assert b"error-code" not in r.data
