@@ -24,7 +24,7 @@
       <select name="role">
         {% for rname, label in team_role_dropdown|default([]) %}
         {% if rname != top_role or my_role == top_role %}
-        <option value="{{ rname }}" {% if rname == (form_role or default_role) %}selected{% endif %}>{{ label }}</option>
+        <option value="{{ rname }}" {% if rname == (form_role or default_role) %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
         {% endif %}
         {% endfor %}
       </select>
@@ -92,7 +92,7 @@
       <select name="role">
         {% for rname, label in team_role_dropdown|default([]) %}
         {% if rname != top_role %}
-        <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %}>{{ label }}</option>
+        <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
         {% endif %}
         {% endfor %}
       </select>

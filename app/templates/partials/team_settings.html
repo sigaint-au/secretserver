@@ -175,7 +175,7 @@ syncTeamClassForm();
         <label>Team role
           <select name="role">
             {% for rname, label in dir_role_dropdown|default([]) %}
-            <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %}>{{ label }}</option>
+            <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
             {% endfor %}
           </select>
         </label>
@@ -223,7 +223,7 @@ syncTeamClassForm();
         <label>Team role
           <select name="role">
             {% for rname, label in dir_role_dropdown|default([]) %}
-            <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %}>{{ label }}</option>
+            <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
             {% endfor %}
           </select>
         </label>
