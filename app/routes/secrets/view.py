@@ -278,7 +278,7 @@ def secret_view(project_id, secret_id):
 
         if request.method == "POST":
             if is_version or not can_write:
-                flash("You don't have permission to do that", "error")
+                flash("You do not have permission to perform this action", "error")
                 return redirect(
                     url_for(
                         "secret_view",
@@ -379,7 +379,7 @@ def secret_view(project_id, secret_id):
             )
             if cur.rowcount == 0:
                 conn.rollback()
-                flash("You don't have permission to do that", "error")
+                flash("You do not have permission to perform this action", "error")
                 return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
             audit.log_secret(
                 cur,

@@ -136,7 +136,7 @@ def upsert_secret_meta(project_id, secret_id):
 
     if not metadata.validate_meta_key(key):
         flash(
-            "Metadata key must start with a letter/digit and use only "
+            "Metadata key must start with a letter or digit and use only "
             "A–Z, a–z, 0–9, ., _, - (max 64)",
             "error",
         )
@@ -147,7 +147,7 @@ def upsert_secret_meta(project_id, secret_id):
             (str(secret_id),),
         )
         if not (cur.fetchone() or {}).get("w"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(meta_url)
         try:
             cur.execute(
@@ -196,7 +196,7 @@ def delete_secret_meta(project_id, secret_id, meta_key):
             (str(secret_id),),
         )
         if not (cur.fetchone() or {}).get("w"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(meta_url)
         cur.execute(
             """
@@ -210,7 +210,7 @@ def delete_secret_meta(project_id, secret_id, meta_key):
         )
         row = cur.fetchone()
         if not row:
-            flash("Field not found or not permitted", "error")
+            flash("Field not found or not permitted.", "error")
             conn.rollback()
         else:
             audit.log_secret(
@@ -304,7 +304,7 @@ def bulk_secrets(project_id):
     ids = request.form.getlist("secret_ids")
     back = url_for("project_detail", project_id=project_id, tab="secrets")
     if not ids:
-        flash("Select at least one secret", "error")
+        flash("Select at least one secret.", "error")
         return redirect(back)
     if action != "delete":
         flash("Unknown bulk action", "error")
@@ -313,7 +313,7 @@ def bulk_secrets(project_id):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_write_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(back)
         for sid in ids:
             cur.execute(
@@ -464,7 +464,7 @@ def secret_new(project_id):
             return "Not found", 404
         cur.execute("SELECT api.can_write_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
 
     def _new_ctx(**extra):

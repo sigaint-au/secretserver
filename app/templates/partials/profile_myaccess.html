@@ -12,7 +12,7 @@
         <input type="search" name="q" value="{{ my_access_q or '' }}"
                placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}">
       </fieldset>
-      {% if my_access_q %}<a class="button ghost small" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear</a>{% endif %}
+      {% if my_access_q %}<a class="button ghost small" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if user.is_global_admin %}

@@ -39,6 +39,40 @@ def test_folder_access_tab_renders_shared_binding_panel():
     assert b"Add binding" in response.data
 
 
+def test_folder_htmx_access_tab_returns_panel():
+    """HTMX tab swaps render the folder panel fragment (no page chrome).
+
+    Regression guard for the secret-panel bug class: partials rendered
+    directly must resolve their own branch conditions.
+    """
+    project_id = uuid4()
+    folder_id = uuid4()
+    conn, cur = mock_conn()
+    cur.fetchone.side_effect = [
+        {"id": folder_id, "project_id": project_id, "path": "ops"},
+        {"id": project_id, "name": "prod", "team_name": "Ops", "team_id": uuid4()},
+        {"a": True},
+        {"a": True},
+    ]
+    cur.fetchall.side_effect = [[], [], []]
+    with store.app.test_client() as client:
+        with client.session_transaction() as session:
+            session["user_id"] = str(uuid4())
+            session["email"] = "folder@example.test"
+            session["is_global_admin"] = False
+        with patch.object(settings_svc, "get_settings", return_value={}), patch.object(
+            db, "as_user", return_value=conn
+        ):
+            response = client.get(
+                f"/projects/{project_id}/folders/{folder_id}?tab=access",
+                headers={"HX-Request": "true"},
+            )
+
+    assert response.status_code == 200
+    assert b"Effective access" in response.data
+    assert b"<html" not in response.data
+
+
 def test_folder_contents_empty_states_use_shared_partial():
     project_id = uuid4()
     folder_id = uuid4()

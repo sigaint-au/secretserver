@@ -80,7 +80,7 @@ def create_team_invite(team_id):
             )
             row = cur.fetchone()
             if not row:
-                flash("Permission denied", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
                 return members_response(team_id)
             audit.log_org(
@@ -242,7 +242,7 @@ def approve_join_request(team_id, req_id):
         )
         req = cur.fetchone()
         if not req or req["status"] != "pending":
-            flash("Request not found", "error")
+            flash("Request not found.", "error")
             return members_response(team_id)
         try:
             # Role in request row is a current name, or a legacy short name
@@ -333,5 +333,5 @@ def reject_join_request(team_id, req_id):
             conn.commit()
             flash("Join request rejected", "ok")
         else:
-            flash("Request not found", "error")
+            flash("Request not found.", "error")
     return members_response(team_id)

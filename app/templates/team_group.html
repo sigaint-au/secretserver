@@ -14,7 +14,7 @@
     <span class="badge" data-variant="secondary">{{ group.source }}</span>
   </div>
   <div class="section-tools">
-    <a class="button outline small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Back</a>
+    <a class="button outline small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Back to groups</a>
   </div>
 </div>
 <p class="page-desc muted">
@@ -51,7 +51,7 @@
                placeholder="Search" autocomplete="off" aria-label="Search members">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}">Clear search</a>
       {% endif %}
     </form>
   </div>

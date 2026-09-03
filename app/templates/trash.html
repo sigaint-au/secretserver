@@ -16,9 +16,9 @@
         <option value="">Action…</option>
         <option value="restore"
                 data-url="{{ url_for('bulk_trash') }}"
-                data-confirm="Restore {n} selected secret(s)?">Restore</option>
+                data-confirm="Restore the {n} selected secrets?">Restore</option>
         <option value="purge"
-                data-url="{{ url_for('bulk_trash') }}">Delete forever</option>
+                data-url="{{ url_for('bulk_trash') }}">Delete permanently</option>
       </select>
       <button type="button" id="bulk-apply" class="bulk-apply" disabled>Apply</button>
     </div>
@@ -39,7 +39,7 @@
          hx-get="{{ url_for('trash') }}"
          hx-target="#trash-results"
          hx-swap="outerHTML"
-         hx-push-url="true">Clear</a>
+         hx-push-url="true">Clear search</a>
       {% endif %}
     </form>
   </div>
@@ -47,7 +47,7 @@
 </div>
 
 {% if team %}
-<p class="page-desc muted">Deleted secrets for <strong>{{ team.name }}</strong>. Restore to put them back in the project, or permanently delete.</p>
+<p class="page-desc muted">Deleted secrets for <strong>{{ team.name }}</strong>. Restore them to their project, or delete them permanently.</p>
 {% endif %}
 {% include "partials/trash_results.html" %}
 {% endblock %}

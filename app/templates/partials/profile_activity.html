@@ -40,7 +40,7 @@
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search recent activity">
       </fieldset>
-      {% if activity_q %}<a class="button ghost small" href="{{ url_for('profile', tab='activity') }}">Clear</a>{% endif %}
+      {% if activity_q %}<a class="button ghost small" href="{{ url_for('profile', tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if recent %}

@@ -6,8 +6,8 @@
 </div>
 {% if not team %}
 {% if nav_teams %}
-<p class="empty">
-  Select a team to view machine accounts.
+<div class="empty">
+  <p>Select a team to view machine accounts.</p>
   <form method="post" action="{{ url_for('select_team') }}" class="inline">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
@@ -19,12 +19,12 @@
     </select>
     <button type="submit" class="button ghost small">Go</button>
   </form>
-</p>
+</div>
 {% else %}
-<p class="empty">No teams yet. Ask a team administrator to invite you or contact your administrator for access.</p>
+<p class="empty">No teams yet. Ask a team administrator to invite you, or contact your administrator for access.</p>
 {% endif %}
 {% else %}
-<p class="page-desc muted">Team: <strong>{{ team.name }}</strong></p>
+<p class="page-desc muted">Machine accounts for team <strong>{{ team.name }}</strong>.</p>
 <form method="get" action="{{ url_for('machines_list') }}" class="toolbar" role="search"
       hx-get="{{ url_for('machines_list') }}"
       hx-target="#machines-results"
@@ -43,7 +43,7 @@
        hx-get="{{ url_for('machines_list') }}"
        hx-target="#machines-results"
        hx-swap="outerHTML"
-       hx-push-url="true">Clear</a>
+       hx-push-url="true">Clear search</a>
   </div>
   {% endif %}
 </form>

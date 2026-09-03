@@ -1803,12 +1803,7 @@
       max-width: 100%;
       box-sizing: border-box;
     }
-    .access-acts-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 0.75rem;
-      align-items: center;
-    }
+    .access-approve-form button { align-self: flex-start; }
     .lock-badge { margin-left: 0.25em; font-size: 0.9em; opacity: 0.9; }
     .lock-badge.lock-granted { opacity: 0.75; }
     .reveal-toggle.reveal-locked { color: var(--warning, #ca8a04); }
@@ -2572,6 +2567,13 @@
     .muted { color: var(--muted-foreground); font-size: .9em; }
     /* Flashes: oat role="alert" - slight spacing under shell header */
     [role="alert"] { margin-bottom: 1rem; }
+    #flashes [role="alert"] {
+      display: flex;
+      gap: .75rem;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    #flashes [role="alert"] [data-dismiss] { flex: none; }
     .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: end; }
     .row > * { flex: 1; min-width: 8rem; }
     table { width: 100%; border-collapse: collapse; font-size: .925rem; table-layout: auto; }

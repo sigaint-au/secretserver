@@ -39,7 +39,7 @@
 <section class="crypto-panel">
   <div class="section-head">
     <h2>HSM slots</h2>
-    <a class="button outline small" href="{{ url_for('hsm_slot_new_wizard') }}">+ Add HSM slot</a>
+    <a class="button outline small" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
   </div>
   {% if encryption.hsm_slots %}
   <div class="table table-unclipped"><table>
@@ -141,7 +141,7 @@
                placeholder="Search" autocomplete="off" aria-label="Search projects">
       </fieldset>
       {% if encryption_q %}
-      <a class="button ghost small" href="{{ url_for('server_settings', tab='encryption') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('server_settings', tab='encryption') }}">Clear search</a>
       {% endif %}
     </form>
   </div>

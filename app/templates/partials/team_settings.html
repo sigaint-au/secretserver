@@ -5,7 +5,7 @@
 
   <section class="list-panel">
     <h2>Access</h2>
-    <p class="muted page-desc">Token defaults and who may ask to see secret values.</p>
+    <p class="muted page-desc">Defaults for machine tokens and reveal requests.</p>
     <div class="settings-form">
     <fieldset class="field-group">
       <legend>Machine tokens</legend>
@@ -130,7 +130,7 @@ syncTeamClassForm();
 <section class="list-panel">
   <h2>Directory groups</h2>
   <p class="muted page-desc">
-    Map IdP groups to a team role. Matching users are added on login.
+    Map identity provider groups to a team role. Matching users are added when they sign in.
     For long-lived grants, use
     <a href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Access</a>
     instead.
@@ -236,7 +236,7 @@ syncTeamClassForm();
 {% if is_owner %}
 <section class="list-panel">
   <h2>Ownership</h2>
-  <p class="muted page-desc">Promotes the chosen user to owner and demotes you to admin.</p>
+  <p class="muted page-desc">Transfer ownership: the chosen user becomes owner and you become admin.</p>
   <form method="post" action="{{ url_for('transfer_team_ownership', team_id=team.id) }}"
         class="settings-form"
         onsubmit="return confirm('Transfer ownership to this user?')">

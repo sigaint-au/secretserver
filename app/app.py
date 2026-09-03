@@ -40,15 +40,15 @@ def _setup_audit_console() -> None:
 
 # User-facing messages for HTTP errors rendered as WebUI pages.
 _ERROR_MESSAGES = {
-    400: ("Bad request", "The request was not understood."),
-    403: ("Forbidden", "You don’t have permission to view this."),
-    404: ("Not found", "That page doesn’t exist."),
-    405: ("Method not allowed", "This URL doesn’t accept that method."),
+    400: ("Bad request", "The server could not understand the request."),
+    403: ("Forbidden", "You do not have permission to view this page."),
+    404: ("Not found", "The requested page does not exist."),
+    405: ("Method not allowed", "That action is not allowed for this page."),
     413: ("Request too large", "The upload or request exceeded the size limit."),
-    429: ("Too many requests", "Please slow down and try again shortly."),
+    429: ("Too many requests", "Please try again shortly."),
     500: ("Something went wrong", "An unexpected error occurred."),
     502: ("Bad gateway", "An upstream service returned an invalid response."),
-    503: ("Service unavailable", "The service is temporarily unavailable."),
+    503: ("Service unavailable", "Please try again shortly."),
 }
 
 

@@ -11,16 +11,16 @@
                placeholder="Search" autocomplete="off" aria-label="Search teams">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('teams') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('teams') }}">Clear search</a>
       {% endif %}
     </form>
     {% if can_create_team %}
     <button type="button" class="button outline small"
-            data-open-dialog="create-team-dlg">+ Add team</button>
+            data-open-dialog="create-team-dlg">Add team</button>
     {% endif %}
   </div>
 </div>
-<p class="page-desc muted">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Team creation is restricted to global admins.{% endif %}</p>
+<p class="page-desc muted">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Only global admins can create teams.{% endif %}</p>
 
 <section class="list-panel">
 {% if teams %}
@@ -39,7 +39,7 @@
 {% else %}
 {% if search_q %}
 {% set icon = 'search' %}
-{% set title = 'No teams match' %}
+{% set title = 'No matching teams' %}
 {% set text = 'No teams match "' ~ search_q ~ '".' %}
 {% set action = 'Clear search' %}
 {% set action_href = url_for('teams') %}
@@ -55,7 +55,7 @@
     </svg>
   </div>
   <h2 class="setup-guide-title">Welcome to {{ app_name }}</h2>
-  <p class="setup-guide-text">Corvus stores your team's secrets with row-level security enforced at the database. Get started in three steps.</p>
+  <p class="setup-guide-text">Corvus keeps your team's secrets encrypted and access controlled. Get started in three steps.</p>
   <ol class="setup-guide-steps">
     <li class="setup-guide-step is-active">
       <span class="setup-guide-n" aria-hidden="true">1</span>
@@ -75,7 +75,7 @@
       <span class="setup-guide-n" aria-hidden="true">3</span>
       <span class="setup-guide-body">
         <span class="setup-guide-label">Add a secret</span>
-        <span class="setup-guide-hint muted">Store a credential, then reveal it to verify the flow.</span>
+        <span class="setup-guide-hint muted">Store a credential, then reveal it to confirm everything works.</span>
       </span>
     </li>
   </ol>

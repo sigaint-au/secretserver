@@ -175,13 +175,13 @@ def team_access_binding_create(team_id):
             cur.execute("SELECT id FROM rbac.roles WHERE name = %s", (role_name,))
             role = cur.fetchone()
             if not role:
-                flash("Unknown role", "error")
+                flash("Unknown role.", "error")
                 return redirect(access_url)
             subject_id = None
             if subject_kind == "User":
                 subject_id = lookup_user_id(cur, subject_email)
                 if not subject_id:
-                    flash("No user with that email. They need to register first.", "error")
+                    flash("No account found for that email address.", "error")
                     return redirect(access_url)
             elif subject_kind == "Group":
                 cur.execute(
@@ -193,13 +193,13 @@ def team_access_binding_create(team_id):
                 )
                 g = cur.fetchone()
                 if not g:
-                    flash("Group not found on this team", "error")
+                    flash("Group not found in this team", "error")
                     return redirect(access_url)
                 subject_id = str(g["id"])
             elif subject_kind == "ServiceAccount":
                 subject_id = subject_sa
             else:
-                flash("Invalid subject kind", "error")
+                flash("Invalid subject kind.", "error")
                 return redirect(access_url)
             if not subject_id:
                 flash("Subject required", "error")
@@ -253,7 +253,7 @@ def team_access_binding_delete(team_id, binding_id):
                 flash("Binding removed", "ok")
             else:
                 conn.rollback()
-                flash("Binding not found or not permitted", "error")
+                flash("Binding not found. or not permitted.", "error")
         except Exception:
             conn.rollback()
             flash("Could not update team membership. Try again.", "error")
@@ -283,11 +283,11 @@ def add_team_binding(team_id):
         cur.execute("SELECT api.team_role(%s) AS r", (str(team_id),))
         my_role = (cur.fetchone() or {}).get("r")
         if role == top_role and not team_role_at_least(cur, my_role, OWNER_TIER):
-            flash("Only a team owner can grant the owner role", "error")
+            flash("Only a team owner can assign the owner role", "error")
             return members_response(team_id, form_email=email, form_role=role)
         uid = lookup_user_id(cur, email)
         if not uid:
-            flash("No user with that email. They need to register or sign in via LDAP first.", "error")
+            flash("No account found for that email address.", "error")
             return members_response(team_id, form_email=email, form_role=role)
         try:
             # Check for existing binding to determine add vs update
@@ -404,7 +404,7 @@ def transfer_team_ownership(team_id):
             return redirect(url_for("team_detail", team_id=team_id, tab="settings"))
         new_uid = lookup_user_id(cur, email)
         if not new_uid:
-            flash("No user with that email. Ask them to sign up first.", "error")
+            flash("No account found for that email address.", "error")
             return redirect(url_for("team_detail", team_id=team_id, tab="settings"))
         if new_uid == session["user_id"]:
             flash("Already owner", "ok")

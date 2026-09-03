@@ -307,7 +307,7 @@ def mgmt_upsert_project_meta(project_ref, meta_key):
         return err
     if not metadata.validate_meta_key(meta_key):
         return (
-            jsonify({"error": "metadata key must start with a letter/digit and use only A-Z a-z 0-9 . _ - (max 64)"}),
+            jsonify({"error": "metadata key must start with a letter or digit and use only A-Z a-z 0-9 . _ - (max 64)"}),
             400,
         )
     value = metadata.clean_meta_value((request.get_json(silent=True) or {}).get("value"))
@@ -343,7 +343,7 @@ def mgmt_delete_project_meta(project_ref, meta_key):
     if err:
         return err
     if not metadata.validate_meta_key(meta_key):
-        return jsonify({"error": "metadata key must start with a letter/digit and use only A-Z a-z 0-9 . _ - (max 64)"}), 400
+        return jsonify({"error": "metadata key must start with a letter or digit and use only A-Z a-z 0-9 . _ - (max 64)"}), 400
     with db.as_user(uid) as conn, conn.cursor() as cur:
         pid = _resolve_project(cur, project_ref)
         if not pid:

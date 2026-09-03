@@ -76,7 +76,7 @@ def eso_request_secret_access(project_ref, key):
                     "status": "pending",
                     "id": str(existing["id"]),
                     "key": row["key"],
-                    "message": "Access request already pending approval",
+                    "message": "An access request is already pending approval.",
                 }
             )
         cur.execute(

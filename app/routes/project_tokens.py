@@ -169,7 +169,7 @@ def create_token(project_id):
         # Explicit write gate (read-only can list tokens, not create them)
         cur.execute("SELECT api.can_admin_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return _token_redirect()
         if not days_raw:
             cur.execute(
@@ -215,7 +215,7 @@ def create_token(project_id):
             )
             row = cur.fetchone()
             if not row:
-                flash("You don't have permission to do that", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
                 return _token_redirect()
             insert_token_scopes(cur, str(row["id"]), scopes)
@@ -254,13 +254,13 @@ def delete_token(project_id, token_id):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))
         cur.execute(
             "DELETE FROM api.machine_tokens WHERE id = %s AND project_id = %s",
             (str(token_id), str(project_id)),
         )
         if cur.rowcount == 0:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
         conn.commit()
     return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))

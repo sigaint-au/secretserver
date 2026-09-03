@@ -47,7 +47,7 @@ def update_secret_access(project_id, secret_id):
         )
         row = cur.fetchone()
         if not row:
-            flash("Secret not found or not permitted", "error")
+            flash("Secret not found. or not permitted", "error")
             conn.rollback()
         else:
             audit.log_secret(
@@ -88,7 +88,7 @@ def add_secret_access_binding(project_id, secret_id):
         flash("Enter an email address.", "error")
         return redirect(access_url)
     if subject_kind == "Group" and not group_id:
-        flash("Select a group", "error")
+        flash("Select a group.", "error")
         return redirect(access_url)
     if subject_kind == "ServiceAccount" and not sa_id:
         flash("Enter a machine account ID.", "error")
@@ -116,7 +116,7 @@ def add_secret_access_binding(project_id, secret_id):
         )
         sec = cur.fetchone()
         if not sec:
-            flash("Secret not found", "error")
+            flash("Secret not found.", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
         cur.execute("SELECT id FROM rbac.roles WHERE name = %s", (role_name,))
         role = cur.fetchone()
@@ -128,7 +128,7 @@ def add_secret_access_binding(project_id, secret_id):
                 subject_id = lookup_user_id(cur, email)
                 if not subject_id:
                     flash(
-                        "No user with that email. They need to register or sign in first.",
+                        "No account found for that email address.",
                         "error",
                     )
                     return redirect(access_url)
@@ -143,7 +143,7 @@ def add_secret_access_binding(project_id, secret_id):
                 )
                 g = cur.fetchone()
                 if not g:
-                    flash("Group not found on this team", "error")
+                    flash("Group not found in this team", "error")
                     return redirect(access_url)
                 subject_id, who = str(g["id"]), f"group {g['name']}"
             else:
@@ -267,7 +267,7 @@ def delete_secret_access_binding(project_id, secret_id, grant_id):
         )
         row = cur.fetchone()
         if not row:
-            flash("Binding not found", "error")
+            flash("Binding not found.", "error")
             conn.rollback()
         else:
             audit.log_secret(

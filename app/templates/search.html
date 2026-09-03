@@ -34,7 +34,7 @@
   {% endif %}
   {% if search_q or scope %}
   <div class="audit-filter-actions">
-    <a class="button ghost small" href="{{ url_for('global_search') }}">Clear</a>
+    <a class="button ghost small" href="{{ url_for('global_search') }}">Clear search</a>
   </div>
   {% endif %}
 </form>
@@ -205,7 +205,7 @@
   {% if secrets_total > secrets|length %}
   <p class="muted">
     <a href="{{ url_for('global_search', q=search_q, scope='secrets') }}">View all {{ secrets_total }} matching secrets →</a>
-    · filter by kind/expiry on the full results page
+    · Filter by kind or expiry on the full results page
   </p>
   {% endif %}
   {% else %}

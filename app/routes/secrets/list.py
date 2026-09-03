@@ -202,7 +202,7 @@ def restore_secret(secret_id):
             )
             row = cur.fetchone()
             if not row:
-                flash("Could not restore. You may lack permission, or a secret with that key already exists.", "error")
+                flash("Could not restore the secret. Check your permissions and whether that key already exists.", "error")
             else:
                 try:
                     cur.execute(
@@ -230,7 +230,7 @@ def restore_secret(secret_id):
                 except Exception as exc:
                     if "duplicate key" in str(exc).lower() or "UniqueViolation" in type(exc).__name__:
                         conn.rollback()
-                        flash("Could not restore. You may lack permission, or a secret with that key already exists.", "error")
+                        flash("Could not restore the secret. Check your permissions and whether that key already exists.", "error")
                         q = request.args.get("q") or ""
                         if authz.htmx():
                             tid = nav.ensure_active_team(session["user_id"])
@@ -239,7 +239,7 @@ def restore_secret(secret_id):
                         return redirect(url_for("trash", q=q or None))
                     raise
                 if cur.rowcount == 0:
-                    flash("Could not restore. You may lack permission, or a secret with that key already exists.", "error")
+                    flash("Could not restore the secret. Check your permissions and whether that key already exists.", "error")
                 else:
                     audit.log_secret(
                         cur,
@@ -328,7 +328,7 @@ def bulk_trash():
     ids = request.form.getlist("secret_ids")
     q = (request.form.get("q") or request.args.get("q") or "").strip() or None
     if not ids:
-        flash("Select at least one secret", "error")
+        flash("Select at least one secret.", "error")
         return redirect(url_for("trash", q=q))
     n = 0
     skipped = 0

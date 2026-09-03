@@ -88,9 +88,9 @@ def change_password():
         if n:
             flash(f"Password updated. Signed out {n} other session(s).", "ok")
         else:
-            flash("Password updated.", "ok")
+            flash("Password updated", "ok")
     else:
-        flash("Password updated.", "ok")
+        flash("Password updated", "ok")
     return redirect(url_for("profile", tab="security"))
 
 

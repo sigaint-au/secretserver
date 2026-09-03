@@ -556,7 +556,7 @@ def delete_project(project_id):
 
         row = cur.fetchone()
         if not row:
-            flash("Project not found", "error")
+            flash("Project not found.", "error")
             return redirect(url_for("projects_list"))
         team_id = row["team_id"]
         if not team_role_at_least(cur, row["r"], MANAGE_TIER):
@@ -564,7 +564,7 @@ def delete_project(project_id):
             return redirect(url_for("project_detail", project_id=project_id))
         cur.execute("DELETE FROM api.projects WHERE id = %s", (str(project_id),))
         if cur.rowcount == 0:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             conn.rollback()
             return redirect(url_for("project_detail", project_id=project_id))
         conn.commit()
@@ -594,7 +594,7 @@ def update_project_settings(project_id):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="settings"))
         cur.execute(
             """
@@ -605,7 +605,7 @@ def update_project_settings(project_id):
             (require_on, description, default_acl, str(project_id)),
         )
         if cur.rowcount == 0:
-            flash("Project not found or not permitted", "error")
+            flash("Project not found. or not permitted", "error")
             conn.rollback()
         else:
             cur.execute(
@@ -632,12 +632,12 @@ def upsert_project_meta(project_id):
     key = (request.form.get("key") or "").strip()
     value = metadata.clean_meta_value(request.form.get("value"))
     if not metadata.validate_meta_key(key):
-        flash("Metadata key must start with a letter/digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
+        flash("Metadata key must start with a letter or digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
         return redirect(meta_url)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(meta_url)
         cur.execute("SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),))
         team_id = (cur.fetchone() or {}).get("team_id")
@@ -666,7 +666,7 @@ def delete_project_meta(project_id, meta_key):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(meta_url)
         cur.execute("SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),))
         team_id = (cur.fetchone() or {}).get("team_id")
@@ -677,7 +677,7 @@ def delete_project_meta(project_id, meta_key):
             )
             if not cur.fetchone():
                 conn.rollback()
-                flash("Field not found or not permitted", "error")
+                flash("Field not found or not permitted.", "error")
             else:
                 audit.log_org(cur, team_id=str(team_id), project_id=str(project_id), action="project_meta", detail=f"meta {meta_key}")
                 conn.commit()
@@ -710,7 +710,7 @@ def project_crypto_action(project_id):
         cur.execute("SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),))
         proj = cur.fetchone() or {}
         if not proj:
-            flash("Project not found", "error")
+            flash("Project not found.", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="settings"))
         team_id = proj.get("team_id")
         cur.execute("SELECT api.is_global_admin() AS g", ())

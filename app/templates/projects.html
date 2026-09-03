@@ -12,11 +12,11 @@
                placeholder="Search" autocomplete="off" aria-label="Search projects">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('projects_list') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('projects_list') }}">Clear search</a>
       {% endif %}
     </form>
     {% if can_create_project %}
-    <a class="button outline small" href="{{ url_for('new_project_wizard', team_id=team.id) }}">+ Add project</a>
+    <a class="button outline small" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
     {% endif %}
   </div>
   {% endif %}
@@ -43,7 +43,7 @@
 {% else %}
 {% set icon = 'teams' %}
 {% set title = 'No teams yet' %}
-{% set text = 'Ask a team administrator to invite you or contact your administrator for access.' %}
+{% set text = 'Ask a team administrator to invite you, or contact your administrator for access.' %}
 {% include "partials/empty_state.html" %}
 {% endif %}
 {% else %}
@@ -84,7 +84,7 @@
 {% else %}
 {% if search_q %}
 {% set icon = 'search' %}
-{% set title = 'No projects match' %}
+{% set title = 'No matching projects' %}
 {% set text = 'No projects match “' ~ search_q ~ '”.' %}
 {% set action = 'Clear search' %}
 {% set action_href = url_for('projects_list') %}

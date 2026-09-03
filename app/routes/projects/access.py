@@ -38,7 +38,7 @@ def add_project_binding(project_id):
             (str(project_id),),
         )
         if not (cur.fetchone() or {}).get("ok"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(dest)
         from auth.roles import default_role_for_scope, role_names_for_scope
 
@@ -50,7 +50,7 @@ def add_project_binding(project_id):
         uid = lookup_user_id(cur, email)
         if not uid:
             flash(
-                "No user with that email. They need to register or sign in via LDAP first.",
+                "No account found for that email address.",
                 "error",
             )
             return redirect(dest)
@@ -93,7 +93,7 @@ def remove_project_binding(project_id, user_id):
             (str(project_id),),
         )
         if not (cur.fetchone() or {}).get("ok"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(dest)
         cur.execute(
             "SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),)
@@ -127,7 +127,7 @@ def add_project_group_role(project_id):
     raw_role = (request.form.get("role") or "").strip()
     dest = _project_access_url(project_id)
     if not group_id:
-        flash("Select a group.", "error")
+        flash("Select a group..", "error")
         return redirect(dest)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute(
@@ -135,7 +135,7 @@ def add_project_group_role(project_id):
             (str(project_id),),
         )
         if not (cur.fetchone() or {}).get("ok"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(dest)
         from auth.roles import default_role_for_scope, role_names_for_scope
 
@@ -155,7 +155,7 @@ def add_project_group_role(project_id):
         )
         row = cur.fetchone()
         if not row:
-            flash("Group not found on this team", "error")
+            flash("Group not found in this team", "error")
             return redirect(dest)
         try:
             from auth import rbac_sync
@@ -192,7 +192,7 @@ def remove_project_group_role(project_id, group_id):
             (str(project_id),),
         )
         if not (cur.fetchone() or {}).get("ok"):
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(dest)
         cur.execute(
             "SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),)
@@ -245,13 +245,13 @@ def project_access_binding_create(project_id):
         )
         proj = cur.fetchone()
         if not proj:
-            flash("Project not found", "error")
+            flash("Project not found.", "error")
             return redirect(url_for("projects"))
         try:
             from auth.roles import role_names_for_scope
 
             if role_name not in role_names_for_scope(cur, "project"):
-                flash("Unknown role", "error")
+                flash("Unknown role.", "error")
                 return redirect(dest)
 
             subject_id = None
@@ -259,7 +259,7 @@ def project_access_binding_create(project_id):
             if subject_kind == "User":
                 subject_id = lookup_user_id(cur, subject_email)
                 if not subject_id:
-                    flash("No user with that email. They need to register first.", "error")
+                    flash("No account found for that email address.", "error")
                     return redirect(dest)
                 detail_who = subject_email
                 rbac_sync.sync_user_project_binding(
@@ -271,7 +271,7 @@ def project_access_binding_create(project_id):
                 )
             elif subject_kind == "Group":
                 if not subject_group:
-                    flash("Select a group", "error")
+                    flash("Select a group.", "error")
                     return redirect(dest)
                 cur.execute(
                     """
@@ -282,7 +282,7 @@ def project_access_binding_create(project_id):
                 )
                 g = cur.fetchone()
                 if not g:
-                    flash("Group not found on this team", "error")
+                    flash("Group not found in this team", "error")
                     return redirect(dest)
                 subject_id = str(g["id"])
                 detail_who = f"group {g['name']}"
@@ -301,7 +301,7 @@ def project_access_binding_create(project_id):
                     return redirect(dest)
                 rid = rbac_sync.role_id(cur, role_name)
                 if not rid:
-                    flash("Unknown role", "error")
+                    flash("Unknown role.", "error")
                     return redirect(dest)
                 cur.execute(
                     """
@@ -318,7 +318,7 @@ def project_access_binding_create(project_id):
                     ),
                 )
             else:
-                flash("Invalid subject kind", "error")
+                flash("Invalid subject kind.", "error")
                 return redirect(dest)
 
             audit.log_org(
@@ -365,7 +365,7 @@ def project_access_binding_delete(project_id, binding_id):
             )
             row = cur.fetchone()
             if not row:
-                flash("Binding not found or not permitted", "error")
+                flash("Binding not found. or not permitted.", "error")
                 conn.rollback()
             else:
                 audit.log_org(

@@ -165,7 +165,7 @@ class TestNav:
         assert r.status_code == 200
         assert b'DB_URL' in r.data
         assert b'Restore' in r.data
-        assert b'Delete forever' in r.data
+        assert b'Delete permanently' in r.data
         assert b'Permanently delete' in r.data
         assert b'This cannot be undone' in r.data
         assert b'hx-confirm' in r.data

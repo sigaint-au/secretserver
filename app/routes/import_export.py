@@ -239,7 +239,7 @@ def import_preview(project_id):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_write_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(back)
         cur.execute(
             """
@@ -316,7 +316,7 @@ def import_commit(project_id):
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_write_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(back)
         try:
             for item in items:
@@ -382,7 +382,7 @@ def bulk_export(project_id):
         fmt = "env"
     ids = request.form.getlist("secret_ids")
     if not ids:
-        flash("Select at least one secret", "error")
+        flash("Select at least one secret.", "error")
         return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_read_project(%s) AS r", (str(project_id),))

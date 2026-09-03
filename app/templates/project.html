@@ -12,7 +12,7 @@
 <p class="page-desc">{{ project.description }} <span class="muted">· Project ID: <code class="k">{{ project.id }}</code></span></p>
 {% elif can_admin or can_settings %}
 <p class="page-desc muted">
-  No description yet -
+  No description yet.
   <a class="page-edit-link" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
      title="Add description in Settings" aria-label="Add description in Settings">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -33,7 +33,7 @@
     <strong>Machine token (copy now, shown once)</strong>
     <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
   </div>
-  <p class="muted">The clipboard clears 60 seconds after copying. Store it somewhere safe.</p>
+  <p class="muted">Copy it now. This is the only time it is displayed. The clipboard clears automatically after 60 seconds.</p>
   <pre id="new-token-pre">{{ new_token }}</pre>
 </div>
 {% endif %}

@@ -215,7 +215,7 @@ def add_group_member(team_id, group_id):
             return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
         uid = lookup_user_id(cur, email)
         if not uid:
-            flash("No user with that email. They need to register or sign in first.", "error")
+            flash("No account found for that email address.", "error")
             return redirect(_group_detail_url(team_id, group_id))
         try:
             cur.execute(

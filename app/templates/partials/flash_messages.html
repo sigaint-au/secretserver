@@ -5,7 +5,8 @@
   {% for cat, msg in _msgs %}
   {# oat.ink Alert #}
   <div role="alert"{% if cat in ('error', 'danger') %} data-variant="error"{% elif cat in ('ok', 'success') %} data-variant="success"{% elif cat == 'warning' %} data-variant="warning"{% endif %}>
-    {{ msg }}
+    <span>{{ msg }}</span>
+    <button type="button" class="link" data-dismiss aria-label="Dismiss notification">Dismiss</button>
   </div>
   {% endfor %}
 </div>

@@ -83,7 +83,7 @@ def rbac_roles_create():
             )
             row = cur.fetchone()
             if not row:
-                flash("Permission denied creating role", "error")
+                flash("You do not have permission to perform this action creating role", "error")
                 conn.rollback()
                 return redirect(url_for("rbac_roles", tab="create"))
             for resources, verbs in rules:

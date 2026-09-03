@@ -430,7 +430,7 @@ def update_team_settings(team_id):
                 ),
             )
             if cur.rowcount == 0:
-                flash("Permission denied", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
             else:
                 audit.log_org(
@@ -475,7 +475,7 @@ def delete_team(team_id):
         try:
             cur.execute("DELETE FROM api.teams WHERE id = %s", (str(team_id),))
             if cur.rowcount == 0:
-                flash("Permission denied", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
                 return redirect(url_for("team_detail", team_id=team_id, tab="settings"))
             conn.commit()
@@ -497,7 +497,7 @@ def upsert_team_meta(team_id):
     key = (request.form.get("key") or "").strip()
     value = (request.form.get("value") or "").strip()
     if not re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", key):
-        flash("Metadata key must start with a letter/digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
+        flash("Metadata key must start with a letter or digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
         return redirect(meta_url)
     if len(value) > 2000:
         value = value[:2000]
@@ -546,7 +546,7 @@ def delete_team_meta(team_id, meta_key):
             )
             if not cur.fetchone():
                 conn.rollback()
-                flash("Field not found or not permitted", "error")
+                flash("Field not found or not permitted.", "error")
             else:
                 audit.log_org(cur, team_id=str(team_id), action="team_meta", detail=f"meta {meta_key}")
                 conn.commit()

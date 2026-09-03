@@ -51,7 +51,7 @@
               hx-swap="outerHTML"
               hx-confirm="{{ ('Permanently delete ' ~ item.key ~ '? This cannot be undone.') }}">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button type="submit" class="link danger">Delete forever</button>
+          <button type="submit" class="link danger">Delete permanently</button>
         </form>
         {% else %}
         <span class="muted">Read only</span>
@@ -70,7 +70,7 @@
 {% else %}
 {% set icon = 'inbox' %}
 {% set title = 'Trash is empty' %}
-{% set text = 'Soft-deleted secrets land here. They can be restored or permanently deleted.' %}
+{% set text = 'Deleted secrets stay here until you restore or permanently delete them.' %}
 {% include "partials/empty_state.html" %}
 {% endif %}
 </section>

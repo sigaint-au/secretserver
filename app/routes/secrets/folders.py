@@ -135,8 +135,9 @@ def folder_view(project_id, folder_id):
             )
             start = (page - 1) * effective_access_pager["per_page"]
             effective_access = effective_access[start : start + effective_access_pager["per_page"]]
+    template = "partials/folder_panel.html" if authz.htmx() else "folder_view.html"
     return render_template(
-        "folder_view.html",
+        template,
         folder=folder,
         project=project,
         project_id=project_id,
@@ -192,7 +193,7 @@ def update_folder_access(project_id, folder_id):
             flash("Folder access settings saved", "ok")
         else:
             conn.rollback()
-            flash("Folder not found", "error")
+            flash("Folder not found.", "error")
     return redirect(access_url)
 
 
@@ -212,7 +213,7 @@ def add_folder_access_binding(project_id, folder_id):
         flash("Enter an email address.", "error")
         return redirect(access_url)
     if subject_kind == "Group" and not group_id:
-        flash("Select a group", "error")
+        flash("Select a group.", "error")
         return redirect(access_url)
     if subject_kind == "ServiceAccount" and not sa_id:
         flash("Enter a machine account ID.", "error")
@@ -249,7 +250,7 @@ def add_folder_access_binding(project_id, folder_id):
         if subject_kind == "User":
             subject_id = lookup_user_id(cur, email)
             if not subject_id:
-                flash("No user with that email.", "error")
+                flash("No account found for that email address.", "error")
                 return redirect(access_url)
         elif subject_kind == "Group":
             cur.execute(
@@ -258,7 +259,7 @@ def add_folder_access_binding(project_id, folder_id):
             )
             group = cur.fetchone()
             if not group:
-                flash("Group not found on this team", "error")
+                flash("Group not found in this team", "error")
                 return redirect(access_url)
             subject_id = group["id"]
         else:
@@ -330,7 +331,7 @@ def delete_folder_access_binding(project_id, folder_id, binding_id):
             flash("Binding removed", "ok")
         else:
             conn.rollback()
-            flash("Binding not found", "error")
+            flash("Binding not found.", "error")
     return redirect(access_url)
 
 
@@ -385,7 +386,7 @@ def delete_folder(project_id, folder_id):
             return redirect(url_for("folder_view", project_id=project_id, folder_id=folder_id))
         if not deleted:
             conn.rollback()
-            flash("Folder not found", "error")
+            flash("Folder not found.", "error")
         else:
             conn.commit()
             flash("Folder deleted", "ok")

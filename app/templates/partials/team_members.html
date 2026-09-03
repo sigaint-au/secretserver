@@ -5,12 +5,13 @@
     <strong>Invite link (copy now, shown once)</strong>
     <button type="button" class="link copy-btn" data-copy-target="new-invite-pre" data-clear-seconds="60">Copy link</button>
   </div>
+  <p class="muted">Copy it now. This is the only time it is displayed. The clipboard clears automatically after 60 seconds.</p>
   <pre id="new-invite-pre">{{ new_invite_url }}</pre>
 </div>
 {% endif %}
 <section>
   <h2>Members</h2>
-  <p class="muted">People with a team role binding. Manage groups and advanced bindings under <a href="{{ url_for('team_detail', team_id=team.id, tab='access') if is_admin else '#' }}">Access</a>.</p>
+  <p class="muted">People with a role on this team. Manage groups and advanced access rules under <a href="{{ url_for('team_detail', team_id=team.id, tab='access') if is_admin else '#' }}">Access</a>.</p>
   {% if is_admin %}
   <form method="post" action="{{ url_for('add_team_binding', team_id=team.id) }}" class="row"
         hx-post="{{ url_for('add_team_binding', team_id=team.id) }}"

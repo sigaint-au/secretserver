@@ -599,6 +599,13 @@ document.addEventListener('htmx:configRequest', function (e) {
         if (cdlg) oatCloseDialog(cdlg);
         return;
       }
+      var dismissBtn = e.target.closest && e.target.closest('[data-dismiss]');
+      if (dismissBtn) {
+        e.preventDefault();
+        var target = dismissBtn.closest(dismissBtn.getAttribute('data-dismiss') || '[role="alert"]');
+        if (target) target.remove();
+        return;
+      }
       var submitBtn = e.target.closest && e.target.closest('[data-submit-form]');
       if (submitBtn) {
         e.preventDefault();

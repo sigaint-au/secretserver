@@ -58,7 +58,7 @@ def request_secret_access(project_id, secret_id):
         if not row:
             if wants_htmx:
                 return "Not found", 404
-            flash("Secret not found", "error")
+            flash("Secret not found.", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
         access_state, access_row = _reveal_access_state(
             cur, project_id, secret_id, session["user_id"]
@@ -96,7 +96,7 @@ def request_secret_access(project_id, secret_id):
                     request_row=access_row,
                     cell=cell,
                 )
-            flash("Access request already pending approval", "ok")
+            flash("An access request is already pending approval.", "ok")
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         try:
             cur.execute(
@@ -135,7 +135,7 @@ def request_secret_access(project_id, secret_id):
                         request_row=access_row,
                         cell=cell,
                     )
-                flash("Access request already pending approval", "ok")
+                flash("An access request is already pending approval.", "ok")
                 return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
             audit.log_secret(
                 cur,
@@ -210,7 +210,7 @@ def approve_secret_access(project_id, req_id):
         )
         req = cur.fetchone()
         if not req or req["status"] != "pending":
-            flash("Request not found or already resolved", "error")
+            flash("Request not found. or already resolved.", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         try:
             cur.execute(
@@ -225,7 +225,7 @@ def approve_secret_access(project_id, req_id):
                 (session["user_id"], str(minutes), str(req_id)),
             )
             if cur.rowcount == 0:
-                flash("Request not found or already resolved", "error")
+                flash("Request not found. or already resolved.", "error")
                 conn.rollback()
             else:
                 audit.log_secret(
@@ -288,7 +288,7 @@ def deny_secret_access(project_id, req_id):
         )
         req = cur.fetchone()
         if not req or req["status"] != "pending":
-            flash("Request not found or already resolved", "error")
+            flash("Request not found. or already resolved.", "error")
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         try:
             cur.execute(
@@ -303,7 +303,7 @@ def deny_secret_access(project_id, req_id):
                 (session["user_id"], str(req_id)),
             )
             if cur.rowcount == 0:
-                flash("Request not found or already resolved", "error")
+                flash("Request not found. or already resolved.", "error")
                 conn.rollback()
             else:
                 audit.log_secret(

@@ -276,7 +276,7 @@ def rbac_bindings_create():
             cur.execute("SELECT id FROM rbac.roles WHERE name = %s", (role_name,))
             role = cur.fetchone()
             if not role:
-                flash("Unknown role", "error")
+                flash("Unknown role.", "error")
                 return redirect(url_for("rbac_bindings", scope=scope_kind, scope_id=scope_id))
             if not role_allowed_at_scope(cur, role_name, scope_kind):
                 flash("That role cannot be assigned at this scope", "error")
@@ -289,14 +289,14 @@ def rbac_bindings_create():
                 if not team_role_at_least(
                     cur, (cur.fetchone() or {}).get("r"), OWNER_TIER
                 ) and not authz.is_global_admin(session["user_id"]):
-                    flash("Only a team owner can grant the owner role", "error")
+                    flash("Only a team owner can assign the owner role", "error")
                     return redirect(url_for("rbac_bindings", scope=scope_kind, scope_id=scope_id))
 
             subject_id = None
             if subject_kind == "User":
                 subject_id = lookup_user_id(cur, subject_email)
                 if not subject_id:
-                    flash("No user with that email. They need to register first.", "error")
+                    flash("No account found for that email address.", "error")
                     return redirect(url_for("rbac_bindings", scope=scope_kind, scope_id=scope_id))
             elif subject_kind == "Group":
                 if not is_uuid(subject_group):
@@ -374,7 +374,7 @@ def rbac_bindings_create():
                     return redirect(url_for("rbac_bindings", scope=scope_kind, scope_id=scope_id))
                 subject_id = subject_sa
             else:
-                flash("Invalid subject kind", "error")
+                flash("Invalid subject kind.", "error")
                 return redirect(url_for("rbac_bindings", scope=scope_kind, scope_id=scope_id))
 
             # Resolve scope_id in Python — CASE %s IS NULL confuses PG type inference
@@ -397,7 +397,7 @@ def rbac_bindings_create():
                 ),
             )
             if cur.rowcount == 0:
-                flash("Permission denied", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
             else:
                 audit.log_org(
@@ -449,7 +449,7 @@ def rbac_bindings_delete(binding_id):
                 flash("Binding removed", "ok")
             else:
                 conn.rollback()
-                flash("Permission denied or binding not found", "error")
+                flash("You do not have permission to perform this action or binding not found", "error")
         except Exception:
             conn.rollback()
             flash("Could not update roles or bindings. Try again.", "error")

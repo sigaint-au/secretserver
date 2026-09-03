@@ -9,7 +9,7 @@
                placeholder="Search" autocomplete="off" aria-label="Search groups">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Clear search</a>
       {% endif %}
     </form>
   </div>

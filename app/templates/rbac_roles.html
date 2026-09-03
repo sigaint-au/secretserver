@@ -32,7 +32,7 @@
     <a class="button outline small" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
   </div>
-  <p class="muted mt-0">Shipped roles used by the Access dropdowns. Rules can't be edited.</p>
+  <p class="muted mt-0">Built-in roles used by the Access dropdowns. Rules cannot be edited.</p>
   {% if builtin_roles %}
   <div class="table">
     <table>
@@ -56,7 +56,7 @@
   </div>
   {% else %}
   {% set title = 'No built-in roles' %}
-  {% set text = 'Shipped roles used by the Access dropdowns were not loaded.' %}
+  {% set text = 'Built-in roles could not be loaded.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
 </section>

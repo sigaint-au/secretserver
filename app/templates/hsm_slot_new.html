@@ -10,7 +10,7 @@
 <div class="page-head">
   <h1>{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
 </div>
-<p class="page-desc muted">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The app will open a session against this module/token and store the key-encryption key.</p>
+<p class="page-desc muted">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
 
 <form method="post" action="{{ url_for('hsm_slot_new_wizard') }}" class="settings-form" id="hsm-slot-form">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">

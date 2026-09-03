@@ -23,7 +23,7 @@
                placeholder="Search access" aria-label="Search effective access" autocomplete="off">
       </fieldset>
       {% if effective_access_q %}
-      <a class="button ghost small" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear search</a>
       {% endif %}
     </form>
   </div>

@@ -10,11 +10,11 @@
                  placeholder="Search" autocomplete="off" aria-label="Search projects">
         </fieldset>
         {% if search_q %}
-        <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear</a>
+        <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear search</a>
         {% endif %}
       </form>
       {% if can_create_projects %}
-      <a class="button outline small" href="{{ url_for('new_project_wizard', team_id=team.id) }}">+ Add project</a>
+      <a class="button outline small" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
       {% endif %}
     </div>
   </div>

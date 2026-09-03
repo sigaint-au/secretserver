@@ -40,7 +40,7 @@ def new_project_wizard(team_id):
         can_create = team_role_at_least(cur, my_role, MEMBER_TIER)
         can_manage_team = team_role_at_least(cur, my_role, MANAGE_TIER)
     if not can_create:
-        flash("You don't have permission to create projects", "error")
+        flash("You do not have permission to create projects", "error")
         return redirect(url_for("team_detail", team_id=team_id, tab="projects"))
     hsm_slots = []
     try:
@@ -90,7 +90,7 @@ def create_project(team_id):
             )
             row = cur.fetchone()
             if not row:
-                flash("Permission denied", "error")
+                flash("You do not have permission to perform this action", "error")
                 conn.rollback()
                 return redirect(url_for("team_detail", team_id=team_id, tab="projects"))
             pid = row["id"]
@@ -169,7 +169,7 @@ def delete_project_from_team(team_id, project_id):
             (str(project_id), str(team_id)),
         )
         if cur.rowcount == 0:
-            flash("Permission denied", "error")
+            flash("You do not have permission to perform this action", "error")
             conn.rollback()
         else:
             conn.commit()

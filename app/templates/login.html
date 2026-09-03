@@ -24,7 +24,7 @@
   <button type="submit">Sign in</button>
 </form>
 {% if ldap_enabled or oidc_enabled %}
-<p class="muted">Local accounts only below. SSO users sign in above.</p>
+<p class="muted">Use single sign-on above, or continue with a local account below.</p>
 {% endif %}
 <p class="muted"><a href="{{ url_for('forgot_password') }}">Forgot your local account password?</a>
 </p>

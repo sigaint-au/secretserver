@@ -14,7 +14,7 @@
            inputmode="numeric" pattern="[0-9A-Za-z\- ]{6,20}"
            placeholder="123456 or xxxx-xxxx" autofocus>
   </label>
-  <button type="submit">Verify</button>
+  <button type="submit">Verify code</button>
 </form>
 <form method="post" action="{{ url_for('logout') }}" class="inline">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">

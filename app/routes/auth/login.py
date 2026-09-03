@@ -107,7 +107,7 @@ def login_oidc():
         GET /login/oidc
     """
     if not oidc_auth.oidc_enabled():
-        flash("SSO is not enabled", "error")
+        flash("Single sign-on is not enabled for this server.", "error")
         return redirect(url_for("login"))
     try:
         state, nonce = oidc_auth.new_state_nonce()
@@ -138,7 +138,7 @@ def login_oidc_callback():
         GET /login/oidc/callback?code=...&state=...
     """
     if not oidc_auth.oidc_enabled():
-        flash("SSO is not enabled", "error")
+        flash("Single sign-on is not enabled for this server.", "error")
         return redirect(url_for("login"))
     err = request.args.get("error")
     if err:

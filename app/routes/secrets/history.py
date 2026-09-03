@@ -249,7 +249,7 @@ def rollback_secret(project_id, secret_id, version_id):
             return redirect(url_for("secret_history", project_id=project_id, secret_id=secret_id))
         enc = fetch_secret_version_enc(cur, version_id, secret_id)
         if not enc:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             return redirect(url_for("secret_history", project_id=project_id, secret_id=secret_id))
         cur.execute(
             """
@@ -266,7 +266,7 @@ def rollback_secret(project_id, secret_id, version_id):
             ),
         )
         if cur.rowcount == 0:
-            flash("You don't have permission to do that", "error")
+            flash("You do not have permission to perform this action", "error")
             conn.rollback()
         else:
             audit.log_secret(

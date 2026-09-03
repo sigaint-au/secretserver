@@ -103,7 +103,7 @@
     <button type="submit" class="button outline small">Apply</button>
     {% if search_q or audit_actor or audit_since or audit_until %}
     <div class="audit-filter-actions">
-      <a class="button ghost small" href="{{ url_for('admin_audit', tab='roles') }}">Clear</a>
+      <a class="button ghost small" href="{{ url_for('admin_audit', tab='roles') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>

@@ -18,10 +18,10 @@
       <input type="search" name="q" value="{{ search_q or '' }}"
              placeholder="Search" autocomplete="off" aria-label="Search webhooks">
     </fieldset>
-    {% if search_q %}<a class="button ghost small" href="{{ list_url }}">Clear</a>{% endif %}
+    {% if search_q %}<a class="button ghost small" href="{{ list_url }}">Clear search</a>{% endif %}
   </form>
   {% if scope_kind %}
-  <a class="button outline small" href="{{ url_for('webhook_new', scope=scope_kind, scope_id=scope_ref or '', back=list_url) }}">+ Add webhook</a>
+  <a class="button outline small" href="{{ url_for('webhook_new', scope=scope_kind, scope_id=scope_ref or '', back=list_url) }}">Add webhook</a>
   {% endif %}
 </div>
 <section class="list-panel">
