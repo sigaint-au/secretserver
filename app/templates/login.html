@@ -23,12 +23,13 @@
   <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
   <button type="submit">Sign in</button>
 </form>
-<p class="muted"><a href="{{ url_for('forgot_password') }}">Forgot password?</a>
-  <span>(local accounts)</span>
+{% if ldap_enabled or oidc_enabled %}
+<p class="muted">Local accounts only below. SSO users sign in above.</p>
+{% endif %}
+<p class="muted"><a href="{{ url_for('forgot_password') }}">Forgot your local account password?</a>
 </p>
 {% if registration_enabled %}
-<p class="muted">No account? <a href="{{ url_for('register') }}">Register</a>
-  {% if ldap_enabled or oidc_enabled %} <span>(local account)</span>{% endif %}
+<p class="muted">No account? <a href="{{ url_for('register') }}">Create a local account</a>
 </p>
 {% endif %}
 {% endblock %}

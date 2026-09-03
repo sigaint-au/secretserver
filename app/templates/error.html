@@ -18,6 +18,9 @@
     <p class="error-code" role="status">{{ code }}</p>
     <h1 class="error-title">{{ title }}</h1>
     {% if message %}<p class="error-text">{{ message }}</p>{% endif %}
+    {% if code >= 500 %}
+    <p class="error-text muted">If this keeps happening, contact your administrator{% if now %} and mention {{ now }} (UTC){% endif %}.</p>
+    {% endif %}
     <p class="error-action">
       <a class="button" href="{{ home }}">
         {% if session.get('user_id') %}Back to projects{% else %}Back to sign in{% endif %}

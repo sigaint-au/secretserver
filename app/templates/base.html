@@ -18,7 +18,7 @@
 </head>
 <body class="{% if session.get('user_id') %}app{% else %}auth{% endif %}">
   <a class="skip-link" href="#main-content">Skip to content</a>
-  {% if classification and classification.enabled %}commi
+  {% if classification and classification.enabled %}
   <div class="class-banner"
        style="background: {{ classification.color }}; color: {{ classification.fg }};"
        role="status">{{ classification.text }}</div>
@@ -57,7 +57,8 @@
       {# Include query (e.g. ?tab=secrets) so team switch can land on the right list #}
       <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
       <label for="side-team-select">Team</label>
-      <select id="side-team-select" name="team_id" onchange="this.form.submit()"
+      <span class="side-team-row">
+      <select id="side-team-select" name="team_id"
               aria-label="Team">
         {% if not nav_teams %}
         <option value="">No teams</option>
@@ -67,7 +68,10 @@
         {% endfor %}
         {% endif %}
       </select>
+      <button type="submit" class="button ghost small">Go</button>
+      </span>
     </form>
+    <nav class="side-nav" aria-label="Workspace">
     {% for g in nav_groups %}
     <details class="side-group" data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
       <summary>{{ g['label'] }}</summary>

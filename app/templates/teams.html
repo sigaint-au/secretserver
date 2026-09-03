@@ -20,11 +20,7 @@
     {% endif %}
   </div>
 </div>
-<p class="page-desc muted">Teams own projects. Access is managed via role bindings.</p>
-
-{% if not can_create_team %}
-<p class="muted">Team creation is restricted to global admins.</p>
-{% endif %}
+<p class="page-desc muted">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Team creation is restricted to global admins.{% endif %}</p>
 
 <section class="list-panel">
 {% if teams %}
@@ -34,7 +30,7 @@
   {% for t in teams %}
     <tr>
       <td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
-      <td><span class="badge" data-variant="secondary">{{ t.role }}</span></td>
+      <td class="muted">{{ t.role }}</td>
       <td>{{ t.project_count }}</td>
     </tr>
   {% endfor %}
@@ -42,7 +38,12 @@
 </table></div>
 {% else %}
 {% if search_q %}
-<p class="empty">No teams match "{{ search_q }}".</p>
+{% set icon = 'search' %}
+{% set title = 'No teams match' %}
+{% set text = 'No teams match "' ~ search_q ~ '".' %}
+{% set action = 'Clear search' %}
+{% set action_href = url_for('teams') %}
+{% include "partials/empty_state.html" %}
 {% else %}
 {% if can_create_team %}
 <div class="setup-guide">

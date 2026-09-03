@@ -28,11 +28,12 @@
 {% endif %}
 
 {% if new_token %}
-<div class="token-once">
+<div class="token-once" role="status">
   <div class="section-head tight">
     <strong>Machine token (copy now, shown once)</strong>
     <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
   </div>
+  <p class="muted">The clipboard clears 60 seconds after copying. Store it somewhere safe.</p>
   <pre id="new-token-pre">{{ new_token }}</pre>
 </div>
 {% endif %}

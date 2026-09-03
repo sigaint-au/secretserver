@@ -16,11 +16,12 @@
   'ip': pager.ip if pager else none,
   'hide_reveals': pager.hide_reveals if pager else none,
 } %}
-{% if pager and pager.total > pager.per_page %}
+{% if pager and pager.total > 0 %}
 <nav class="pager hstack" aria-label="Pagination">
   <span class="muted pager-summary">
-    Showing {{ pager.start }}–{{ pager.end }} of {{ pager.total }}
+    Showing {{ pager.start }}–{{ pager.end }} of {{ pager.total }}{% if not (pager.total > pager.per_page) and (pager.q or pager.project or pager.kind or pager.due or pager.access_mode or pager.folder or pager.actor or pager.action or pager.since or pager.until) %} matching filters{% endif %}
   </span>
+  {% if pager.total > pager.per_page %}
   {# oat.ink pagination: menu.buttons + .button / native <button disabled> #}
   <menu class="buttons">
     <li>
@@ -56,7 +57,6 @@
       {% endif %}
     </li>
   </menu>
+  {% endif %}
 </nav>
-{% elif pager and pager.total > 0 %}
-<p class="muted pager-count">Showing {{ pager.start }}–{{ pager.end }} of {{ pager.total }}{% if pager.q or pager.project or pager.kind or pager.due or pager.access_mode or pager.folder or pager.actor or pager.action or pager.since or pager.until %} matching filters{% endif %}</p>
 {% endif %}

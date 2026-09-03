@@ -7,6 +7,7 @@ with ``gunicorn app:app`` and ``import app as store`` in tests.
 import logging
 import os
 import sys
+from datetime import datetime, timezone
 
 from flask import Flask, get_flashed_messages, jsonify, render_template, request
 
@@ -74,7 +75,17 @@ def _register_error_handlers(app) -> None:
         def _handler(_exc, _c=_code, _t=_title, _m=_fallback):
             if _error_wants_json():
                 return jsonify({"error": _t, "status": _c}), _c
-            return render_template("error.html", code=_c, title=_t, message=_m), _c
+            _now = (
+                datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                if _c >= 500
+                else None
+            )
+            return (
+                render_template(
+                    "error.html", code=_c, title=_t, message=_m, now=_now
+                ),
+                _c,
+            )
 
         app.register_error_handler(_code, _handler)
 
@@ -89,6 +100,7 @@ def _register_error_handlers(app) -> None:
                 code=500,
                 title="Something went wrong",
                 message="An unexpected error occurred.",
+                now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             ),
             500,
         )

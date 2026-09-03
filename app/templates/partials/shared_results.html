@@ -48,7 +48,12 @@
 {% endwith %}
 {% else %}
 {% if search_q %}
-<p class="empty">No shared secrets match these filters.</p>
+{% set icon = 'search' %}
+{% set title = 'No shared secrets match' %}
+{% set text = 'Try widening the search or clearing the filters.' %}
+{% set action = 'Clear filters' %}
+{% set action_href = url_for('shared_secrets_list') %}
+{% include "partials/empty_state.html" %}
 {% else %}
 {% set icon = 'key' %}
 {% set title = 'No shared secrets' %}

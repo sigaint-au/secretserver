@@ -319,9 +319,10 @@ def _render_secret_view(
         tab = "secret"
     if tab == "access" and not can_admin:
         tab = "secret"
+    template = "partials/secret_panel.html" if authz.htmx() else "secret_view.html"
     return (
         render_template(
-            "secret_view.html",
+            template,
             project_id=project_id,
             project_name=row.get("project_name") or "",
             team_id=row.get("team_id"),

@@ -85,8 +85,8 @@
   <section>
     <h2>Secrets <span class="muted">({{ secrets_total }})</span></h2>
     {% if secrets %}
-    <div class="table"><table>
-      <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
+    <div class="table secrets-table"><table>
+      <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
       <tbody>
       {% for s in secrets %}
         <tr>
@@ -180,8 +180,8 @@
     </span>
   </h2>
   {% if secrets %}
-  <div class="table"><table>
-    <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
+  <div class="table secrets-table"><table>
+    <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
     <tbody>
     {% for s in secrets %}
       <tr>

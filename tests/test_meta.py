@@ -308,7 +308,7 @@ class TestSecretMetaOverride:
         assert resp.status_code == 302
 
     def test_template_shows_source_and_hides_remove_for_inherited(self):
-        src = (REPO_ROOT / "app" / "templates" / "secret_view.html").read_text()
+        src = (REPO_ROOT / "app" / "templates" / "partials" / "secret_panel.html").read_text()
         assert "m.source" in src
         assert "inherited" in src.lower()
         assert "<th>Updated</th>" in src
