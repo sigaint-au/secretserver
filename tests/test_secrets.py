@@ -578,6 +578,54 @@ class TestSecrets:
         assert b'class="button outline small copy-btn"' in plain_copy
         assert b'id="toggle-edit-mode"' in r.data
 
+    def _secret_row(self, sid):
+        return {
+            'id': sid, 'key': 'API_KEY', 'note': '', 'kind': 'plain',
+            'expires_at': None, 'requires_approval': None, 'access_mode': 'inherit',
+            'created_at': '2026-01-01', 'updated_at': '2026-01-01',
+            'last_accessed_at': None, 'last_accessed_by': None,
+            'project_name': 'prod', 'require_reveal_approval': False,
+        }
+
+    def test_secret_view_htmx_meta_tab_returns_panel(self):
+        """HTMX tab swaps render the panel partial with its tab guards resolved.
+
+        Regression: the guards (show_meta_tab/...) lived only in the full
+        page, so HTMX ?tab=meta fell through to the secret-value section.
+        """
+        sid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            self._secret_row(sid), {'w': False}, {'r': True, 'a': False},
+            None, {'a': False},
+        ]
+        cur.fetchall.side_effect = [[], []]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get(
+                f'/projects/{self.pid}/secrets/{sid}/view?tab=meta',
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Custom fields' in r.data
+        assert b'<html' not in r.data
+
+    def test_secret_view_htmx_access_tab_returns_panel(self):
+        """HTMX ?tab=access renders the bindings panel, not the value section."""
+        sid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            self._secret_row(sid), {'w': True}, {'a': True}, {'a': True},
+        ]
+        cur.fetchall.side_effect = [[], [], [], [], []]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get(
+                f'/projects/{self.pid}/secrets/{sid}/view?tab=access',
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Role bindings' in r.data
+        assert b'<html' not in r.data
+
     def test_secret_view_update_binds_note_and_provider(self):
         """BYOK splat used to bind provider as note and note as expires_at (500)."""
         sid = uuid4()
