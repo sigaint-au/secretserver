@@ -285,6 +285,8 @@ def _render_secret_view(
     access_request=None,
     custom_meta=None,
     effective_access=None,
+    reveal_pending: bool = False,
+    reveal_url: str | None = None,
 ):
     """Render the type-specific secret view/edit page template."""
     exp = row.get("expires_at")
@@ -367,6 +369,8 @@ def _render_secret_view(
             access_blocked=access_blocked,
             access_state=access_state,
             access_request=access_request,
+            reveal_pending=reveal_pending,
+            reveal_url=reveal_url or "",
             requires_approval=row.get("requires_approval"),
             require_reveal_approval=row.get("require_reveal_approval"),
             clipboard_clear_seconds=settings_svc.int_setting("clipboard_clear_seconds", 30),

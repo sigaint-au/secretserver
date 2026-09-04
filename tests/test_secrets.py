@@ -903,6 +903,62 @@ class TestSecrets:
             'project_name': 'prod', 'require_reveal_approval': False,
         }
 
+    def _shared_row(self, sid):
+        row = self._secret_row(sid)
+        row.update({
+            'is_team_member': False, 'team_id': uuid4(), 'team_name': 'Other',
+            'project_name': 'shared-proj', 'crypto_provider': 'master',
+        })
+        return row
+
+    def _shared_view_mocks(self, conn):
+        return [
+            patch.object(db, 'as_user', return_value=conn),
+            patch('auth.roles.roles_for_scope', return_value=[]),
+            patch(
+                'routes.secrets.view._reveal_access_state',
+                return_value=('allowed', None),
+            ),
+        ]
+
+    def test_shared_secret_view_gates_reveal(self):
+        """Opening a shared secret lands on metadata: no decrypt, no reveal audit."""
+        sid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            self._shared_row(sid), {'w': False}, {'a': False},
+        ]
+        mocks = self._shared_view_mocks(conn)
+        with mocks[0], mocks[1], mocks[2], \
+             patch('crypto.decrypt_for_project') as mock_dec, \
+             patch('audit.log_secret') as mock_audit:
+            r = self.client.get(f'/projects/{self.pid}/secrets/{sid}/view')
+        assert r.status_code == 200
+        assert b'Reveal value' in r.data
+        assert b'reveal=1' in r.data
+        assert b'Shared secrets' in r.data
+        mock_dec.assert_not_called()
+        mock_audit.assert_not_called()
+
+    def test_shared_secret_view_explicit_reveal(self):
+        """?reveal=1 decrypts, shows the value, and audits the reveal."""
+        sid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            self._shared_row(sid), {'w': False}, {'a': False},
+            {'value_enc': 'ENCDATA', 'crypto_provider': 'master'},
+        ]
+        mocks = self._shared_view_mocks(conn)
+        with mocks[0], mocks[1], mocks[2], \
+             patch('crypto.decrypt_for_project', return_value='super-secret-value') as mock_dec, \
+             patch('audit.log_secret') as mock_audit:
+            r = self.client.get(f'/projects/{self.pid}/secrets/{sid}/view?reveal=1')
+        assert r.status_code == 200
+        assert b'super-secret-value' in r.data
+        mock_dec.assert_called_once()
+        mock_audit.assert_called_once()
+        assert mock_audit.call_args[1].get('action') == 'revealed'
+
     def test_secret_view_htmx_meta_tab_returns_panel(self):
         """HTMX tab swaps render the panel partial with its tab guards resolved.
 

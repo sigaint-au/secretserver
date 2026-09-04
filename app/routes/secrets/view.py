@@ -424,6 +424,44 @@ def secret_view(project_id, secret_id):
             )
             return body, code
 
+        shared_gated = (
+            row["shared_access"]
+            and request.method == "GET"
+            and active_tab == "secret"
+            and can_reveal
+            and (request.args.get("reveal") or "").strip() != "1"
+        )
+        if shared_gated:
+            # Shared grantees land on metadata; the value is only decrypted
+            # after an explicit Reveal click (which audits the reveal).
+            body, code = _render_secret_view(
+        role_dropdown=secret_role_dropdown,
+                project_id=project_id,
+                secret_id=secret_id,
+                row=row,
+                plaintext="",
+                kind=normalize_kind(row.get("kind")),
+                can_write=can_write,
+                is_version=is_version,
+                can_admin=can_admin,
+                secret_bindings=secret_bindings if can_admin else [],
+                can_reveal=True,
+                team_groups=team_groups if can_admin else [],
+                effective_access=effective_access,
+                active_tab="secret",
+                reveal_pending=True,
+                reveal_url=url_for(
+                    "secret_view",
+                    project_id=project_id,
+                    secret_id=secret_id,
+                    tab="secret",
+                    reveal="1",
+                    version_id=version_id,
+                ),
+                custom_meta=custom_meta,
+            )
+            return body, code
+
         if not can_reveal:
             # Metadata only — do not decrypt or audit a reveal
             body, code = _render_secret_view(
