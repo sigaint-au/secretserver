@@ -703,6 +703,53 @@ document.body.addEventListener('htmx:before:swap', function (e) {
         if (href) window.location.href = href;
         return;
       }
+      /* Global styled confirm (confirm-dlg): resolves a pending hx-confirm */
+      var confirmOk = e.target.closest && e.target.closest('#confirm-dlg-ok');
+      if (confirmOk) {
+        settleConfirm(true);
+        return;
+      }
+    });
+    /* Styled replacement for native hx-confirm(): one global dialog fed by
+       the htmx:confirm event (v4 detail carries issueRequest/dropRequest),
+       so destructive HTMX actions share the app's dialog styling. Runs in
+       the bubble phase on document; preventDefault suppresses the native
+       window.confirm fallback inside htmx. */
+    var pendingConfirm = null;
+    function settleConfirm(confirmed) {
+      var p = pendingConfirm;
+      pendingConfirm = null;
+      var d = document.getElementById('confirm-dlg');
+      if (d && d.open) oatCloseDialog(d);
+      if (!p) return;
+      if (confirmed) p.issue();
+      else p.drop();
+    }
+    /* Classification banner presets (server + team settings): swatches
+       carry data-bg/data-fg; one delegated listener replaces the inline
+       onclick handlers (applyPreset lives in the color-picker include). */
+    document.addEventListener('click', function (e) {
+      var sw = e.target.closest && e.target.closest('.swatch-row .swatch[data-bg]');
+      if (!sw || typeof window.applyPreset !== 'function') return;
+      window.applyPreset(
+        sw.getAttribute('data-bg'),
+        sw.getAttribute('data-fg') || '#ffffff'
+      );
+    });
+    document.addEventListener('htmx:confirm', function (e) {
+      var d = document.getElementById('confirm-dlg');
+      var el = e.target && e.target.getAttribute ? e.target : null;
+      var q = el ? el.getAttribute('hx-confirm') : null;
+      if (!d || !q || !e.detail || !e.detail.issueRequest) return;
+      e.preventDefault();
+      if (pendingConfirm) pendingConfirm.drop();
+      pendingConfirm = { issue: e.detail.issueRequest, drop: e.detail.dropRequest };
+      document.getElementById('confirm-dlg-msg').textContent = q;
+      d._opener = el;
+      d.onclose = function () {
+        if (pendingConfirm) settleConfirm(false);
+      };
+      oatOpenDialog(d);
     });
     document.body.addEventListener('htmx:after:swap', function (e) {
       var t = htmxSwapRoot(e);

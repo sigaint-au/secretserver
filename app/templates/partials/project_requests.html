@@ -1,6 +1,7 @@
 {% if oob_flashes is defined and oob_flashes %}
 {% with oob=True %}{% include "partials/flash_messages.html" %}{% endwith %}
 {% endif %}
+{% if access_pending is defined %}{% with n=access_pending %}{% include "partials/nav_access_badge.html" %}{% endwith %}{% endif %}
 <div id="project-requests">
 <section>
   <div class="section-head">

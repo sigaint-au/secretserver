@@ -514,6 +514,7 @@ class TestSecrets:
             {'a': True},
             {'id': rid, 'secret_id': sid, 'user_id': self.uid, 'status': 'pending', 'secret_key': 'API_KEY'},
             {'a': True},
+            {'n': 2},
         ]
         cur.rowcount = 1
         cur.fetchall.side_effect = [[]]
@@ -527,6 +528,7 @@ class TestSecrets:
         assert r.status_code == 200
         assert b'project-requests' in r.data
         assert b'Access approved' in r.data
+        assert b'nav-access-badge' in r.data
         assert b'<html' not in r.data
 
     def test_deny_secret_access_htmx_returns_inbox_partial(self):
@@ -536,6 +538,7 @@ class TestSecrets:
         cur.fetchone.side_effect = [
             {'a': True},
             {'id': rid, 'secret_id': sid, 'status': 'pending', 'secret_key': 'API_KEY'},
+            {'n': 0},
         ]
         cur.rowcount = 1
         cur.fetchall.side_effect = [[]]
@@ -548,6 +551,149 @@ class TestSecrets:
         assert r.status_code == 200
         assert b'requests-results' in r.data
         assert b'Access request denied' in r.data
+        assert b'nav-access-badge' in r.data
+        assert b'<html' not in r.data
+
+    def _catalog(self):
+        return {
+            r['name']: {
+                'description': r['description'],
+                'scopes': r['scopes'],
+                'precedence': r['precedence'],
+                'built_in': r['built_in'],
+            }
+            for r in self._CATALOG_ROWS
+        }
+
+    def test_htmx_project_binding_create_returns_access_panel(self):
+        """HTMX binding create re-renders the project access tab, not a redirect."""
+        tid, uid, rid = (uuid4(), uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'join api.teams' in s and 'from api.projects' in s:
+                return {'id': self.pid, 'name': 'prod', 'team_id': tid, 'team_name': 'Ops'}
+            if 'from api.projects where id' in s:
+                return {'team_id': tid}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            if 'can_admin_project' in s:
+                return {'a': True}
+            if 'private.lookup_user' in s:
+                return {'id': uid}
+            if 'from rbac.roles where name' in s:
+                return {'id': rid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch(
+            'auth.roles.role_catalog', return_value=self._catalog()
+        ):
+            r = self.client.post(
+                f'/projects/{self.pid}/access/bindings',
+                data={'subject_kind': 'User', 'subject_email': 'a@ex.com', 'role_name': 'project-read'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'access-rbac-panel' in r.data
+        assert b'Binding created' in r.data
+        assert b'<html' not in r.data
+
+    def test_htmx_folder_binding_create_returns_access_panel(self):
+        """HTMX binding create re-renders the folder access tab, not a redirect."""
+        fid, tid, uid, rid = (uuid4(), uuid4(), uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.folders f join' in s:
+                return {'path': 'deploy', 'team_id': tid}
+            if 'from api.folders' in s and 'where id' in s:
+                return {'id': fid, 'project_id': self.pid, 'name': 'deploy', 'path': 'deploy', 'access_mode': 'inherit'}
+            if 'from api.projects p join' in s:
+                return {'id': self.pid, 'name': 'prod', 'team_id': tid, 'team_name': 'Ops'}
+            if 'can_admin_project' in s:
+                return {'a': True}
+            if 'private.lookup_user' in s:
+                return {'id': uid}
+            if 'from rbac.roles where name' in s:
+                return {'id': rid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch(
+            'auth.roles.role_catalog', return_value=self._catalog()
+        ):
+            r = self.client.post(
+                f'/projects/{self.pid}/folders/{fid}/access/bindings',
+                data={'subject_kind': 'User', 'subject_email': 'a@ex.com', 'role_name': 'secret-reveal'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'access-rbac-panel' in r.data
+        assert b'Folder binding added' in r.data
+        assert b'<html' not in r.data
+
+    def test_htmx_secret_binding_create_returns_access_panel(self):
+        """HTMX binding create re-renders the secret access tab, not a redirect."""
+        sid, tid, uid, rid = (uuid4(), uuid4(), uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.secrets s' in s and 'join api.projects' in s:
+                if 's.id, s.key, s.note' in s:
+                    return {
+                        'id': sid, 'key': 'API_KEY', 'note': '', 'kind': 'plain',
+                        'expires_at': None, 'rotation_interval_days': None,
+                        'rotation_owner': None, 'rotation_next_at': None, 'rotated_at': None,
+                        'requires_approval': None, 'access_mode': 'restricted',
+                        'created_at': None, 'updated_at': None,
+                        'last_accessed_at': None, 'last_accessed_by': None,
+                        'crypto_provider': 'master', 'project_name': 'prod',
+                        'require_reveal_approval': False, 'team_id': tid,
+                        'team_name': 'Ops', 'is_team_member': True,
+                    }
+                return {'id': sid, 'key': 'API_KEY', 'access_mode': 'inherit', 'team_id': tid}
+            if 'can_admin_project' in s:
+                return {'a': True}
+            if 'can_access_secret' in s:
+                return {'w': True}
+            if 'can_reveal_secret' in s:
+                return {'a': True, 'r': True}
+            if "api.can(" in s:
+                return {'member': True}
+            if 'private.lookup_user' in s:
+                return {'id': uid}
+            if 'from rbac.roles where name' in s:
+                return {'id': rid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch(
+            'auth.roles.role_catalog', return_value=self._catalog()
+        ):
+            r = self.client.post(
+                f'/projects/{self.pid}/secrets/{sid}/access/bindings',
+                data={'subject_kind': 'User', 'subject_email': 'a@ex.com', 'role_name': 'secret-reveal'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'access-rbac-panel' in r.data
+        assert b'Bound a@ex.com as secret-reveal' in r.data
         assert b'<html' not in r.data
 
     def test_secret_view_keeps_secret_row_after_binding_enrichment(self):
@@ -643,7 +789,7 @@ class TestSecrets:
             self._secret_row(sid), {'w': False}, {'r': True, 'a': False},
             None, {'a': False},
         ]
-        cur.fetchall.side_effect = [[], []]
+        cur.fetchall.side_effect = [[]]
         with patch.object(db, 'as_user', return_value=conn):
             r = self.client.get(
                 f'/projects/{self.pid}/secrets/{sid}/view?tab=meta',

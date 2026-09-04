@@ -382,15 +382,7 @@ def inject_nav():
     # Pending reveal access requests the user can approve (project admin / team owner)
     try:
         with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT count(*) AS n
-                FROM api.secret_access_requests r
-                WHERE r.status = 'pending'
-                  AND api.can_admin_project(r.project_id)
-                """
-            )
-            base["nav_access_pending"] = int((cur.fetchone() or {}).get("n") or 0)
+            base["nav_access_pending"] = pending_access_count(cur)
     except Exception:
         base["nav_access_pending"] = 0
     # Team-level classification: NULL enabled = use server banner; True/False = override
@@ -414,3 +406,24 @@ def inject_nav():
                     it["badge"] = base["nav_access_pending"]
     base["nav_groups"] = groups
     return base
+
+
+def pending_access_count(cur):
+    """Count pending reveal requests the user can approve (sidebar badge).
+
+    Args:
+        cur: Open DB cursor (user RLS).
+
+    Returns:
+        Number of ``pending`` secret access requests in projects the user
+        can administer.
+    """
+    cur.execute(
+        """
+        SELECT count(*) AS n
+        FROM api.secret_access_requests r
+        WHERE r.status = 'pending'
+          AND api.can_admin_project(r.project_id)
+        """
+    )
+    return int((cur.fetchone() or {}).get("n") or 0)

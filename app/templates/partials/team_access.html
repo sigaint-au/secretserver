@@ -3,6 +3,7 @@
 {% set delete_endpoint = 'team_access_binding_delete' %}
 {% set delete_team_id = team.id %}
 {% set form_id_prefix = 'team-access-rbac' %}
+{% set hx_target = '#team-panel' %}
 {% set role_dropdown = team_role_dropdown %}
 {% set full_bindings_url = url_for('rbac_bindings', scope='team', scope_id=team.id) %}
 {% set empty_message = 'No team bindings yet. Add a user, group, or machine account below.' %}

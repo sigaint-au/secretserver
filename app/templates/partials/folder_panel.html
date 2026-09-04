@@ -42,6 +42,7 @@
 {% set delete_project_id = project_id %}
 {% set delete_folder_id = folder_id %}
 {% set form_id_prefix = 'folder-access' %}
+{% set hx_target = '#folder-panel' %}
 {% set empty_message = 'No folder-level bindings yet. Access follows project and team roles unless this folder is Restricted.' %}
 {% set help_html = 'Bind a user, group, or machine account to a folder role. Use <strong>Restricted</strong> mode so only these bindings apply.' %}
 {% include "partials/access_bindings_panel.html" %}

@@ -388,6 +388,42 @@ class TestTeams:
         assert r.status_code == 200
         assert b'value="nope@x.com"' in r.data
 
+    def test_htmx_team_binding_create_returns_access_panel(self):
+        """HTMX binding create re-renders the access tab, not a redirect."""
+        tid, uid, rid = (uuid4(), uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            if 'private.lookup_user' in s:
+                return {'id': uid}
+            if 'from rbac.roles where name' in s:
+                return {'id': rid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/teams/{tid}/access/bindings',
+                data={'subject_kind': 'User', 'subject_email': 'a@ex.com', 'role_name': 'team-member'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'access-rbac-panel' in r.data
+        assert b'hx-post' in r.data
+        assert b'Binding created' in r.data
+        assert b'<html' not in r.data.lower()
+
     def test_add_member_viewer_role(self):
         tid, uid = (uuid4(), uuid4())
         conn, cur = _conn(fetchone={'id': uid})

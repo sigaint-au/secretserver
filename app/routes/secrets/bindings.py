@@ -63,6 +63,140 @@ def update_secret_access(project_id, secret_id):
     return redirect(access_url)
 
 
+def secret_access_partial(project_id, secret_id):
+    """Render the secret access-tab partial for HTMX swaps (no decrypt).
+
+    Mirrors the access-tab branch of ``secret_view`` without touching the
+    secret value, so binding mutations can re-render the tab in place.
+
+    Args:
+        project_id: UUID of the owning project.
+        secret_id: UUID of the secret.
+
+    Returns:
+        Rendered ``partials/secret_panel.html`` for the access tab,
+        or 404 when invisible.
+    """
+    from auth import rbac_sync
+    from auth.roles import roles_for_scope
+    from lib.users import user_email
+    from secret_svc.queries import get_secret_detail
+    from secret_svc.secret_kinds import normalize_kind
+
+    from .helpers import _render_secret_view, _reveal_access_state
+
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        secret_role_dropdown = roles_for_scope(cur, "secret")
+        row = get_secret_detail(cur, secret_id, project_id)
+        if not row:
+            return "Not found", 404
+        row = dict(row)
+        row["shared_access"] = row.get("is_team_member") is False
+        row["last_accessed_by_email"] = ""
+        if row.get("last_accessed_by"):
+            with db.connect_admin() as aconn, aconn.cursor() as acur:
+                row["last_accessed_by_email"] = user_email(
+                    acur, str(row["last_accessed_by"])
+                )
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = bool((cur.fetchone() or {}).get("a"))
+        if not can_admin:
+            return "Not found", 404
+        cur.execute(
+            "SELECT api.can_access_secret(%s, 'write') AS w",
+            (str(secret_id),),
+        )
+        can_write = bool((cur.fetchone() or {}).get("w"))
+        access_state, access_row = _reveal_access_state(
+            cur, project_id, secret_id, session["user_id"]
+        )
+        try:
+            cur.execute(
+                "SELECT * FROM private.secret_meta_rows(%s::uuid)",
+                (str(secret_id),),
+            )
+            custom_meta = cur.fetchall() or []
+        except Exception:
+            custom_meta = []
+        try:
+            cur.execute(
+                """
+                SELECT b.id, b.subject_kind, b.subject_id, b.created_at,
+                       r.name AS role_name,
+                       g.name AS group_name
+                FROM rbac.bindings b
+                JOIN rbac.roles r ON r.id = b.role_id
+                LEFT JOIN api.groups g
+                  ON b.subject_kind = 'Group' AND g.id = b.subject_id
+                WHERE b.scope_kind = 'secret' AND b.scope_id = %s::uuid
+                ORDER BY b.created_at DESC
+                """,
+                (str(secret_id),),
+            )
+            secret_bindings = list(cur.fetchall() or [])
+        except Exception:
+            secret_bindings = []
+        rbac_sync.enrich_binding_emails(secret_bindings)
+        try:
+            cur.execute(
+                """
+                SELECT g.id, g.name
+                FROM api.groups g
+                JOIN api.projects p ON p.team_id = g.team_id
+                WHERE p.id = %s
+                ORDER BY g.name
+                """,
+                (str(project_id),),
+            )
+            team_groups = cur.fetchall() or []
+        except Exception:
+            team_groups = []
+        try:
+            cur.execute(
+                "SELECT * FROM api.effective_access_rows('secret', %s::uuid)",
+                (str(secret_id),),
+            )
+            effective_access = list(cur.fetchall() or [])
+        except Exception:
+            conn.rollback()
+            effective_access = []
+    body, _code = _render_secret_view(
+        role_dropdown=secret_role_dropdown,
+        project_id=project_id,
+        secret_id=secret_id,
+        row=row,
+        plaintext="",
+        kind=normalize_kind(row.get("kind")),
+        can_write=can_write,
+        is_version=False,
+        can_admin=can_admin,
+        secret_bindings=secret_bindings,
+        can_reveal=access_state == "allowed",
+        team_groups=team_groups,
+        effective_access=effective_access,
+        active_tab="access",
+        access_blocked=access_state in ("pending", "need_request"),
+        access_state=access_state,
+        access_request=access_row,
+        custom_meta=custom_meta,
+    )
+    return body
+
+
+def secret_access_response(project_id, secret_id):
+    """Return the secret access-tab partial for HTMX, else redirect to it."""
+    if authz.htmx():
+        return secret_access_partial(project_id, secret_id)
+    return redirect(
+        url_for(
+            "secret_view",
+            project_id=project_id,
+            secret_id=secret_id,
+            tab="access",
+        )
+    )
+
+
 @authz.login_required
 def add_secret_access_binding(project_id, secret_id):
     """Bind a user, group, or machine account to a secret role (project admin).
@@ -78,28 +212,22 @@ def add_secret_access_binding(project_id, secret_id):
     group_id = (request.form.get("subject_group") or "").strip()
     sa_id = (request.form.get("subject_sa") or "").strip()
     raw_role_name = (request.form.get("role_name") or "").strip()
-    access_url = url_for(
-        "secret_view",
-        project_id=project_id,
-        secret_id=secret_id,
-        tab="access",
-    )
     if subject_kind == "User" and not email:
         flash("Enter an email address.", "error")
-        return redirect(access_url)
+        return secret_access_response(project_id, secret_id)
     if subject_kind == "Group" and not group_id:
         flash("Select a group.", "error")
-        return redirect(access_url)
+        return secret_access_response(project_id, secret_id)
     if subject_kind == "ServiceAccount" and not sa_id:
         flash("Enter a machine account ID.", "error")
-        return redirect(access_url)
+        return secret_access_response(project_id, secret_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         from auth.roles import default_role_for_scope, role_names_for_scope
 
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can manage secret bindings", "error")
-            return redirect(access_url)
+            return secret_access_response(project_id, secret_id)
         role_name = (
             raw_role_name
             if raw_role_name in role_names_for_scope(cur, "secret")
@@ -117,12 +245,14 @@ def add_secret_access_binding(project_id, secret_id):
         sec = cur.fetchone()
         if not sec:
             flash("Secret not found.", "error")
+            if authz.htmx():
+                return secret_access_partial(project_id, secret_id)
             return redirect(url_for("project_detail", project_id=project_id, tab="secrets"))
         cur.execute("SELECT id FROM rbac.roles WHERE name = %s", (role_name,))
         role = cur.fetchone()
         if not role:
             flash(f"Role {role_name} missing. Run schema ensure.", "error")
-            return redirect(access_url)
+            return secret_access_response(project_id, secret_id)
         try:
             if subject_kind == "User":
                 subject_id = lookup_user_id(cur, email)
@@ -131,7 +261,7 @@ def add_secret_access_binding(project_id, secret_id):
                         "No account found for that email address.",
                         "error",
                     )
-                    return redirect(access_url)
+                    return secret_access_response(project_id, secret_id)
                 who = email
             elif subject_kind == "Group":
                 cur.execute(
@@ -144,7 +274,7 @@ def add_secret_access_binding(project_id, secret_id):
                 g = cur.fetchone()
                 if not g:
                     flash("Group not found in this team", "error")
-                    return redirect(access_url)
+                    return secret_access_response(project_id, secret_id)
                 subject_id, who = str(g["id"]), f"group {g['name']}"
             else:
                 cur.execute(
@@ -159,7 +289,7 @@ def add_secret_access_binding(project_id, secret_id):
                 sa = cur.fetchone()
                 if not sa:
                     flash("Machine account not found in this project", "error")
-                    return redirect(access_url)
+                    return secret_access_response(project_id, secret_id)
                 subject_id, who = str(sa["id"]), f"machine account {sa_id[:8]}"
             external_user = False
             if subject_kind == "User":
@@ -184,7 +314,7 @@ def add_secret_access_binding(project_id, secret_id):
                             "to the team first.",
                             "error",
                         )
-                        return redirect(access_url)
+                        return secret_access_response(project_id, secret_id)
             # Replace any existing secret-scope binding for this subject
             cur.execute(
                 """
@@ -236,23 +366,17 @@ def add_secret_access_binding(project_id, secret_id):
         except Exception:
             conn.rollback()
             flash("Could not update secret access. Try again.", "error")
-    return redirect(access_url)
+    return secret_access_response(project_id, secret_id)
 
 
 @authz.login_required
 def delete_secret_access_binding(project_id, secret_id, grant_id):
     """Remove a secret-scope role binding (project admin only)."""
-    access_url = url_for(
-        "secret_view",
-        project_id=project_id,
-        secret_id=secret_id,
-        tab="access",
-    )
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can manage secret bindings", "error")
-            return redirect(access_url)
+            return secret_access_response(project_id, secret_id)
         cur.execute(
             """
             DELETE FROM rbac.bindings b
@@ -279,4 +403,4 @@ def delete_secret_access_binding(project_id, secret_id, grant_id):
             )
             conn.commit()
             flash("Binding removed", "ok")
-    return redirect(access_url)
+    return secret_access_response(project_id, secret_id)

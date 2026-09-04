@@ -78,7 +78,7 @@
       <summary>{{ g['label'] }}</summary>
       <div class="side-group-body">
         {% for it in g['items'] %}
-        <a class="side-nav-link{% if it['active'] %} active{% endif %}"{% if it['active'] %} aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="tab-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
+        <a class="side-nav-link{% if it['active'] %} active{% endif %}"{% if it['active'] %} aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="tab-badge" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
         {% endfor %}
       </div>
     </details>
@@ -127,6 +127,19 @@
   {% endif %}
 
     {% include "partials/flash_messages.html" %}
+
+    <dialog id="confirm-dlg" closedby="any" class="access-dlg" aria-labelledby="confirm-dlg-title">
+      <header>
+        <h3 id="confirm-dlg-title">Confirm action</h3>
+      </header>
+      <div>
+        <p id="confirm-dlg-msg"></p>
+      </div>
+      <footer>
+        <button type="button" class="outline" data-close-dialog="confirm-dlg">Cancel</button>
+        <button type="button" id="confirm-dlg-ok" data-variant="danger">Confirm</button>
+      </footer>
+    </dialog>
 
     {% block body %}{% endblock %}
   </div>

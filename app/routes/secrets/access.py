@@ -172,8 +172,10 @@ def _requests_response(project_id):
 
     The forms tag their page with ``?from=inbox`` (global Requests page)
     or ``?from=project`` (project Requests tab); the matching region is
-    returned with out-of-band flashes.
+    returned with out-of-band flashes and a refreshed sidebar badge.
     """
+    from ui.nav import pending_access_count
+
     from_page = (request.args.get("from") or "project").strip().lower()
     grant_ctx = {
         "grant_minutes": settings_svc.reveal_access_grant_minutes(),
@@ -184,7 +186,12 @@ def _requests_response(project_id):
         if from_page == "inbox":
             cur.execute("SELECT * FROM private.pending_access_requests_for_admin()")
             rows = cur.fetchall() or []
-            return render_template("partials/requests_table.html", requests=rows, **grant_ctx)
+            return render_template(
+                "partials/requests_table.html",
+                requests=rows,
+                access_pending=pending_access_count(cur),
+                **grant_ctx,
+            )
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         can_admin = bool((cur.fetchone() or {}).get("a"))
         cur.execute(
@@ -197,6 +204,7 @@ def _requests_response(project_id):
             project={"id": project_id},
             access_requests=rows,
             can_admin=can_admin,
+            access_pending=pending_access_count(cur),
             **grant_ctx,
         )
 

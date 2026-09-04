@@ -20,7 +20,7 @@ from core import config, db, settings_svc
 from integrations import ldap_auth
 from ui import paging
 
-from .members import enrich_join_request_emails, load_members_tab
+from .members import enrich_join_request_emails, load_access_tab, load_members_tab
 
 log = logging.getLogger(__name__)
 
@@ -195,21 +195,10 @@ def team_detail(team_id):
             webhooks = load_scope_webhooks(cur, "team", team_id)
         elif tab == "access" and is_admin:
             # All team-scope bindings (users, groups, machine accounts)
-            access_bindings = rbac_sync.list_scope_bindings(cur, "team", team_id)
-            rbac_sync.enrich_binding_emails(access_bindings)
-            cur.execute(
-                "SELECT id, name FROM api.groups WHERE team_id = %s ORDER BY name",
-                (str(team_id),),
+            access_bindings, access_groups, role_descriptions = load_access_tab(
+                cur, team_id
             )
-            access_groups = list(cur.fetchall() or [])
             can_edit_access = True
-            try:
-                cur.execute("SELECT name, description FROM rbac.roles")
-                role_descriptions = {
-                    r["name"]: (r.get("description") or "") for r in (cur.fetchall() or [])
-                }
-            except Exception:
-                role_descriptions = {}
         elif tab == "groups":
             try:
                 cur.execute(

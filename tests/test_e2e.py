@@ -53,7 +53,8 @@ def browser():
 def page(browser):
     context = browser.new_context()
     page = context.new_page()
-    page.on("dialog", lambda dialog: dialog.accept())  # hx-confirm delete dialog
+    # Destructive hx actions use the styled confirm dialog (confirm-dlg);
+    # no native dialogs remain on these flows.
     yield page
     context.close()
 
@@ -108,10 +109,13 @@ def test_secret_lifecycle(page):
     page.wait_for_selector("#secrets-list .secret-value", timeout=15_000)
     assert page.locator("#secrets-list .secret-value").first.input_value() == value
 
-    # Trash it via the row menu; the confirm dialog is auto-accepted.
+    # Trash it via the row menu, confirming the styled dialog.
     page.goto(f"{base}/projects/{project_id}?tab=secrets&q={key}", wait_until="networkidle")
     page.click(f'button[aria-label="Actions for {key}"]')
     page.click('menu button:has-text("Delete")')
+    page.wait_for_selector("#confirm-dlg[open]", timeout=15_000)
+    assert key in page.inner_text("#confirm-dlg-msg")
+    page.click("#confirm-dlg-ok")
     page.wait_for_function(
         "() => ![...document.querySelectorAll('#secrets-list tbody tr')]"
         ".some(tr => tr.textContent.includes(arguments[0]))",

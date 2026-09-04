@@ -25,6 +25,8 @@ from secret_svc.secret_kinds import (
 from secret_svc.secret_ops import _load_secrets_page
 from ui import nav, paging
 
+from .access import load_project_access_tab
+
 
 @authz.login_required
 def projects_list():
@@ -365,74 +367,23 @@ def project_detail(project_id):
             )
             project_meta = cur.fetchall() or []
         elif tab == "access" and can_admin:
-            from auth import rbac_sync
-
-            cur.execute(
-                "SELECT api.can_manage_rbac('project', %s::uuid) AS ok",
-                (str(project_id),),
+            access_ctx = load_project_access_tab(
+                cur,
+                conn,
+                project_id,
+                project["team_id"],
+                can_admin=can_admin,
+                page=page,
+                q=request.args.get("q") or "",
             )
-            can_edit_access = bool((cur.fetchone() or {}).get("ok")) or bool(can_admin)
-            access_bindings = rbac_sync.list_scope_bindings(cur, "project", project_id)
-            try:
-                cur.execute(
-                    "SELECT * FROM api.effective_access_rows('project', %s::uuid)",
-                    (str(project_id),),
-                )
-                effective_access = list(cur.fetchall() or [])
-            except Exception:
-                conn.rollback()
-                effective_access = []
-            effective_access_q = (request.args.get("q") or "").strip()
-            if effective_access_q:
-                needle = effective_access_q.casefold()
-                effective_access = [
-                    row
-                    for row in effective_access
-                    if needle
-                    in " ".join(
-                        str(row.get(key) or "")
-                        for key in (
-                            "subject_email",
-                            "subject_name",
-                            "subject_kind",
-                            "role_name",
-                            "scope_label",
-                            "scope_kind",
-                            "grant_kind",
-                            "grant_subject",
-                        )
-                    ).casefold()
-                ]
-            effective_access_pager = paging.page_window(len(effective_access), page)
-            effective_access_pager.update(
-                endpoint="project_detail",
-                project_id=project_id,
-                tab="access",
-                q=effective_access_q or None,
-            )
-            start = (page - 1) * effective_access_pager["per_page"]
-            effective_access = effective_access[start : start + effective_access_pager["per_page"]]
-            try:
-                cur.execute(
-                    """
-                    SELECT id, name FROM api.groups
-                    WHERE team_id = %s ORDER BY name
-                    """,
-                    (str(project["team_id"]),),
-                )
-                access_groups = list(cur.fetchall() or [])
-            except Exception:
-                access_groups = []
-            try:
-                cur.execute("SELECT name, description FROM rbac.roles")
-                role_descriptions = {
-                    r["name"]: (r.get("description") or "") for r in (cur.fetchall() or [])
-                }
-            except Exception:
-                role_descriptions = {}
-            from auth.roles import roles_for_scope
-
-            project_role_dropdown = roles_for_scope(cur, "project")
+            can_edit_access = access_ctx["can_edit_access"]
+            access_bindings = access_ctx["access_bindings"]
+            access_groups = access_ctx["access_groups"]
+            effective_access = access_ctx["effective_access"]
+            effective_access_pager = access_ctx["effective_access_pager"]
+            effective_access_q = access_ctx["effective_access_q"]
+            role_descriptions = access_ctx["role_descriptions"]
+            project_role_dropdown = access_ctx["project_role_dropdown"]
         elif tab == "requests":
             cur.execute(
                 "SELECT * FROM private.secret_access_request_rows(%s::uuid)",

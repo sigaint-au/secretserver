@@ -169,6 +169,7 @@ class TestNav:
         assert b'Permanently delete' in r.data
         assert b'This cannot be undone' in r.data
         assert b'hx-confirm' in r.data
+        assert b'id="confirm-dlg"' in r.data
 
     def test_restore_secret(self):
         conn, cur = _conn()

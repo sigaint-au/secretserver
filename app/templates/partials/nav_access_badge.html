@@ -1,0 +1,4 @@
+{# Sidebar "Access requests" pending badge. Rendered with hx-swap-oob so
+   HTMX approve/deny responses refresh the count without a reload.
+   Expects: n (pending count). Hidden when zero. #}
+<span id="nav-access-badge" class="tab-badge" hx-swap-oob="true" title="{{ n }} pending"{% if not n %} hidden{% endif %}>{{ n }}</span>

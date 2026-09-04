@@ -18,6 +18,154 @@ def _folder_access_url(project_id, folder_id):
     return url_for("folder_view", project_id=project_id, folder_id=folder_id, tab="access")
 
 
+def load_folder_access(cur, conn, project_id, folder_id, team_id, *, page=1, q=""):
+    """Load folder access-tab rows (bindings, effective access, groups).
+
+    Shared by the full folder page and the HTMX access partial so the two
+    cannot drift apart.
+
+    Args:
+        cur: Open DB cursor (user RLS).
+        conn: Open DB connection (rolled back when the effective-access
+            lookup fails, matching the folder route).
+        project_id: UUID of the owning project (effective-access pager).
+        folder_id: UUID of the folder.
+        team_id: UUID of the owning team (for the group dropdown).
+        page: Effective-access page number.
+        q: Effective-access search filter.
+
+    Returns:
+        Dict of template vars for the access branch of
+        ``partials/folder_panel.html``.
+    """
+    from auth.roles import roles_for_scope
+
+    role_dropdown = roles_for_scope(cur, "folder")
+    access_bindings = rbac_sync.list_scope_bindings(cur, "folder", folder_id)
+    rbac_sync.enrich_binding_emails(access_bindings)
+    cur.execute(
+        "SELECT id, name FROM api.groups WHERE team_id = %s ORDER BY name",
+        (str(team_id),),
+    )
+    access_groups = list(cur.fetchall() or [])
+    try:
+        cur.execute(
+            "SELECT * FROM api.effective_access_rows('folder', %s::uuid)",
+            (str(folder_id),),
+        )
+        effective_access = list(cur.fetchall() or [])
+    except Exception:
+        conn.rollback()
+        effective_access = []
+    effective_access_q = (q or "").strip()
+    if effective_access_q:
+        needle = effective_access_q.casefold()
+        effective_access = [
+            row
+            for row in effective_access
+            if needle
+            in " ".join(
+                str(row.get(key) or "")
+                for key in (
+                    "subject_email",
+                    "subject_name",
+                    "subject_kind",
+                    "role_name",
+                    "scope_label",
+                    "scope_kind",
+                    "grant_kind",
+                    "grant_subject",
+                )
+            ).casefold()
+        ]
+    effective_access_pager = paging.page_window(len(effective_access), page)
+    effective_access_pager.update(
+        endpoint="folder_view",
+        project_id=project_id,
+        folder_id=folder_id,
+        tab="access",
+        q=effective_access_q or None,
+    )
+    start = (page - 1) * effective_access_pager["per_page"]
+    effective_access = effective_access[start : start + effective_access_pager["per_page"]]
+    return {
+        "access_bindings": access_bindings,
+        "access_groups": access_groups,
+        "effective_access": effective_access,
+        "effective_access_q": effective_access_q,
+        "effective_access_pager": effective_access_pager,
+        "role_dropdown": role_dropdown,
+    }
+
+
+def folder_access_partial(project_id, folder_id):
+    """Render the folder access-tab partial for HTMX swaps.
+
+    Args:
+        project_id: UUID of the owning project.
+        folder_id: UUID of the folder.
+
+    Returns:
+        Rendered ``partials/folder_panel.html`` for the access tab,
+        or 404 when invisible.
+    """
+    page = int(request.args.get("page") or 1)
+    q = (request.args.get("q") or "").strip()
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, project_id, name, path, access_mode
+            FROM api.folders
+            WHERE id = %s::uuid AND project_id = %s::uuid
+            """,
+            (str(folder_id), str(project_id)),
+        )
+        folder = cur.fetchone()
+        if not folder:
+            return "Not found", 404
+        cur.execute(
+            """
+            SELECT p.id, p.name, p.team_id, t.name AS team_name
+            FROM api.projects p JOIN api.teams t ON t.id = p.team_id
+            WHERE p.id = %s::uuid
+            """,
+            (str(project_id),),
+        )
+        project = cur.fetchone()
+        if not project:
+            return "Not found", 404
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = bool((cur.fetchone() or {}).get("a"))
+        if not can_admin:
+            return "Not found", 404
+        access_ctx = load_folder_access(
+            cur, conn, project_id, folder_id, project["team_id"], page=page, q=q
+        )
+    path = (folder or {}).get("path") or "Folder"
+    return render_template(
+        "partials/folder_panel.html",
+        oob_title=f"Access - {path}",
+        folder=folder,
+        project=project,
+        project_id=project_id,
+        folder_id=folder_id,
+        active_tab="access",
+        can_admin=can_admin,
+        can_edit_access=can_admin,
+        subject_kinds=config.RBAC_SUBJECT_KINDS,
+        access_modes=config.ACCESS_MODES,
+        access_mode_labels=config.ACCESS_MODE_LABELS,
+        **access_ctx,
+    )
+
+
+def folder_access_response(project_id, folder_id):
+    """Return the folder access-tab partial for HTMX, else redirect to it."""
+    if authz.htmx():
+        return folder_access_partial(project_id, folder_id)
+    return redirect(_folder_access_url(project_id, folder_id))
+
+
 @authz.login_required
 def folder_view(project_id, folder_id):
     """Render a folder's direct contents or project-admin access bindings."""
@@ -88,53 +236,21 @@ def folder_view(project_id, folder_id):
             )
             secrets = list(cur.fetchall() or [])
         else:
-            access_bindings = rbac_sync.list_scope_bindings(cur, "folder", folder_id)
-            rbac_sync.enrich_binding_emails(access_bindings)
-            cur.execute(
-                "SELECT id, name FROM api.groups WHERE team_id = %s ORDER BY name",
-                (str(project["team_id"]),),
+            access_ctx = load_folder_access(
+                cur,
+                conn,
+                project_id,
+                folder_id,
+                project["team_id"],
+                page=page,
+                q=request.args.get("q") or "",
             )
-            access_groups = list(cur.fetchall() or [])
-            try:
-                cur.execute(
-                    "SELECT * FROM api.effective_access_rows('folder', %s::uuid)",
-                    (str(folder_id),),
-                )
-                effective_access = list(cur.fetchall() or [])
-            except Exception:
-                conn.rollback()
-                effective_access = []
-            effective_access_q = (request.args.get("q") or "").strip()
-            if effective_access_q:
-                needle = effective_access_q.casefold()
-                effective_access = [
-                    row
-                    for row in effective_access
-                    if needle
-                    in " ".join(
-                        str(row.get(key) or "")
-                        for key in (
-                            "subject_email",
-                            "subject_name",
-                            "subject_kind",
-                            "role_name",
-                            "scope_label",
-                            "scope_kind",
-                            "grant_kind",
-                            "grant_subject",
-                        )
-                    ).casefold()
-                ]
-            effective_access_pager = paging.page_window(len(effective_access), page)
-            effective_access_pager.update(
-                endpoint="folder_view",
-                project_id=project_id,
-                folder_id=folder_id,
-                tab="access",
-                q=effective_access_q or None,
-            )
-            start = (page - 1) * effective_access_pager["per_page"]
-            effective_access = effective_access[start : start + effective_access_pager["per_page"]]
+            access_bindings = access_ctx["access_bindings"]
+            access_groups = access_ctx["access_groups"]
+            effective_access = access_ctx["effective_access"]
+            effective_access_q = access_ctx["effective_access_q"]
+            effective_access_pager = access_ctx["effective_access_pager"]
+            folder_role_dropdown = access_ctx["role_dropdown"]
     template = "partials/folder_panel.html" if authz.htmx() else "folder_view.html"
     oob = {}
     if authz.htmx():
@@ -205,7 +321,6 @@ def update_folder_access(project_id, folder_id):
 @authz.login_required
 def add_folder_access_binding(project_id, folder_id):
     """Bind a user, group, or machine account to a folder role."""
-    access_url = _folder_access_url(project_id, folder_id)
     subject_kind = (request.form.get("subject_kind") or "User").strip()
     email = (request.form.get("subject_email") or "").strip().lower()
     group_id = (request.form.get("subject_group") or "").strip()
@@ -213,23 +328,23 @@ def add_folder_access_binding(project_id, folder_id):
     raw_role_name = (request.form.get("role_name") or "").strip()
     if subject_kind not in config.RBAC_SUBJECT_KINDS:
         flash("Invalid subject or role", "error")
-        return redirect(access_url)
+        return folder_access_response(project_id, folder_id)
     if subject_kind == "User" and not email:
         flash("Enter an email address.", "error")
-        return redirect(access_url)
+        return folder_access_response(project_id, folder_id)
     if subject_kind == "Group" and not group_id:
         flash("Select a group.", "error")
-        return redirect(access_url)
+        return folder_access_response(project_id, folder_id)
     if subject_kind == "ServiceAccount" and not sa_id:
         flash("Enter a machine account ID.", "error")
-        return redirect(access_url)
+        return folder_access_response(project_id, folder_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         from auth.roles import default_role_for_scope, role_names_for_scope
 
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can manage folder bindings", "error")
-            return redirect(access_url)
+            return folder_access_response(project_id, folder_id)
         role_name = (
             raw_role_name
             if raw_role_name in role_names_for_scope(cur, "folder")
@@ -248,15 +363,15 @@ def add_folder_access_binding(project_id, folder_id):
         role = cur.fetchone()
         if not folder or not role:
             flash("Folder or role not found", "error")
-            return redirect(access_url)
+            return folder_access_response(project_id, folder_id)
         if not role_allowed_at_scope(cur, role_name, "folder"):
             flash("That role cannot be assigned at folder scope", "error")
-            return redirect(access_url)
+            return folder_access_response(project_id, folder_id)
         if subject_kind == "User":
             subject_id = lookup_user_id(cur, email)
             if not subject_id:
                 flash("No account found for that email address.", "error")
-                return redirect(access_url)
+                return folder_access_response(project_id, folder_id)
         elif subject_kind == "Group":
             cur.execute(
                 "SELECT id FROM api.groups WHERE id = %s::uuid AND team_id = %s::uuid",
@@ -265,7 +380,7 @@ def add_folder_access_binding(project_id, folder_id):
             group = cur.fetchone()
             if not group:
                 flash("Group not found in this team", "error")
-                return redirect(access_url)
+                return folder_access_response(project_id, folder_id)
             subject_id = group["id"]
         else:
             cur.execute(
@@ -275,7 +390,7 @@ def add_folder_access_binding(project_id, folder_id):
             machine = cur.fetchone()
             if not machine:
                 flash("Machine account not found in this project", "error")
-                return redirect(access_url)
+                return folder_access_response(project_id, folder_id)
             subject_id = machine["id"]
         cur.execute(
             """
@@ -301,18 +416,17 @@ def add_folder_access_binding(project_id, folder_id):
         )
         conn.commit()
         flash("Folder binding added", "ok")
-    return redirect(access_url)
+    return folder_access_response(project_id, folder_id)
 
 
 @authz.login_required
 def delete_folder_access_binding(project_id, folder_id, binding_id):
     """Remove a folder-scope role binding."""
-    access_url = _folder_access_url(project_id, folder_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can manage folder bindings", "error")
-            return redirect(access_url)
+            return folder_access_response(project_id, folder_id)
         cur.execute(
             """
             DELETE FROM rbac.bindings b
@@ -337,7 +451,7 @@ def delete_folder_access_binding(project_id, folder_id, binding_id):
         else:
             conn.rollback()
             flash("Binding not found.", "error")
-    return redirect(access_url)
+    return folder_access_response(project_id, folder_id)
 
 
 @authz.login_required

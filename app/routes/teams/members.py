@@ -23,7 +23,7 @@ from auth.roles import (
     team_role_at_least,
     team_tier_role,
 )
-from core import db
+from core import config, db
 from lib.users import lookup_user_id
 
 
@@ -154,10 +154,93 @@ def members_response(team_id, *, form_email="", form_role=None):
     return redirect(url_for("team_detail", team_id=team_id, tab="members"))
 
 
+def load_access_tab(cur, team_id):
+    """Load access-tab rows (all team-scope bindings, groups, role descriptions).
+
+    Shared by the full team page and the HTMX access partial so the two
+    cannot drift apart.
+
+    Args:
+        cur: Open DB cursor (user RLS).
+        team_id: UUID of the team.
+
+    Returns:
+        Tuple ``(access_bindings, access_groups, role_descriptions)``.
+    """
+    access_bindings = rbac_sync.list_scope_bindings(cur, "team", team_id)
+    rbac_sync.enrich_binding_emails(access_bindings)
+    cur.execute(
+        "SELECT id, name FROM api.groups WHERE team_id = %s ORDER BY name",
+        (str(team_id),),
+    )
+    access_groups = list(cur.fetchall() or [])
+    try:
+        cur.execute("SELECT name, description FROM rbac.roles")
+        role_descriptions = {
+            r["name"]: (r.get("description") or "") for r in (cur.fetchall() or [])
+        }
+    except Exception:
+        role_descriptions = {}
+    return access_bindings, access_groups, role_descriptions
+
+
+def access_tab_partial(team_id):
+    """Render the access-tab partial for HTMX swaps.
+
+    Args:
+        team_id: UUID of the team.
+
+    Returns:
+        Rendered ``partials/team_content.html`` for the access tab,
+        or 404 when invisible.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        team = db.team(cur, team_id)
+        if not team:
+            return "Not found", 404
+        cur.execute("SELECT api.team_role(%s) AS r", (str(team_id),))
+        my_role = (cur.fetchone() or {}).get("r")
+        cur.execute(
+            "SELECT api.can_manage_rbac('team', %s::uuid) AS ok",
+            (str(team_id),),
+        )
+        can_edit_access = bool((cur.fetchone() or {}).get("ok"))
+        is_admin = (
+            team_role_at_least(cur, my_role, MANAGE_TIER)
+            or bool(session.get("is_global_admin"))
+            or can_edit_access
+        )
+        if not is_admin:
+            return "Not found", 404
+        access_bindings, access_groups, role_descriptions = load_access_tab(cur, team_id)
+        team_role_dropdown = roles_for_scope(cur, "team")
+    rbac_sync.enrich_binding_emails(access_bindings)
+    tname = (team or {}).get("name") or "Team"
+    return render_template(
+        "partials/team_content.html",
+        oob_title=f"Access - {tname}",
+        team=team,
+        is_admin=is_admin,
+        active_tab="access",
+        access_bindings=access_bindings,
+        access_groups=access_groups,
+        can_edit_access=True,
+        team_role_dropdown=team_role_dropdown,
+        role_descriptions=role_descriptions,
+        subject_kinds=config.RBAC_SUBJECT_KINDS,
+    )
+
+
+def access_tab_response(team_id):
+    """Return the access-tab partial for HTMX, else redirect to the access tab."""
+    if authz.htmx():
+        return access_tab_partial(team_id)
+    return redirect(url_for("team_detail", team_id=team_id, tab="access"))
+
+
 @authz.login_required
 def team_access_binding_create(team_id):
     """Create a team-scope role binding (team admin)."""
-    access_url = url_for("team_detail", team_id=team_id, tab="access")
     role_name = (request.form.get("role_name") or "").strip()
     subject_kind = (request.form.get("subject_kind") or "User").strip()
     subject_email = (request.form.get("subject_email") or "").strip().lower()
@@ -170,19 +253,19 @@ def team_access_binding_create(team_id):
         )
         if not (cur.fetchone() or {}).get("ok"):
             flash("Only team admins can manage role bindings", "error")
-            return redirect(access_url)
+            return access_tab_response(team_id)
         try:
             cur.execute("SELECT id FROM rbac.roles WHERE name = %s", (role_name,))
             role = cur.fetchone()
             if not role:
                 flash("Unknown role.", "error")
-                return redirect(access_url)
+                return access_tab_response(team_id)
             subject_id = None
             if subject_kind == "User":
                 subject_id = lookup_user_id(cur, subject_email)
                 if not subject_id:
                     flash("No account found for that email address.", "error")
-                    return redirect(access_url)
+                    return access_tab_response(team_id)
             elif subject_kind == "Group":
                 cur.execute(
                     """
@@ -194,16 +277,16 @@ def team_access_binding_create(team_id):
                 g = cur.fetchone()
                 if not g:
                     flash("Group not found in this team", "error")
-                    return redirect(access_url)
+                    return access_tab_response(team_id)
                 subject_id = str(g["id"])
             elif subject_kind == "ServiceAccount":
                 subject_id = subject_sa
             else:
                 flash("Invalid subject kind.", "error")
-                return redirect(access_url)
+                return access_tab_response(team_id)
             if not subject_id:
                 flash("Subject required", "error")
-                return redirect(access_url)
+                return access_tab_response(team_id)
             cur.execute(
                 """
                 INSERT INTO rbac.bindings
@@ -223,13 +306,12 @@ def team_access_binding_create(team_id):
         except Exception:
             conn.rollback()
             flash("Could not update team membership. Try again.", "error")
-    return redirect(access_url)
+    return access_tab_response(team_id)
 
 
 @authz.login_required
 def team_access_binding_delete(team_id, binding_id):
     """Remove a team-scope role binding (team admin)."""
-    access_url = url_for("team_detail", team_id=team_id, tab="access")
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute(
             "SELECT api.can_manage_rbac('team', %s::uuid) AS ok",
@@ -237,7 +319,7 @@ def team_access_binding_delete(team_id, binding_id):
         )
         if not (cur.fetchone() or {}).get("ok"):
             flash("Only team admins can manage role bindings", "error")
-            return redirect(access_url)
+            return access_tab_response(team_id)
         try:
             cur.execute(
                 """
@@ -257,7 +339,7 @@ def team_access_binding_delete(team_id, binding_id):
         except Exception:
             conn.rollback()
             flash("Could not update team membership. Try again.", "error")
-    return redirect(access_url)
+    return access_tab_response(team_id)
 
 
 @authz.login_required

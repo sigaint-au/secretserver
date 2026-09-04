@@ -41,12 +41,20 @@ def _write_migrations(tmp_path, files):
 
 
 def test_migrations_ship_in_order():
-    """Single squashed baseline (pre-release: reset the DB, no upgrades)."""
+    """Squashed baseline plus additive migrations, in filename order."""
     files = [p.name for p in migrations._migration_files()]
-    assert files == ["0001_init.sql"]
+    assert files == ["0001_init.sql", "0002_cli_session_last_used.sql"]
     for name in files:
         assert name[:4].isdigit()
         assert name[4] == "_"
+
+
+def test_cli_session_last_used_migration():
+    """CLI auth updates last_used_at on every use (resolve); the shipped
+    schema must define that column or `corvus login` commands 500."""
+    sql = (migrations.MIGRATIONS_DIR / "0002_cli_session_last_used.sql").read_text()
+    assert "ALTER TABLE private.cli_session_tokens" in sql
+    assert "ADD COLUMN IF NOT EXISTS last_used_at" in sql
 
 
 def test_baseline_covers_folders_schema_and_rls():

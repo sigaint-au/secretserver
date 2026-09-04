@@ -3,6 +3,7 @@
 {% set delete_endpoint = 'project_access_binding_delete' %}
 {% set delete_project_id = project.id %}
 {% set form_id_prefix = 'proj-access' %}
+{% set hx_target = '#project-panel' %}
 {% set role_dropdown = project_role_dropdown %}
 {% set full_bindings_url = url_for('rbac_bindings', scope='project', scope_id=project.id) %}
 {% set empty_message = 'No project-scope bindings yet. Team members still have access via their team role.' %}

@@ -17,7 +17,8 @@
 
   {% if can_edit_access %}
   <h3>Add binding</h3>
-  <form method="post" action="{{ create_url }}" class="settings-form" id="{{ pref }}-bind-form">
+  <form method="post" action="{{ create_url }}" class="settings-form" id="{{ pref }}-bind-form"
+        hx-post="{{ create_url }}" hx-target="{{ hx_target }}" hx-swap="innerHTML">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
       <fieldset class="field-group">
@@ -116,8 +117,18 @@
           <td class="muted">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
           <td class="acts">
             {% if can_edit_access and delete_endpoint %}
+            {% if delete_team_id is defined and delete_team_id %}
+            {% set del_url = url_for(delete_endpoint, team_id=delete_team_id, binding_id=b.id) %}
+            {% elif delete_secret_id is defined and delete_secret_id %}
+            {% set del_url = url_for(delete_endpoint, project_id=delete_project_id, secret_id=delete_secret_id, grant_id=b.id) %}
+            {% elif delete_folder_id is defined and delete_folder_id %}
+            {% set del_url = url_for(delete_endpoint, project_id=delete_project_id, folder_id=delete_folder_id, binding_id=b.id) %}
+            {% else %}
+            {% set del_url = url_for(delete_endpoint, project_id=delete_project_id, binding_id=b.id) %}
+            {% endif %}
             <form method="post"
-                   action="{% if delete_team_id is defined and delete_team_id %}{{ url_for(delete_endpoint, team_id=delete_team_id, binding_id=b.id) }}{% elif delete_secret_id is defined and delete_secret_id %}{{ url_for(delete_endpoint, project_id=delete_project_id, secret_id=delete_secret_id, grant_id=b.id) }}{% elif delete_folder_id is defined and delete_folder_id %}{{ url_for(delete_endpoint, project_id=delete_project_id, folder_id=delete_folder_id, binding_id=b.id) }}{% else %}{{ url_for(delete_endpoint, project_id=delete_project_id, binding_id=b.id) }}{% endif %}"
+                   action="{{ del_url }}"
+                   hx-post="{{ del_url }}" hx-target="{{ hx_target }}" hx-swap="innerHTML"
                   class="inline"
                   onsubmit="return confirm('Remove this binding?')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
