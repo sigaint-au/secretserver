@@ -534,6 +534,7 @@ class TestSecrets:
         assert b'Access approved' in r.data
         assert b'nav-access-badge' in r.data
         assert b'hx-confirm' in r.data
+        assert b'Approve reveal for' in r.data
         assert b'return confirm(' not in r.data
         assert b'<html' not in r.data
 
@@ -563,6 +564,7 @@ class TestSecrets:
         assert b'Access request denied' in r.data
         assert b'nav-access-badge' in r.data
         assert b'Deny this reveal request?' in r.data
+        assert b'Approve reveal for' in r.data
         assert b'return confirm(' not in r.data
         assert b'<html' not in r.data
 

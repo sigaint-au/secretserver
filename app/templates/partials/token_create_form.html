@@ -11,6 +11,8 @@
   {% endif %}
   <form method="post"
         action="{{ url_for('create_token', project_id=project.id) }}"
+        {% if token_form_hx|default(false) %}hx-post="{{ url_for('create_token', project_id=project.id) }}"
+        hx-target="#project-panel" hx-swap="innerHTML"{% endif %}
         class="settings-form"
         id="{{ form_id }}"
         data-scope-form>

@@ -561,6 +561,38 @@ class TestTeams:
         assert b'return confirm(' not in r.data
         assert b'<html' not in r.data.lower()
 
+    def test_htmx_webhooks_search_renders_results(self):
+        """HTMX webhook search swaps only the results region, not a redirect."""
+        tid = uuid4()
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        cur.fetchall.side_effect = [[], []]
+        with patch.object(db, 'as_user', return_value=conn), patch.object(
+            ldap_auth, 'ldap_cfg', return_value={'ldap_enabled': 'false'}
+        ):
+            r = self.client.get(
+                f'/teams/{tid}?tab=webhooks&q=deploy', headers={'HX-Request': 'true'}
+            )
+        assert r.status_code == 200
+        assert b'webhook-results' in r.data
+        assert b'hx-select' in r.data
+        assert b'<html' not in r.data.lower()
+
     def test_add_member_viewer_role(self):
         tid, uid = (uuid4(), uuid4())
         conn, cur = _conn(fetchone={'id': uid})

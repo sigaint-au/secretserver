@@ -26,6 +26,7 @@ from secret_svc.secret_ops import _load_secrets_page
 from ui import nav, paging
 
 from .access import load_project_access_tab
+from routes.project_tokens import load_tokens_tab
 
 
 @authz.login_required
@@ -301,50 +302,24 @@ def project_detail(project_id):
             )
         elif tab in ("tokens", "integrations"):
             if tab == "tokens":
-                cur.execute(
-                    """
-                    SELECT id, name, description, token_prefix, role, created_at, expires_at, last_used_at
-                    FROM api.machine_tokens
-                    WHERE project_id = %s
-                    ORDER BY created_at DESC
-                    """,
-                    (str(project_id),),
-                )
-                tokens = annotate_token_expiry(cur.fetchall())
-                # Attach allow-list (empty = no keys after 0011)
-                tids = [str(t["id"]) for t in tokens]
-                scope_map: dict = {}
-                if tids:
-                    try:
-                        cur.execute(
-                            """
-                            SELECT token_id, secret_key, key_pattern
-                            FROM api.machine_token_scope
-                            WHERE token_id = ANY(%s::uuid[])
-                            ORDER BY secret_key NULLS LAST, key_pattern NULLS LAST
-                            """,
-                            (tids,),
-                        )
-                        for sc in cur.fetchall() or []:
-                            scope_map.setdefault(str(sc["token_id"]), []).append(sc)
-                    except Exception:
-                        scope_map = {}
-                for t in tokens:
-                    t["scopes"] = scope_map.get(str(t["id"]), [])
-            # Suggest existing keys for the allow-list chip input
-            try:
-                cur.execute(
-                    """
-                    SELECT key FROM api.secrets
-                    WHERE project_id = %s AND deleted_at IS NULL
-                    ORDER BY key
-                    LIMIT 200
-                    """,
-                    (str(project_id),),
-                )
-                project_secret_keys = [r["key"] for r in (cur.fetchall() or [])]
-            except Exception:
-                project_secret_keys = []
+                tokens_ctx = load_tokens_tab(cur, project_id)
+                tokens = tokens_ctx["tokens"]
+                project_secret_keys = tokens_ctx["project_secret_keys"]
+            else:
+                # Suggest existing keys for the ESO allow-list chip input
+                try:
+                    cur.execute(
+                        """
+                        SELECT key FROM api.secrets
+                        WHERE project_id = %s AND deleted_at IS NULL
+                        ORDER BY key
+                        LIMIT 200
+                        """,
+                        (str(project_id),),
+                    )
+                    project_secret_keys = [r["key"] for r in (cur.fetchall() or [])]
+                except Exception:
+                    project_secret_keys = []
         elif tab == "webhooks":
             from routes.webhooks_ui import load_scope_webhooks
 

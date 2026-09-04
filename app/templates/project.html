@@ -27,7 +27,7 @@
 <p class="page-desc muted">Project ID: <code class="k">{{ project.id }}</code></p>
 {% endif %}
 
-{% if new_token %}
+{% if new_token and active_tab != 'tokens' %}
 <div class="token-once" role="status">
   <div class="section-head tight">
     <strong>Machine token (copy now, shown once)</strong>

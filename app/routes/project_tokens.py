@@ -68,6 +68,114 @@ def register(app):
     app.post("/projects/<uuid:project_id>/tokens/<uuid:token_id>/delete")(delete_token)
 
 
+def load_tokens_tab(cur, project_id):
+    """Load tokens-tab rows (annotated tokens with scopes, key suggestions).
+
+    Shared by the full project page and the HTMX tokens partial so the two
+    cannot drift apart.
+
+    Args:
+        cur: Open DB cursor (user RLS).
+        project_id: UUID of the project.
+
+    Returns:
+        Dict with ``tokens`` and ``project_secret_keys`` template vars.
+    """
+    cur.execute(
+        """
+        SELECT id, name, description, token_prefix, role, created_at, expires_at, last_used_at
+        FROM api.machine_tokens
+        WHERE project_id = %s
+        ORDER BY created_at DESC
+        """,
+        (str(project_id),),
+    )
+    tokens = annotate_token_expiry(cur.fetchall())
+    # Attach allow-list (empty = no keys after 0011)
+    tids = [str(t["id"]) for t in tokens]
+    scope_map: dict = {}
+    if tids:
+        try:
+            cur.execute(
+                """
+                SELECT token_id, secret_key, key_pattern
+                FROM api.machine_token_scope
+                WHERE token_id = ANY(%s::uuid[])
+                ORDER BY secret_key NULLS LAST, key_pattern NULLS LAST
+                """,
+                (tids,),
+            )
+            for sc in cur.fetchall() or []:
+                scope_map.setdefault(str(sc["token_id"]), []).append(sc)
+        except Exception:
+            scope_map = {}
+    for t in tokens:
+        t["scopes"] = scope_map.get(str(t["id"]), [])
+    # Suggest existing keys for the allow-list chip input
+    try:
+        cur.execute(
+            """
+            SELECT key FROM api.secrets
+            WHERE project_id = %s AND deleted_at IS NULL
+            ORDER BY key
+            LIMIT 200
+            """,
+            (str(project_id),),
+        )
+        project_secret_keys = [r["key"] for r in (cur.fetchall() or [])]
+    except Exception:
+        project_secret_keys = []
+    return {"tokens": tokens, "project_secret_keys": project_secret_keys}
+
+
+def tokens_partial(project_id):
+    """Render the tokens-tab partial for HTMX swaps.
+
+    Args:
+        project_id: UUID of the project.
+
+    Returns:
+        Rendered ``partials/project_content.html`` for the tokens tab,
+        or 404 when missing.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT p.*, t.name AS team_name, t.id AS team_id,
+                   t.default_token_days
+            FROM api.projects p JOIN api.teams t ON t.id = p.team_id
+            WHERE p.id = %s
+            """,
+            (str(project_id),),
+        )
+        project = cur.fetchone()
+        if not project:
+            return "Not found", 404
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = cur.fetchone()["a"]
+        tokens_ctx = load_tokens_tab(cur, project_id)
+    pname = (project or {}).get("name") or "Project"
+    return render_template(
+        "partials/project_content.html",
+        oob_title=f"Machine accounts - {pname}",
+        project=project,
+        project_id=project_id,
+        can_admin=can_admin,
+        active_tab="tokens",
+        default_token_days=project.get("default_token_days"),
+        max_expiry_days=config.MAX_EXPIRY_DAYS,
+        new_token=session.pop("new_token", None),
+        **tokens_ctx,
+    )
+
+
+def tokens_response(project_id):
+    """Return the tokens-tab partial for HTMX, else redirect to the tokens tab."""
+    if authz.htmx():
+        return tokens_partial(project_id)
+    return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))
+
+
 @authz.login_required
 def machines_list():
     """List machine tokens for all projects under the session team.
@@ -151,15 +259,14 @@ def create_token(project_id):
     ):
         return_tab = "tokens"
 
-    def _token_redirect():
-        """Redirect back to project detail using the chosen return tab.
+    def _token_response():
+        """Return the tokens tab for HTMX, else redirect to the return tab.
 
-        Returns:
-            Flask redirect response to project_detail with return_tab.
-
-        Example:
-            return _token_redirect()
+        HTMX posts only come from the tokens tab (which posts no return_tab),
+        so any other return tab keeps the legacy redirect.
         """
+        if authz.htmx() and return_tab == "tokens":
+            return tokens_response(project_id)
         return redirect(url_for("project_detail", project_id=project_id, tab=return_tab))
 
     expires_at = None
@@ -170,7 +277,7 @@ def create_token(project_id):
         cur.execute("SELECT api.can_admin_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
             flash("You do not have permission to perform this action", "error")
-            return _token_redirect()
+            return _token_response()
         if not days_raw:
             cur.execute(
                 """
@@ -185,19 +292,19 @@ def create_token(project_id):
                 days_raw = str(row["default_token_days"])
         if not days_raw and require_expiry:
             flash("Enter an expiry period.", "error")
-            return _token_redirect()
+            return _token_response()
         if days_raw:
             try:
                 days = int(days_raw)
             except ValueError:
                 flash("Expiry must be a positive number of days.", "error")
-                return _token_redirect()
+                return _token_response()
             if days < 1 or days > max_days:
                 flash(
                     f"Expiry must be between 1 and {max_days} days",
                     "error",
                 )
-                return _token_redirect()
+                return _token_response()
             expires_at = datetime.now(timezone.utc) + timedelta(days=days)
         raw = "ss_" + secrets.token_urlsafe(32)
         thash = sha256_hex(raw)
@@ -217,12 +324,12 @@ def create_token(project_id):
             if not row:
                 flash("You do not have permission to perform this action", "error")
                 conn.rollback()
-                return _token_redirect()
+                return _token_response()
             insert_token_scopes(cur, str(row["id"]), scopes)
             conn.commit()
         except Exception:
             flash("Could not complete the request. Try again.", "error")
-            return _token_redirect()
+            return _token_response()
     session["new_token"] = raw  # shown once
     stored = scopes or [("pattern", "*")]
     scope_note = (
@@ -234,7 +341,7 @@ def create_token(project_id):
         f"Machine account created{scope_note}. Copy the token now. It is shown only once.",
         "ok",
     )
-    return _token_redirect()
+    return _token_response()
 
 
 @authz.login_required
@@ -255,12 +362,14 @@ def delete_token(project_id, token_id):
         cur.execute("SELECT api.can_admin_project(%s) AS w", (str(project_id),))
         if not cur.fetchone()["w"]:
             flash("You do not have permission to perform this action", "error")
-            return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))
+            return tokens_response(project_id)
         cur.execute(
             "DELETE FROM api.machine_tokens WHERE id = %s AND project_id = %s",
             (str(token_id), str(project_id)),
         )
         if cur.rowcount == 0:
             flash("You do not have permission to perform this action", "error")
+        else:
+            flash("Machine account revoked", "ok")
         conn.commit()
-    return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))
+    return tokens_response(project_id)

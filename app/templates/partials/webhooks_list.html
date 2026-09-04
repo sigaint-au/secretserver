@@ -10,7 +10,13 @@
 </nav>
 {% endif %}
 <div class="section-tools">
-  <form method="get" action="{{ search_action }}" class="toolbar" role="search">
+  <form method="get" action="{{ search_action }}" class="toolbar" role="search"
+        {% if webhooks_hx|default(false) %}hx-get="{{ search_action }}"
+        hx-target="#webhook-results"
+        hx-swap="outerHTML"
+        hx-select="#webhook-results"
+        hx-push-url="true"
+        hx-trigger="submit, input delay:250ms from:input[name=q]"{% endif %}>
     <input type="hidden" name="tab" value="webhooks">
     {% if webhook_filter is defined %}<input type="hidden" name="filter" value="{{ webhook_filter }}">{% endif %}
     <fieldset class="group search-input">
@@ -18,12 +24,18 @@
       <input type="search" name="q" value="{{ search_q or '' }}"
              placeholder="Search" autocomplete="off" aria-label="Search webhooks">
     </fieldset>
-    {% if search_q %}<a class="button ghost small" href="{{ list_url }}">Clear search</a>{% endif %}
+    {% if search_q %}<a class="button ghost small" href="{{ list_url }}"
+       {% if webhooks_hx|default(false) %}hx-get="{{ list_url }}"
+       hx-target="#webhook-results"
+       hx-swap="outerHTML"
+       hx-select="#webhook-results"
+       hx-push-url="true"{% endif %}>Clear search</a>{% endif %}
   </form>
   {% if scope_kind %}
   <a class="button outline small" href="{{ url_for('webhook_new', scope=scope_kind, scope_id=scope_ref or '', back=list_url) }}">Add webhook</a>
   {% endif %}
 </div>
+<div id="webhook-results">
 <section class="list-panel">
 {% if webhooks %}
 <div class="table"><table class="table-spaced">
@@ -59,3 +71,4 @@
 {% include "partials/empty_state.html" %}
 {% endif %}
 </section>
+</div>

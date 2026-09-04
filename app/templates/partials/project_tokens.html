@@ -10,9 +10,20 @@
   </p>
 
   {% if can_admin %}
-  {% with form_id='token-form', default_name='machine', compact=false %}
+  {% with form_id='token-form', default_name='machine', compact=false, token_form_hx=true %}
     {% include "partials/token_create_form.html" %}
   {% endwith %}
+  {% endif %}
+
+  {% if new_token %}
+  <div class="token-once" role="status">
+    <div class="section-head tight">
+      <strong>Machine token (copy now, shown once)</strong>
+      <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
+    </div>
+    <p class="muted">Copy it now. This is the only time it is displayed. The clipboard clears automatically after 60 seconds.</p>
+    <pre id="new-token-pre">{{ new_token }}</pre>
+  </div>
   {% endif %}
 
   <section class="token-list-section list-panel">
@@ -73,7 +84,9 @@
           <td class="acts">
             {% if can_admin %}
             <form method="post" action="{{ url_for('delete_token', project_id=project.id, token_id=t.id) }}" class="inline"
-                  onsubmit="return confirm('Revoke token “{{ t.name }}”?')">
+                  hx-post="{{ url_for('delete_token', project_id=project.id, token_id=t.id) }}"
+                  hx-target="#project-panel" hx-swap="innerHTML"
+                  hx-confirm="Revoke token “{{ t.name }}”?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Revoke</button>
             </form>

@@ -36,6 +36,57 @@ class TestTokens:
         scope_calls = [c for c in cur.execute.call_args_list if c.args and 'machine_token_scope' in str(c.args[0])]
         assert scope_calls and any('*' in str(c.args[1]) for c in scope_calls)
 
+    def test_htmx_create_token_returns_tokens_panel_with_once_banner(self):
+        """HTMX token create re-renders the tokens tab incl. the one-time secret."""
+        tid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            {'w': True},
+            {},
+            {'id': tid},
+            {'id': self.pid, 'name': 'prod', 'team_id': uuid4(), 'team_name': 'Ops', 'default_token_days': None},
+            {'a': True},
+        ]
+        cur.fetchall.side_effect = [[], []]
+        with patch.object(db, 'as_user', return_value=conn), patch.object(settings_svc, 'token_expiry_policy', return_value=(False, 3650)):
+            r = self.client.post(
+                f'/projects/{self.pid}/tokens',
+                data={'name': 'ci', 'role': 'service-read', 'scope_keys': ''},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'token-once' in r.data
+        assert b'Machine account created' in r.data
+        assert b'<html' not in r.data
+
+    def test_htmx_revoke_token_returns_tokens_panel_with_styled_confirm(self):
+        """HTMX token revoke re-renders the tokens tab; revoke uses hx-confirm."""
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        tid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            {'w': True},
+            {'id': self.pid, 'name': 'prod', 'team_id': uuid4(), 'team_name': 'Ops', 'default_token_days': None},
+            {'a': True},
+        ]
+        cur.rowcount = 1
+        cur.fetchall.side_effect = [[
+            {'id': tid, 'name': 'ci', 'description': '', 'token_prefix': 'ss_abc',
+             'role': 'service-read', 'created_at': now, 'expires_at': None, 'last_used_at': None},
+        ], [], []]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/projects/{self.pid}/tokens/{tid}/delete',
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Machine account revoked' in r.data
+        assert 'Revoke token' in r.data.decode()
+        assert b'hx-confirm' in r.data
+        assert b'return confirm(' not in r.data
+        assert b'<html' not in r.data
+
     def test_create_token_write_role(self):
         conn, cur = _conn()
         cur.fetchone.side_effect = [{'w': True}, {}, {'id': uuid4()}]

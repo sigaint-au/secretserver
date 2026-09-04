@@ -2,6 +2,7 @@
 {% with oob=True %}{% include "partials/flash_messages.html" %}{% endwith %}
 {% endif %}
 {% if access_pending is defined %}{% with n=access_pending %}{% include "partials/nav_access_badge.html" %}{% endwith %}{% endif %}
+{% if grant_minutes is defined %}{% if grant_minutes < 60 %}{% set grant_lab = grant_minutes ~ ' minutes' %}{% elif grant_minutes == 60 %}{% set grant_lab = '1 hour' %}{% elif grant_minutes == 1440 %}{% set grant_lab = '1 day' %}{% else %}{% set grant_lab = (grant_minutes // 60) ~ ' hours' %}{% endif %}{% endif %}
 <div id="requests-results">
 {% if requests %}
 <div class="table">
@@ -44,6 +45,7 @@
                 hx-post="{{ url_for('approve_secret_access', project_id=r.project_id, req_id=r.id)}}?from=inbox"
                 hx-target="#requests-results"
                 hx-swap="outerHTML"
+                hx-confirm="Approve reveal for {{ grant_lab|default('the selected duration') }}?"
                 class="access-approve-form"
                 onsubmit="return setAccessBusy(this, 'Approving…')">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
