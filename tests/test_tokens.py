@@ -87,6 +87,30 @@ class TestTokens:
         assert b'return confirm(' not in r.data
         assert b'<html' not in r.data
 
+    def test_htmx_create_token_from_integrations_returns_integrations_panel(self):
+        """HTMX token create from the ESO form re-renders the integrations tab."""
+        tid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            {'w': True},
+            {},
+            {'id': tid},
+            {'id': self.pid, 'name': 'prod', 'team_id': uuid4(), 'team_name': 'Ops', 'default_token_days': None},
+            {'a': True},
+        ]
+        cur.fetchall.side_effect = [[]]
+        with patch.object(db, 'as_user', return_value=conn), patch.object(settings_svc, 'token_expiry_policy', return_value=(False, 3650)):
+            r = self.client.post(
+                f'/projects/{self.pid}/tokens',
+                data={'name': 'eso', 'role': 'service-read', 'scope_keys': '', 'return_tab': 'integrations'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'eso-integration' in r.data
+        assert b'eso-token' in r.data
+        assert b'Machine account created' in r.data
+        assert b'<html' not in r.data
+
     def test_create_token_write_role(self):
         conn, cur = _conn()
         cur.fetchone.side_effect = [{'w': True}, {}, {'id': uuid4()}]
@@ -351,8 +375,8 @@ class TestMachineTokenDescription:
             self.client.post(f'/projects/{self.pid}/tokens', data={'name': 'x', 'description': long_desc}, follow_redirects=False)
         inserts = [c for c in cur.execute.call_args_list if c.args and 'INSERT INTO api.machine_tokens' in str(c.args[0])]
         assert inserts
-        stored = [a for a in inserts[0].args[1] if isinstance(a, str) and a.startswith('d')]
-        assert stored and len(stored[0]) == 500
+        stored = [a for a in inserts[0].args[1] if isinstance(a, str) and len(a) == 500]
+        assert stored and stored[0] == 'd' * 500
 
     def test_mgmt_create_accepts_and_returns_description(self):
         from routes.mgmt_api import tokens as mgmt_tokens

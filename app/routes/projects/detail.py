@@ -26,7 +26,7 @@ from secret_svc.secret_ops import _load_secrets_page
 from ui import nav, paging
 
 from .access import load_project_access_tab
-from routes.project_tokens import load_tokens_tab
+from routes.project_tokens import load_secret_key_suggestions, load_tokens_tab
 
 
 @authz.login_required
@@ -307,19 +307,7 @@ def project_detail(project_id):
                 project_secret_keys = tokens_ctx["project_secret_keys"]
             else:
                 # Suggest existing keys for the ESO allow-list chip input
-                try:
-                    cur.execute(
-                        """
-                        SELECT key FROM api.secrets
-                        WHERE project_id = %s AND deleted_at IS NULL
-                        ORDER BY key
-                        LIMIT 200
-                        """,
-                        (str(project_id),),
-                    )
-                    project_secret_keys = [r["key"] for r in (cur.fetchall() or [])]
-                except Exception:
-                    project_secret_keys = []
+                project_secret_keys = load_secret_key_suggestions(cur, project_id)
         elif tab == "webhooks":
             from routes.webhooks_ui import load_scope_webhooks
 

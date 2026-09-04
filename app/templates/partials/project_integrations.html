@@ -7,7 +7,7 @@
   </div>
 
   {% if can_admin %}
-    {% with form_id='eso-token-form', default_name='eso', return_tab='integrations', compact=true %}
+    {% with form_id='eso-token-form', default_name='eso', return_tab='integrations', compact=true, token_form_hx=true %}
       {% include "partials/token_create_form.html" %}
     {% endwith %}
   {% else %}

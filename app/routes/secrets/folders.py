@@ -458,6 +458,9 @@ def delete_folder_access_binding(project_id, folder_id, binding_id):
 def create_folder(project_id):
     """Create an empty folder from a slash-separated path."""
     back_url = url_for("project_detail", project_id=project_id, tab="secrets")
+    ret = (request.form.get("back") or "").strip()
+    if ret.startswith("/") and not ret.startswith("//"):
+        back_url = ret
     path = (request.form.get("path") or "").strip().strip("/")
     if not path:
         flash("Invalid folder path", "error")

@@ -2632,6 +2632,8 @@
     }
     .section-head.tight { margin-bottom: .35rem; }
     .section-head.compact { margin-bottom: .5rem; }
+    /* Bindings list follows the add-binding form: breathing room above. */
+    .access-rbac-panel .section-head.tight { margin-top: 1.25rem; }
     .toolbar {
       display: flex;
       flex-wrap: nowrap;

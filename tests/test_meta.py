@@ -181,9 +181,11 @@ class TestTeamMetaTemplates:
     def test_team_subnav_has_meta_link(self):
         src = (REPO_ROOT / "app" / "templates" / "team.html").read_text()
         assert "tab='meta'" in src or 'tab="meta"' in src
-        assert "upsert_team_meta" in src
+        # The metadata form lives in the tab partial included above.
+        partial = (REPO_ROOT / "app" / "templates" / "partials" / "team_content.html").read_text()
+        assert "upsert_team_meta" in partial
         assert """{% if is_admin %}
-  <form method="post" action="{{ url_for('upsert_team_meta'""" in src
+  <form method="post" action="{{ url_for('upsert_team_meta'""" in partial
 
     def test_team_meta_registered(self):
         from tests.helpers import routes_module_src

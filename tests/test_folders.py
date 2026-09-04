@@ -130,6 +130,44 @@ def test_folder_contents_empty_states_use_shared_partial():
     assert b"No child folders" in response.data
     assert b"No secrets in this folder" in response.data
     assert b"empty-state" in response.data
+    assert b"create-subfolder-dlg" in response.data
+    assert b'value="ops/"' in response.data
+
+
+def test_create_folder_invalid_path_returns_to_back():
+    """The folder-view dialog passes `back`; errors return there, not project root."""
+    project_id = uuid4()
+    folder_id = uuid4()
+    back = f"/projects/{project_id}/folders/{folder_id}"
+    with store.app.test_client() as client:
+        with client.session_transaction() as session:
+            session["user_id"] = str(uuid4())
+            session["email"] = "folder@example.test"
+            session["is_global_admin"] = False
+        r = client.post(
+            f"/projects/{project_id}/folders",
+            data={"path": "", "back": back},
+            follow_redirects=False,
+        )
+    assert r.status_code == 302
+    assert r.headers["Location"].endswith(back)
+
+
+def test_create_folder_rejects_external_back_url():
+    """An absolute `back` URL falls back to the project secrets tab."""
+    project_id = uuid4()
+    with store.app.test_client() as client:
+        with client.session_transaction() as session:
+            session["user_id"] = str(uuid4())
+            session["email"] = "folder@example.test"
+            session["is_global_admin"] = False
+        r = client.post(
+            f"/projects/{project_id}/folders",
+            data={"path": "", "back": "https://evil.example/"},
+            follow_redirects=False,
+        )
+    assert r.status_code == 302
+    assert r.headers["Location"].endswith(f"/projects/{project_id}?tab=secrets")
 
 
 def test_parse_secret_path_splits_root_and_nested_keys():

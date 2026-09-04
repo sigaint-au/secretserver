@@ -422,6 +422,8 @@ class TestTeams:
         assert b'access-rbac-panel' in r.data
         assert b'hx-post' in r.data
         assert b'Binding created' in r.data
+        assert b'Role bindings' in r.data
+        assert b'Direct role assignments' in r.data
         assert b'<html' not in r.data.lower()
 
     def test_htmx_team_meta_upsert_returns_meta_panel(self):

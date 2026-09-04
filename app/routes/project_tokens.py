@@ -111,7 +111,14 @@ def load_tokens_tab(cur, project_id):
             scope_map = {}
     for t in tokens:
         t["scopes"] = scope_map.get(str(t["id"]), [])
-    # Suggest existing keys for the allow-list chip input
+    return {
+        "tokens": tokens,
+        "project_secret_keys": load_secret_key_suggestions(cur, project_id),
+    }
+
+
+def load_secret_key_suggestions(cur, project_id):
+    """Suggest existing secret keys for allow-list inputs (best effort)."""
     try:
         cur.execute(
             """
@@ -122,10 +129,9 @@ def load_tokens_tab(cur, project_id):
             """,
             (str(project_id),),
         )
-        project_secret_keys = [r["key"] for r in (cur.fetchall() or [])]
+        return [r["key"] for r in (cur.fetchall() or [])]
     except Exception:
-        project_secret_keys = []
-    return {"tokens": tokens, "project_secret_keys": project_secret_keys}
+        return []
 
 
 def tokens_partial(project_id):
@@ -174,6 +180,53 @@ def tokens_response(project_id):
     if authz.htmx():
         return tokens_partial(project_id)
     return redirect(url_for("project_detail", project_id=project_id, tab="tokens"))
+
+
+def integrations_partial(project_id):
+    """Render the integrations-tab partial for HTMX swaps.
+
+    Args:
+        project_id: UUID of the project.
+
+    Returns:
+        Rendered ``partials/project_content.html`` for the integrations tab,
+        or 404 when missing.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT p.*, t.name AS team_name, t.id AS team_id,
+                   t.default_token_days
+            FROM api.projects p JOIN api.teams t ON t.id = p.team_id
+            WHERE p.id = %s
+            """,
+            (str(project_id),),
+        )
+        project = cur.fetchone()
+        if not project:
+            return "Not found", 404
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = cur.fetchone()["a"]
+        project_secret_keys = load_secret_key_suggestions(cur, project_id)
+    pname = (project or {}).get("name") or "Project"
+    return render_template(
+        "partials/project_content.html",
+        oob_title=f"Integrations - {pname}",
+        project=project,
+        project_id=project_id,
+        can_admin=can_admin,
+        active_tab="integrations",
+        public_base_url=settings_svc.public_base_url(request.url_root or ""),
+        new_token=session.pop("new_token", None),
+        project_secret_keys=project_secret_keys,
+    )
+
+
+def integrations_response(project_id):
+    """Return the integrations-tab partial for HTMX, else redirect to it."""
+    if authz.htmx():
+        return integrations_partial(project_id)
+    return redirect(url_for("project_detail", project_id=project_id, tab="integrations"))
 
 
 @authz.login_required
@@ -260,12 +313,10 @@ def create_token(project_id):
         return_tab = "tokens"
 
     def _token_response():
-        """Return the tokens tab for HTMX, else redirect to the return tab.
-
-        HTMX posts only come from the tokens tab (which posts no return_tab),
-        so any other return tab keeps the legacy redirect.
-        """
-        if authz.htmx() and return_tab == "tokens":
+        """Return the issuing tab for HTMX, else redirect to the return tab."""
+        if authz.htmx():
+            if return_tab == "integrations":
+                return integrations_response(project_id)
             return tokens_response(project_id)
         return redirect(url_for("project_detail", project_id=project_id, tab=return_tab))
 
