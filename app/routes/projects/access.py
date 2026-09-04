@@ -59,6 +59,7 @@ def load_project_access_tab(cur, conn, project_id, team_id, *, can_admin, page=1
     except Exception:
         conn.rollback()
         effective_access = []
+    effective_access = rbac_sync.enrich_effective_access(effective_access)
     effective_access_q = (q or "").strip()
     if effective_access_q:
         needle = effective_access_q.casefold()

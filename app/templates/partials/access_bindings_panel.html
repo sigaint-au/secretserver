@@ -106,6 +106,7 @@
         <tr>
           <td>
             {% if b.subject_email %}{{ b.subject_email }}
+            {% elif b.subject_name %}{{ b.subject_name }}
             {% elif b.group_name %}{{ b.group_name }}
             {% else %}<code>{{ b.subject_id }}</code>{% endif %}
             <span class="muted">· {{ b.subject_kind }}</span>

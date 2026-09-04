@@ -323,9 +323,31 @@ def list_scope_bindings(cur, scope_kind: str, scope_id) -> list:
     return list(cur.fetchall() or [])
 
 
+def _token_name_map(sa_ids: list[str]) -> dict[str, str]:
+    """Map machine-token IDs to names via admin DSN (best effort)."""
+    if not sa_ids:
+        return {}
+    try:
+        from core import db
+
+        with db.connect_admin() as aconn, aconn.cursor() as acur:
+            acur.execute(
+                """
+                SELECT id, name FROM api.machine_tokens
+                WHERE id = ANY(%s::uuid[])
+                """,
+                (sa_ids,),
+            )
+            return {str(row["id"]): row["name"] for row in acur.fetchall() or []}
+    except Exception:
+        log.debug("token name lookup failed", exc_info=True)
+        return {}
+
+
 def enrich_binding_emails(bindings: list) -> list:
-    """Attach subject_email for User subjects via admin DSN and the friendly
-    role label (title-bearing badge) for the role_name."""
+    """Attach subject_email for User subjects via admin DSN, subject_name for
+    ServiceAccount subjects (machine-token name), and the friendly role label
+    (title-bearing badge) for the role_name."""
     if not bindings:
         return bindings
     user_ids = [
@@ -350,10 +372,46 @@ def enrich_binding_emails(bindings: list) -> list:
                     email_map[str(row["id"])] = row["email"]
         except Exception:
             log.debug("enrich_binding_emails failed", exc_info=True)
+    name_map = _token_name_map(
+        [
+            str(b["subject_id"])
+            for b in bindings
+            if b.get("subject_kind") == "ServiceAccount" and b.get("subject_id")
+        ]
+    )
     for b in bindings:
         if b.get("subject_kind") == "User":
             b["subject_email"] = email_map.get(str(b.get("subject_id")))
         else:
             b["subject_email"] = None
+        if b.get("subject_kind") == "ServiceAccount":
+            b["subject_name"] = name_map.get(str(b.get("subject_id")))
         b["role_short"] = rbac_role_label(b.get("role_name") or "")
     return bindings
+
+
+def enrich_effective_access(rows: list) -> list:
+    """Fill ServiceAccount names into effective-access rows.
+
+    ``api.effective_access_rows`` returns NULL names and the raw token UUID
+    as grant_subject for ServiceAccount grants, which renders as "-" and
+    "Direct <uuid>". This resolves the token name so the tables show it in
+    both places. Rows for deleted tokens keep the UUID fallback.
+    """
+    if not rows:
+        return rows
+    name_map = _token_name_map(
+        [
+            str(r.get("grant_subject"))
+            for r in rows
+            if r.get("subject_kind") == "ServiceAccount" and r.get("grant_subject")
+        ]
+    )
+    for r in rows:
+        if r.get("subject_kind") != "ServiceAccount":
+            continue
+        name = name_map.get(str(r.get("grant_subject")))
+        if name:
+            r["subject_name"] = name
+            r["grant_subject"] = name
+    return rows

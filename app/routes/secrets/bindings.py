@@ -154,6 +154,7 @@ def _secret_tab_ctx(cur, conn, project_id, secret_id):
         except Exception:
             conn.rollback()
             effective_access = []
+        effective_access = rbac_sync.enrich_effective_access(effective_access)
     return {
         "role_dropdown": secret_role_dropdown,
         "row": row,

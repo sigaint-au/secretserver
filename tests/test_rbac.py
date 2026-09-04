@@ -2,10 +2,60 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
 
+from auth import rbac_sync
 from core import config
+from tests.helpers import mock_conn as _conn
+
+
+def _admin_conn(rows):
+    conn, cur = _conn(fetchall=rows)
+    return conn
+
+
+def test_enrich_binding_emails_resolves_service_account_names():
+    """ServiceAccount bindings show the token name, not the raw UUID."""
+    tid = uuid4()
+    bindings = [
+        {"subject_kind": "ServiceAccount", "subject_id": tid, "role_name": "service-read"},
+    ]
+    with patch("core.db.connect_admin", return_value=_admin_conn([{"id": tid, "name": "ci"}])):
+        out = rbac_sync.enrich_binding_emails(bindings)
+    assert out[0]["subject_name"] == "ci"
+    assert out[0]["subject_email"] is None
+
+
+def test_enrich_binding_emails_keeps_uuid_for_deleted_token():
+    """Deleted tokens keep the UUID fallback (no name resolvable)."""
+    tid = uuid4()
+    bindings = [
+        {"subject_kind": "ServiceAccount", "subject_id": tid, "role_name": "service-read"},
+    ]
+    with patch("core.db.connect_admin", return_value=_admin_conn([])):
+        out = rbac_sync.enrich_binding_emails(bindings)
+    assert out[0].get("subject_name") is None
+
+
+def test_enrich_effective_access_names_service_accounts():
+    """Effective-access SA rows show the token name in subject and How columns."""
+    tid = uuid4()
+    rows = [
+        {"subject_kind": "ServiceAccount", "subject_email": None, "subject_name": None,
+         "scope_kind": "project", "scope_label": "prod", "role_name": "service-read",
+         "grant_kind": "Direct", "grant_subject": str(tid), "is_global_admin": False},
+        {"subject_kind": "User", "subject_email": "a@ex.com", "subject_name": "A",
+         "scope_kind": "project", "scope_label": "prod", "role_name": "project-read",
+         "grant_kind": "Direct", "grant_subject": "a@ex.com", "is_global_admin": False},
+    ]
+    with patch("core.db.connect_admin", return_value=_admin_conn([{"id": tid, "name": "ci"}])):
+        out = rbac_sync.enrich_effective_access(rows)
+    assert out[0]["subject_name"] == "ci"
+    assert out[0]["grant_subject"] == "ci"
+    assert out[1]["grant_subject"] == "a@ex.com"
 
 
 def test_builtin_role_names_match_docs():

@@ -57,6 +57,7 @@ def load_folder_access(cur, conn, project_id, folder_id, team_id, *, page=1, q="
     except Exception:
         conn.rollback()
         effective_access = []
+    effective_access = rbac_sync.enrich_effective_access(effective_access)
     effective_access_q = (q or "").strip()
     if effective_access_q:
         needle = effective_access_q.casefold()
