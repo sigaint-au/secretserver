@@ -361,3 +361,122 @@ def list_for_project(
         r["summary"] = describe_event(r)
         r["when_display"] = format_when(r.get("created_at"))
     return rows
+
+
+def count_secret_audit(
+    cur,
+    *,
+    q: str = "",
+    actor: str = "",
+    action: str = "",
+    since: str = "",
+    until: str = "",
+    ip: str = "",
+    hide_reveals: bool = False,
+) -> int:
+    """Count secret_audit rows across all projects with optional filters.
+
+    Global (cross-project) counterpart to :func:`count_for_project`,
+    backing the admin secret-activity browser.
+
+    Args:
+        cur: Database cursor used to run the COUNT query.
+        q: Free-text filter on secret_key, action, and actor_email.
+        actor: Substring filter on actor_email (case-insensitive).
+        action: Exact action filter if it is a known ACTIONS value.
+        since: Inclusive start date as YYYY-MM-DD (UTC start of day).
+        until: Inclusive end date as YYYY-MM-DD (UTC end of day).
+        ip: Substring filter on ip_address (case-insensitive).
+        hide_reveals: When True, exclude 'revealed' rows (noise filter).
+
+    Returns:
+        Integer count of matching secret_audit rows.
+
+    Example:
+        >>> n = count_secret_audit(cur, action="revealed")
+        >>> n >= 0
+        True
+    """
+    extra, params = _filter_clause(
+        q=q, actor=actor, action=action, since=since, until=until,
+        ip=ip, hide_reveals=hide_reveals,
+    )
+    cur.execute(
+        f"""
+        SELECT count(*) AS n
+        FROM api.secret_audit a
+        WHERE 1=1
+        {extra}
+        """,
+        params,
+    )
+    row = cur.fetchone() or {}
+    return int(row.get("n") or 0)
+
+
+def list_secret_audit(
+    cur,
+    *,
+    limit: int = 25,
+    offset: int = 0,
+    q: str = "",
+    actor: str = "",
+    action: str = "",
+    since: str = "",
+    until: str = "",
+    ip: str = "",
+    hide_reveals: bool = False,
+):
+    """List secret_audit rows across all projects with filters and display fields.
+
+    Global (cross-project) counterpart to :func:`list_for_project`,
+    backing the admin secret-activity browser.
+
+    Args:
+        cur: Database cursor used to run the SELECT.
+        limit: Maximum number of rows to return (default 25).
+        offset: Number of rows to skip for pagination (default 0).
+        q: Free-text filter on secret_key, action, and actor_email.
+        actor: Substring filter on actor_email (case-insensitive).
+        action: Exact action filter if it is a known ACTIONS value.
+        since: Inclusive start date as YYYY-MM-DD (UTC start of day).
+        until: Inclusive end date as YYYY-MM-DD (UTC end of day).
+        ip: Substring filter on ip_address (case-insensitive).
+        hide_reveals: When True, exclude 'revealed' rows (noise filter).
+
+    Returns:
+        List of secret_audit row mappings with team/project names plus
+        summary (from describe_event) and when_display (from format_when).
+
+    Example:
+        >>> rows = list_secret_audit(cur, limit=10)
+        >>> "summary" in rows[0] and "team_name" in rows[0]
+        True
+    """
+    extra, params = _filter_clause(
+        q=q, actor=actor, action=action, since=since, until=until,
+        ip=ip, hide_reveals=hide_reveals,
+    )
+    cur.execute(
+        f"""
+        SELECT a.id, a.secret_id, a.secret_key, a.action, a.created_at,
+               a.actor_email, a.user_id,
+               a.ip_address, a.user_agent,
+               a.project_id,
+               p.name AS project_name, t.name AS team_name,
+               a.actor_email AS actor_name
+        FROM api.secret_audit a
+        LEFT JOIN api.projects p ON p.id = a.project_id
+        LEFT JOIN api.teams t ON t.id = p.team_id
+        WHERE 1=1
+        {extra}
+        ORDER BY a.created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        (*params, limit, offset),
+    )
+    rows = cur.fetchall() or []
+    for r in rows:
+        r["summary"] = describe_event(r)
+        r["when_display"] = format_when(r.get("created_at"))
+    return rows

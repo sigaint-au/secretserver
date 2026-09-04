@@ -1,14 +1,17 @@
 """Unit tests (pytest). Mock DB — no Postgres required."""
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
 
 import app as store
 import audit
+from core import db
 from tests.helpers import REPO_ROOT, migrations_src
+from tests.helpers import mock_conn as _conn
 
 store.app.config["TESTING"] = True
 
@@ -139,6 +142,81 @@ class TestAudit:
         assert 'ip_address' not in sql2
         assert 'revealed' not in sql2
         assert params2 == []
+
+    def test_list_secret_audit_is_global(self):
+        cur = MagicMock()
+        cur.fetchall.return_value = [{
+            'actor_email': 'a@b.c', 'action': 'revealed', 'secret_key': 'API_KEY',
+            'created_at': datetime.now(timezone.utc),
+        }]
+        rows = audit.list_secret_audit(
+            cur, actor='a@', action='revealed', ip='203.0.113',
+            hide_reveals=True, limit=10, offset=5,
+        )
+        sql, params = (cur.execute.call_args.args[0], cur.execute.call_args.args[1])
+        assert 'FROM api.secret_audit' in sql
+        assert 'LEFT JOIN api.projects' in sql
+        assert 'project_id = %s' not in sql
+        assert "action <> 'revealed'" in sql
+        assert 'LIMIT %s OFFSET %s' in sql
+        assert params[-2:] == (10, 5)
+        assert '%a@%' in params
+        assert 'revealed' in params
+        assert 'a@b.c' in rows[0]['summary']
+        assert 'API_KEY' in rows[0]['summary']
+        assert 'when_display' in rows[0]
+
+    def test_count_secret_audit(self):
+        cur = MagicMock()
+        cur.fetchone.return_value = {'n': 7}
+        assert audit.count_secret_audit(cur, q='api') == 7
+        sql, params = (cur.execute.call_args.args[0], cur.execute.call_args.args[1])
+        assert 'count(*)' in sql
+        assert 'FROM api.secret_audit' in sql
+        assert '%api%' in params
+
+    def test_admin_audit_activity_tab_renders_rows(self):
+        uid = str(uuid4())
+        client = store.app.test_client()
+        with client.session_transaction() as s:
+            s['user_id'] = uid
+            s['email'] = 'admin@ex.com'
+        rows = [{
+            'id': uuid4(), 'secret_id': uuid4(), 'secret_key': 'API_KEY',
+            'action': 'revealed', 'created_at': datetime.now(timezone.utc),
+            'actor_email': 'a@b.c', 'user_id': uid,
+            'ip_address': '203.0.113.7', 'user_agent': 'CorvusCLI/1.0',
+            'project_id': uuid4(), 'project_name': 'API', 'team_name': 'Platform',
+            'actor_name': 'a@b.c', 'summary': 'a@b.c revealed “API_KEY”',
+            'when_display': 'just now',
+        }]
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'count_secret_audit', return_value=1), \
+             patch.object(audit, 'list_secret_audit', return_value=rows) as mock_list:
+            r = client.get('/admin/audit?tab=activity&action=revealed')
+        assert r.status_code == 200
+        body = r.get_data(as_text=True)
+        assert 'Secret activity' in body
+        assert 'API_KEY' in body
+        assert 'Platform' in body
+        assert mock_list.call_args.kwargs['action'] == 'revealed'
+
+    def test_admin_audit_roles_all_passes_no_action_filter(self):
+        uid = str(uuid4())
+        client = store.app.test_client()
+        with client.session_transaction() as s:
+            s['user_id'] = uid
+            s['email'] = 'admin@ex.com'
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'count_org_audit', return_value=0) as mock_count, \
+             patch.object(audit, 'list_org_audit', return_value=[]) as mock_list:
+            r = client.get('/admin/audit?tab=roles&role_actions=all')
+        assert r.status_code == 200
+        assert 'All org events' in r.get_data(as_text=True)
+        assert mock_count.call_args.kwargs['actions'] is None
+        assert mock_list.call_args.kwargs['actions'] is None
 
     def test_list_queries_select_ip_and_user_agent(self):
         cur = MagicMock()

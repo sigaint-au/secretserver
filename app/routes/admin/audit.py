@@ -40,7 +40,7 @@ def admin_audit():
         GET/POST /admin/audit?tab=access
     """
     tab = (request.args.get("tab") or request.form.get("tab") or "access").strip().lower()
-    if tab not in ("access", "roles", "export"):
+    if tab not in ("access", "roles", "activity", "export"):
         tab = "access"
 
     if request.method == "POST":
@@ -91,11 +91,19 @@ def admin_audit():
     role_rows = []
     role_total = 0
     role_pager = None
+    secret_rows = []
+    secret_total = 0
+    secret_pager = None
     counts = {"secret_audit": 0, "org_audit": 0, "oldest": None, "newest": None}
     q = (request.args.get("q") or "").strip()
     actor = (request.args.get("actor") or "").strip()
     since = (request.args.get("since") or "").strip()
     until = (request.args.get("until") or "").strip()
+    secret_action = (request.args.get("action") or "").strip()
+    secret_ip = (request.args.get("ip") or "").strip()
+    hide_reveals = (request.args.get("hide_reveals") or "").strip().lower() in (
+        "1", "on", "true",
+    )
     # ponytail: pager.html has a fixed filter-key set; "action" aliases
     # role_actions there so the view survives pagination. Drop the alias if
     # pager.html ever grows a role_actions key.
@@ -105,10 +113,16 @@ def admin_audit():
         or request.form.get("role_actions")
         or "roles"
     ).strip().lower()
+    if role_actions not in ("all", "roles", "encryption"):
+        role_actions = "roles"
     active_actions = (
-        audit.ENC_CHANGE_ACTIONS
-        if role_actions == "encryption"
-        else audit.ROLE_CHANGE_ACTIONS
+        None
+        if role_actions == "all"
+        else (
+            audit.ENC_CHANGE_ACTIONS
+            if role_actions == "encryption"
+            else audit.ROLE_CHANGE_ACTIONS
+        )
     )
 
     with db.connect_admin() as conn, conn.cursor() as cur:
@@ -133,7 +147,7 @@ def admin_audit():
                 actor=actor or None,
                 since=since or None,
                 until=until or None,
-                action=role_actions if role_actions in ("roles", "encryption") else None,
+                action=role_actions,
             )
             role_rows = audit.list_org_audit(
                 cur,
@@ -144,6 +158,43 @@ def admin_audit():
                 until=until,
                 limit=role_pager["limit"],
                 offset=role_pager["offset"],
+            )
+        elif tab == "activity":
+            secret_total = audit.count_secret_audit(
+                cur,
+                q=q,
+                actor=actor,
+                action=secret_action,
+                since=since,
+                until=until,
+                ip=secret_ip,
+                hide_reveals=hide_reveals,
+            )
+            secret_pager = paging.page_window(
+                secret_total, paging.page_arg(), per_page=25
+            )
+            secret_pager.update(
+                endpoint="admin_audit",
+                tab="activity",
+                q=q or None,
+                actor=actor or None,
+                action=secret_action or None,
+                ip=secret_ip or None,
+                since=since or None,
+                until=until or None,
+                hide_reveals="1" if hide_reveals else None,
+            )
+            secret_rows = audit.list_secret_audit(
+                cur,
+                q=q,
+                actor=actor,
+                action=secret_action,
+                since=since,
+                until=until,
+                ip=secret_ip,
+                hide_reveals=hide_reveals,
+                limit=secret_pager["limit"],
+                offset=secret_pager["offset"],
             )
         elif tab == "export":
             counts = audit.audit_counts(cur)
@@ -156,10 +207,17 @@ def admin_audit():
         role_total=role_total,
         role_pager=role_pager,
         role_actions=role_actions,
+        secret_rows=secret_rows,
+        secret_total=secret_total,
+        secret_pager=secret_pager,
+        secret_actions=audit.ACTIONS,
         counts=counts,
         retention_days=retention_days,
         search_q=q,
         audit_actor=actor,
+        audit_action=secret_action,
+        audit_ip=secret_ip,
+        hide_reveals=hide_reveals,
         audit_since=since,
         audit_until=until,
     )

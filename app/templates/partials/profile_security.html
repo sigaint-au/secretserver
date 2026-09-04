@@ -1,8 +1,8 @@
 <section>
   <h2>Short-lived token</h2>
-  <p class="muted">Generate a short-lived token and a ready-to-paste
-    <code class="k">corvus login</code> command for the CLI.
-    Tokens expire quickly &mdash; generate a fresh command each time.</p>
+  <p class="muted">You sign in on the CLI with a
+    <code class="k">corvus login</code> command.
+    Each token lasts a short time, so make a new command each time you sign in.</p>
   <p class="form-actions">
     <button type="button" class="button outline" data-open-dialog="cli-login-dlg">Generate login command</button>
   </p>
@@ -65,8 +65,6 @@
     {% endfor %}
     </tbody>
   </table></div>
-  {% else %}
-  <p class="empty">None yet.</p>
   {% endif %}
 </section>
 

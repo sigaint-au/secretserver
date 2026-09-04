@@ -36,9 +36,11 @@ from .queries import (
     _filter_clause,
     count_for_project,
     count_org_audit,
+    count_secret_audit,
     list_for_project,
     list_org_audit,
     list_org_for_team,
+    list_secret_audit,
 )
 from .review import access_review_rows
 from .write import _client_meta, log_org, log_secret
@@ -81,9 +83,11 @@ __all__ = [
     "_filter_clause",
     "count_for_project",
     "count_org_audit",
+    "count_secret_audit",
     "list_for_project",
     "list_org_audit",
     "list_org_for_team",
+    "list_secret_audit",
     "access_review_rows",
     "log_org",
     "log_secret",
