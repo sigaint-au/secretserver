@@ -40,7 +40,7 @@ function htmxSwapRoot(e) {
 document.body.addEventListener('htmx:after:swap', function (e) {
   var ctx = (e.detail || {}).ctx || {};
   var t = ctx.target;
-  if (typeof t === 'string' && (t === '#project-panel' || t === '#secret-panel' || t === '#folder-panel')) {
+  if (typeof t === 'string' && (t === '#project-panel' || t === '#secret-panel' || t === '#folder-panel' || t === '#team-panel')) {
     var panel = document.getElementById(t.slice(1));
     if (panel && panel.focus) {
       try { panel.focus({ preventScroll: true }); } catch (err) { panel.focus(); }

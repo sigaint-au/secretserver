@@ -304,8 +304,24 @@ def team_detail(team_id):
         enrich_join_request_emails(join_requests)
     if access_bindings:
         rbac_sync.enrich_binding_emails(access_bindings)
+    template = "partials/team_content.html" if authz.htmx() else "team.html"
+    oob = {}
+    if authz.htmx():
+        tab_labels = {
+            "projects": "Projects",
+            "activity": "Activity",
+            "members": "Members",
+            "groups": "Groups",
+            "access": "Access",
+            "webhooks": "Webhooks",
+            "settings": "Settings",
+            "meta": "Metadata",
+        }
+        tname = (team or {}).get("name") or "Team"
+        oob["oob_title"] = f"{tab_labels.get(tab, 'Team')} - {tname}"
     return render_template(
-        "team.html",
+        template,
+        **oob,
         team=team,
         search_q=q,
         members=members,

@@ -92,6 +92,29 @@ class TestTeams:
         sql = ' '.join(str(c.args[0]) for c in cur.execute.call_args_list).lower()
         assert 'from api.projects' in sql
 
+    def test_team_detail_htmx_projects_tab_returns_panel(self):
+        """HTMX tab swaps render the team panel fragment with a title."""
+        tid = uuid4()
+        last_sql = {'s': ''}
+
+        def execute(sql, params=None):
+            last_sql['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last_sql['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s or 'select role from api.team_members' in s:
+                return {'r': 'team-owner', 'role': 'team-owner'}
+            return None
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch.object(ldap_auth, 'ldap_cfg', return_value={'ldap_enabled': 'false'}):
+            r = self.client.get(f'/teams/{tid}?tab=projects', headers={'HX-Request': 'true'})
+        assert r.status_code == 200
+        assert b'<title>Projects - T' in r.data
+        assert b'<html' not in r.data
+
     def test_team_settings_tab_panels(self):
         tid = uuid4()
         last_sql = {'s': ''}

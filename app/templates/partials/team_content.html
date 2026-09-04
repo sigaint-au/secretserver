@@ -1,0 +1,53 @@
+{% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
+{% endif %}{% if active_tab == 'projects' %}{% include "partials/team_projects.html" %}
+{% elif active_tab == 'access' and is_admin %}{% include "partials/team_access.html" %}
+{% elif active_tab == 'webhooks' and is_admin %}
+{% set scope_kind = 'team' %}{% set scope_ref = team.id %}{% set search_action = url_for('team_detail', team_id=team.id) %}{% set list_url = url_for('team_detail', team_id=team.id, tab='webhooks') %}
+{% include "partials/webhooks_list.html" %}
+{% elif active_tab == 'members' %}{% include "partials/team_members.html" %}
+{% elif active_tab == 'groups' %}{% include "partials/team_groups.html" %}
+{% elif active_tab == 'activity' %}{% include "partials/team_activity.html" %}
+{% elif active_tab == 'settings' and is_admin %}{% include "partials/team_settings.html" %}
+{% elif active_tab == 'meta' %}
+<section>
+  <h2>Team metadata</h2>
+  <p class="muted">Metadata here appears on every project and secret in the team.</p>
+  {% if is_admin %}
+  <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="row">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. cost-center"></label>
+    <label>Value <input name="value" maxlength="2000"></label>
+    <button type="submit">Save</button>
+  </form>
+  {% endif %}
+  {% if team_meta %}
+  <div class="table">
+    <table>
+      <thead><tr><th>Key</th><th>Value</th><th>Updated</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+        {% for m in team_meta %}
+        <tr>
+          <td><code class="k">{{ m.key }}</code></td>
+          <td>{{ m.value }}</td>
+          <td>{{ m.updated_at.strftime('%Y-%m-%d %H:%M') if m.updated_at else '' }}</td>
+          {% if is_admin %}
+          <td class="acts">
+            <form method="post" action="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}" class="inline" onsubmit="return confirm('Remove metadata \u201c{{ m.key }}\u201d?')">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <button type="submit" class="link danger">Remove</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  {% set icon = 'teams' %}
+  {% set title = 'No team metadata yet' %}
+  {% set text = 'Metadata here appears on every project and secret in the team.' %}
+  {% include "partials/empty_state.html" %}
+  {% endif %}
+</section>
+{% endif %}
