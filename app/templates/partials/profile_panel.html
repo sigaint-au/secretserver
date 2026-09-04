@@ -1,0 +1,8 @@
+{% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
+{% endif %}{% if active_tab == 'account' %}{% include "partials/profile_account.html" %}
+{% elif active_tab == 'security' %}{% include "partials/profile_security.html" %}
+{% elif active_tab == 'myaccess' %}{% include "partials/profile_myaccess.html" %}
+{% elif active_tab == 'teams' %}{% include "partials/profile_teams.html" %}
+{% elif active_tab == 'projects' %}{% include "partials/profile_projects.html" %}
+{% elif active_tab == 'activity' %}{% include "partials/profile_activity.html" %}
+{% endif %}

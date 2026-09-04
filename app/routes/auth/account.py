@@ -361,8 +361,15 @@ def profile():
     alerts_forced = mailer.login_alerts_forced(smtp)
     user_alerts = True if user.get("login_alerts") is None else bool(user.get("login_alerts"))
 
+    template = "partials/profile_panel.html" if authz.htmx() else "profile.html"
+    oob = {}
+    if authz.htmx():
+        oob["oob_title"] = (
+            "My profile" if tab == "account" else f"{tab.title()} - My profile"
+        )
     return render_template(
-        "profile.html",
+        template,
+        **oob,
         user=user,
         groups=groups,
         login_alerts={

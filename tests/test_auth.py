@@ -288,6 +288,26 @@ class TestAuth:
         assert 'private.user_sessions' in init
         assert 'private.password_reset_tokens' in init
 
+    def test_profile_htmx_account_tab_returns_panel(self):
+        """HTMX profile tab swaps render the panel fragment (no page chrome)."""
+        uid = uuid4()
+        with self.client.session_transaction() as s:
+            s['user_id'] = str(uid)
+            s['email'] = 'a@b.c'
+            s['is_global_admin'] = False
+        admin_conn, _ = _conn(
+            fetchone={'id': uid, 'email': 'a@b.c', 'name': 'Ada',
+                      'is_global_admin': False, 'auth_source': 'local',
+                      'created_at': '2026-01-01', 'totp_enabled_at': None,
+                      'login_alerts': True},
+        )
+        user_conn, _ = _conn(fetchone={'n': 0})
+        with patch.object(db, 'connect_admin', return_value=admin_conn), patch.object(db, 'as_user', return_value=user_conn):
+            r = self.client.get('/profile?tab=account', headers={'HX-Request': 'true'})
+        assert r.status_code == 200
+        assert b'<h2>Account</h2>' in r.data
+        assert b'<html' not in r.data
+
     def test_profile_my_access(self):
         uid = uuid4()
         with self.client.session_transaction() as s:

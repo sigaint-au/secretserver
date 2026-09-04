@@ -53,7 +53,7 @@ document.addEventListener('htmx:after:swap', function (e) {
 document.body.addEventListener('htmx:after:swap', function (e) {
   const ctx = (e.detail || {}).ctx || {};
   const t = ctx.target;
-  if (typeof t === 'string' && (t === '#project-panel' || t === '#secret-panel' || t === '#folder-panel' || t === '#team-panel')) {
+  if (typeof t === 'string' && (t === '#project-panel' || t === '#secret-panel' || t === '#folder-panel' || t === '#team-panel' || t === '#profile-panel' || t === '#roles-panel')) {
     const panel = document.getElementById(t.slice(1));
     if (panel && panel.focus) {
       try { panel.focus({ preventScroll: true }); } catch (err) { panel.focus(); }

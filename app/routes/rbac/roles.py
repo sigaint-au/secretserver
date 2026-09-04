@@ -22,8 +22,13 @@ def rbac_roles():
         roles, builtin, custom, can_edit = load_roles_catalog(cur)
     if tab == "create" and not can_edit:
         tab = "builtin"
+    template = "partials/roles_panel.html" if authz.htmx() else "rbac_roles.html"
+    oob = {}
+    if authz.htmx():
+        oob["oob_title"] = "Roles" if tab == "builtin" else f"{tab.title()} - Roles"
     return render_template(
-        "rbac_roles.html",
+        template,
+        **oob,
         roles=roles,
         builtin_roles=builtin,
         custom_roles=custom,

@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from auth import rbac_sync
-from core import config
+from core import config, db
 from tests.helpers import mock_conn as _conn
 
 
@@ -125,6 +125,28 @@ def test_rbac_roles_requires_login(client):
     r = client.get("/rbac/roles")
     assert r.status_code == 302
     assert "/login" in (r.location or "")
+
+
+def test_rbac_roles_htmx_builtin_tab_returns_panel(client):
+    """HTMX roles tab swaps render the panel fragment (no page chrome)."""
+    with client.session_transaction() as s:
+        s["user_id"] = str(uuid4())
+        s["email"] = "a@b.c"
+        s["is_global_admin"] = False
+    conn, _ = _conn(
+        fetchall=[{
+            "id": uuid4(), "name": "team-owner", "description": "Owns the team",
+            "built_in": True, "created_at": "2026-01-01",
+            "rules": [{"resources": ["secrets"], "verbs": ["get"]}],
+        }],
+        fetchone={"ok": False},
+    )
+    with patch.object(db, "as_user", return_value=conn):
+        r = client.get("/rbac/roles?tab=builtin", headers={"HX-Request": "true"})
+    assert r.status_code == 200
+    assert b"Built-in roles" in r.data
+    assert b"team-owner" in r.data
+    assert b"<html" not in r.data
 
 
 def test_dropdowns_cover_legacy_vocabularies():
