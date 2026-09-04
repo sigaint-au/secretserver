@@ -418,18 +418,29 @@ class TestTeams:
 
     def test_delete_team_owner_ok(self):
         tid = uuid4()
-        conn, cur = _conn(fetchone={'r': 'team-owner'})
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [{'r': 'team-owner'}, {'name': 'Ops'}]
         cur.rowcount = 1
         with self.client.session_transaction() as s:
             s['team_id'] = str(tid)
         with patch.object(db, 'as_user', return_value=conn):
-            r = self.client.post(f'/teams/{tid}/delete', follow_redirects=False)
+            r = self.client.post(f'/teams/{tid}/delete', data={'confirm_name': 'Ops'}, follow_redirects=False)
         assert r.status_code == 302
         assert '/teams' in r.location
         assert str(tid) not in r.location
         conn.commit.assert_called()
         with self.client.session_transaction() as s:
             assert s.get('team_id') != str(tid)
+
+    def test_delete_team_name_mismatch_aborts(self):
+        tid = uuid4()
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [{'r': 'team-owner'}, {'name': 'Ops'}]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(f'/teams/{tid}/delete', data={'confirm_name': 'oops'}, follow_redirects=False)
+        assert r.status_code == 302
+        assert str(tid) in r.location
+        conn.commit.assert_not_called()
 
     def test_delete_team_non_owner_denied(self):
         tid = uuid4()

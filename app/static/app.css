@@ -1684,6 +1684,17 @@
       color: var(--foreground);
       font-weight: 600;
     }
+    /* HTMX tab swaps run a short view transition (motion-safe only). */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: .12s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: .01ms;
+      }
+    }
     .page-subnav-link .tab-badge {
       float: right;
       margin-top: .15rem;

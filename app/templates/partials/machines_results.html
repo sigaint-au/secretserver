@@ -27,7 +27,7 @@
       </tbody>
     </table>
     </div>
-    {% with pager=machines_pager %}
+    {% with pager=machines_pager, hx_target='machines-results' %}
     {% include "partials/pager.html" %}
     {% endwith %}
     {% elif search_q or q %}

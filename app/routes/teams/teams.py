@@ -470,7 +470,13 @@ def delete_team(team_id):
         cur.execute("SELECT api.team_role(%s) AS r", (str(team_id),))
         row = cur.fetchone()
         if not row or not team_role_at_least(cur, row["r"], OWNER_TIER):
-            flash("Only team owners can delete a team", "error")
+            flash("Only a team owner can delete a team", "error")
+            return redirect(url_for("team_detail", team_id=team_id, tab="settings"))
+        cur.execute("SELECT name FROM api.teams WHERE id = %s", (str(team_id),))
+        team = cur.fetchone()
+        confirm_name = (request.form.get("confirm_name") or "").strip()
+        if not team or confirm_name != (team["name"] or ""):
+            flash("Type the team name exactly to confirm deletion.", "error")
             return redirect(url_for("team_detail", team_id=team_id, tab="settings"))
         try:
             cur.execute("DELETE FROM api.teams WHERE id = %s", (str(team_id),))

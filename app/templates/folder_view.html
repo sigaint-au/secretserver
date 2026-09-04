@@ -21,12 +21,12 @@
 </div>
 <div class="page-side">
 <nav class="page-subnav" aria-label="Folder sections">
-  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}" hx-target="#folder-panel" hx-swap="innerHTML" hx-push-url="true" class="page-subnav-link {% if active_tab == 'contents' %}active{% endif %}" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}">Contents</a>
+  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link {% if active_tab == 'contents' %}active{% endif %}" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}">Contents</a>
   {% if can_admin %}
-  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}" hx-target="#folder-panel" hx-swap="innerHTML" hx-push-url="true" class="page-subnav-link {% if active_tab == 'access' %}active{% endif %}" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}">Access</a>
+  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link {% if active_tab == 'access' %}active{% endif %}" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}">Access</a>
   {% endif %}
 </nav>
-<div class="page-panel" id="folder-panel">
+<div class="page-panel" id="folder-panel" tabindex="-1">
 {% include "partials/folder_panel.html" %}
 </div>
 </div>

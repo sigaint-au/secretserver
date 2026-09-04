@@ -11,8 +11,8 @@
 </div>
 <p class="page-desc muted">
   Project <strong>{{ project.name }}</strong>:
-  <strong>{{ n_creates }}</strong> create(s),
-  <strong>{{ n_updates }}</strong> update(s).
+  <strong>{{ n_creates }}</strong> create{{ 's' if n_creates != 1 }},
+  <strong>{{ n_updates }}</strong> update{{ 's' if n_updates != 1 }}.
   Review values and types, then commit. Nothing has been written yet.
 </p>
 

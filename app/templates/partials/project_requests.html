@@ -1,3 +1,7 @@
+{% if oob_flashes is defined and oob_flashes %}
+{% with oob=True %}{% include "partials/flash_messages.html" %}{% endwith %}
+{% endif %}
+<div id="project-requests">
 <section>
   <div class="section-head">
     <h2>Reveal requests</h2>
@@ -48,6 +52,9 @@
           <div class="access-acts-stack">
             <form method="post"
                   action="{{ url_for('approve_secret_access', project_id=project.id, req_id=r.id) }}"
+                  hx-post="{{ url_for('approve_secret_access', project_id=project.id, req_id=r.id)}}?from=project"
+                  hx-target="#project-requests"
+                  hx-swap="outerHTML"
                   class="access-approve-form"
                   onsubmit="var s=this.querySelector('#grant-minutes-{{ r.id }}');var m=parseInt(s?s.value:'0',10);var lab=m<60?m+' minutes':(m===60?'1 hour':(m===1440?'1 day':(m/60)+' hours'));return confirm('Approve reveal for '+lab+'?') && setAccessBusy(this,'Approving…');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -63,6 +70,9 @@
             </form>
             <form method="post"
                   action="{{ url_for('deny_secret_access', project_id=project.id, req_id=r.id) }}"
+                  hx-post="{{ url_for('deny_secret_access', project_id=project.id, req_id=r.id)}}?from=project"
+                  hx-target="#project-requests"
+                  hx-swap="outerHTML"
                   class="inline"
                   onsubmit="return confirm('Deny this reveal request?') && setAccessBusy(this, 'Denying…')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -79,11 +89,8 @@
   </div>
   {% else %}
   <p class="empty">
-    {% if can_admin %}
     No access requests yet.
-    {% else %}
-    No access requests yet.
-    {% endif %}
   </p>
   {% endif %}
 </section>
+</div>

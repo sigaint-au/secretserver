@@ -5,6 +5,16 @@ document.addEventListener('htmx:config:request', function (e) {
   if (m && headers) headers['X-CSRF-Token'] = m.content;
 });
 
+/* Type-to-confirm gates (e.g. team deletion): enable the submit button
+   only when the input matches the expected value exactly. */
+document.addEventListener('input', function (ev) {
+  var el = ev.target && ev.target.closest ? ev.target.closest('[data-confirm-for]') : null;
+  if (!el) return;
+  var btn = document.getElementById(el.getAttribute('data-confirm-for'));
+  if (!btn) return;
+  btn.disabled = (el.value || '') !== (el.getAttribute('data-confirm-value') || '');
+});
+
 /* Resolve the swapped content root for htmx 4 events. htmx 4 dispatches on
    the requesting element and carries the hx-target selector on detail.ctx,
    so e.target alone no longer points at fresh content. */
@@ -23,6 +33,20 @@ function htmxSwapRoot(e) {
   }
   return el || document;
 }
+
+/* Move focus into tab panels after HTMX swaps, mirroring full page loads
+   for keyboard and screen-reader users. Mouse users see no focus ring:
+   script focus after a pointer click does not match :focus-visible. */
+document.body.addEventListener('htmx:after:swap', function (e) {
+  var ctx = (e.detail || {}).ctx || {};
+  var t = ctx.target;
+  if (typeof t === 'string' && (t === '#project-panel' || t === '#secret-panel' || t === '#folder-panel')) {
+    var panel = document.getElementById(t.slice(1));
+    if (panel && panel.focus) {
+      try { panel.focus({ preventScroll: true }); } catch (err) { panel.focus(); }
+    }
+  }
+});
 
 /* Never swap machine-readable error bodies into content panels: the error
    toast below already tells the user what happened. */

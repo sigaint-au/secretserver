@@ -7,6 +7,7 @@ import logging
 from flask import (
     flash,
     redirect,
+    render_template,
     request,
     session,
     url_for,
@@ -166,6 +167,40 @@ def request_secret_access(project_id, secret_id):
     return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
 
 
+def _requests_response(project_id):
+    """Re-render the issuing request list for an HTMX approve/deny.
+
+    The forms tag their page with ``?from=inbox`` (global Requests page)
+    or ``?from=project`` (project Requests tab); the matching region is
+    returned with out-of-band flashes.
+    """
+    from_page = (request.args.get("from") or "project").strip().lower()
+    grant_ctx = {
+        "grant_minutes": settings_svc.reveal_access_grant_minutes(),
+        "grant_choices": config.REVEAL_ACCESS_GRANT_CHOICES,
+        "oob_flashes": True,
+    }
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        if from_page == "inbox":
+            cur.execute("SELECT * FROM private.pending_access_requests_for_admin()")
+            rows = cur.fetchall() or []
+            return render_template("partials/requests_table.html", requests=rows, **grant_ctx)
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = bool((cur.fetchone() or {}).get("a"))
+        cur.execute(
+            "SELECT * FROM private.secret_access_request_rows(%s::uuid)",
+            (str(project_id),),
+        )
+        rows = cur.fetchall() or []
+        return render_template(
+            "partials/project_requests.html",
+            project={"id": project_id},
+            access_requests=rows,
+            can_admin=can_admin,
+            **grant_ctx,
+        )
+
+
 @authz.login_required
 def approve_secret_access(project_id, req_id):
     """Approve a pending secret reveal access request.
@@ -195,9 +230,11 @@ def approve_secret_access(project_id, req_id):
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash(
-                "Only a project admin or team owner can approve access requests",
+                "Only a project admin or team owner can approve access requests.",
                 "error",
             )
+            if authz.htmx():
+                return _requests_response(project_id)
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         cur.execute(
             """
@@ -210,7 +247,9 @@ def approve_secret_access(project_id, req_id):
         )
         req = cur.fetchone()
         if not req or req["status"] != "pending":
-            flash("Request not found. or already resolved.", "error")
+            flash("Request not found or already resolved.", "error")
+            if authz.htmx():
+                return _requests_response(project_id)
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         try:
             cur.execute(
@@ -225,7 +264,7 @@ def approve_secret_access(project_id, req_id):
                 (session["user_id"], str(minutes), str(req_id)),
             )
             if cur.rowcount == 0:
-                flash("Request not found. or already resolved.", "error")
+                flash("Request not found or already resolved.", "error")
                 conn.rollback()
             else:
                 audit.log_secret(
@@ -252,6 +291,8 @@ def approve_secret_access(project_id, req_id):
         except Exception:
             conn.rollback()
             flash("Could not update access. Try again.", "error")
+    if authz.htmx():
+        return _requests_response(project_id)
     return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
 
 
@@ -273,9 +314,11 @@ def deny_secret_access(project_id, req_id):
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash(
-                "Only a project admin or team owner can deny access requests",
+                "Only a project admin or team owner can deny access requests.",
                 "error",
             )
+            if authz.htmx():
+                return _requests_response(project_id)
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         cur.execute(
             """
@@ -288,7 +331,9 @@ def deny_secret_access(project_id, req_id):
         )
         req = cur.fetchone()
         if not req or req["status"] != "pending":
-            flash("Request not found. or already resolved.", "error")
+            flash("Request not found or already resolved.", "error")
+            if authz.htmx():
+                return _requests_response(project_id)
             return redirect(url_for("project_detail", project_id=project_id, tab="requests"))
         try:
             cur.execute(
@@ -303,7 +348,7 @@ def deny_secret_access(project_id, req_id):
                 (session["user_id"], str(req_id)),
             )
             if cur.rowcount == 0:
-                flash("Request not found. or already resolved.", "error")
+                flash("Request not found or already resolved.", "error")
                 conn.rollback()
             else:
                 audit.log_secret(
@@ -322,4 +367,6 @@ def deny_secret_access(project_id, req_id):
         except Exception:
             conn.rollback()
             flash("Could not update access. Try again.", "error")
+    if authz.htmx():
+        return _requests_response(project_id)
     return redirect(url_for("project_detail", project_id=project_id, tab="requests"))

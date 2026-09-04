@@ -1,4 +1,5 @@
-{% if active_tab == 'contents' %}
+{% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
+{% endif %}{% if active_tab == 'contents' %}
 <section>
   <div class="section-head"><h2>Folders</h2></div>
   {% if child_folders %}
@@ -50,7 +51,13 @@
       <h2>Effective access</h2>
       <p class="muted">Who can access this folder, and why.</p>
     </div>
-    <form method="get" action="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id) }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id) }}" class="toolbar" role="search"
+          hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id) }}"
+          hx-target="#folder-access-results"
+          hx-swap="outerHTML"
+          hx-select="#folder-access-results"
+          hx-push-url="true"
+          hx-trigger="submit, input delay:250ms from:input[name=q]">
       <input type="hidden" name="tab" value="access">
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
@@ -58,10 +65,16 @@
                placeholder="Search access" aria-label="Search effective access" autocomplete="off">
       </fieldset>
       {% if effective_access_q %}
-      <a class="button ghost small" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}">Clear search</a>
+      <a class="button ghost small" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}"
+         hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}"
+         hx-target="#folder-access-results"
+         hx-swap="outerHTML"
+         hx-select="#folder-access-results"
+         hx-push-url="true">Clear search</a>
       {% endif %}
     </form>
   </div>
+  <div id="folder-access-results">
   {% if effective_access %}
   <div class="table">
     <table>
@@ -93,11 +106,12 @@
       </tbody>
     </table>
   </div>
-  {% with pager=effective_access_pager %}
+  {% with pager=effective_access_pager, hx_target='folder-access-results', hx_select='folder-access-results' %}
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
   <p class="empty">{% if effective_access_q %}No access grants match “{{ effective_access_q }}”.{% else %}No access grants found for this folder.{% endif %}</p>
   {% endif %}
+  </div>
 </section>
 {% endif %}

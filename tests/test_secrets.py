@@ -506,6 +506,50 @@ class TestSecrets:
         assert 'denied' in all_args
         assert 'access_denied' in all_args
 
+    def test_approve_secret_access_htmx_returns_project_partial(self):
+        """HTMX approve swaps the project Requests section, not a redirect."""
+        rid, sid = (uuid4(), uuid4())
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            {'a': True},
+            {'id': rid, 'secret_id': sid, 'user_id': self.uid, 'status': 'pending', 'secret_key': 'API_KEY'},
+            {'a': True},
+        ]
+        cur.rowcount = 1
+        cur.fetchall.side_effect = [[]]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/projects/{self.pid}/access-requests/{rid}/approve?from=project',
+                data={'minutes': '15'},
+                headers={'HX-Request': 'true'},
+                follow_redirects=False,
+            )
+        assert r.status_code == 200
+        assert b'project-requests' in r.data
+        assert b'Access approved' in r.data
+        assert b'<html' not in r.data
+
+    def test_deny_secret_access_htmx_returns_inbox_partial(self):
+        """HTMX deny swaps the global inbox table, not a redirect."""
+        rid, sid = (uuid4(), uuid4())
+        conn, cur = _conn()
+        cur.fetchone.side_effect = [
+            {'a': True},
+            {'id': rid, 'secret_id': sid, 'status': 'pending', 'secret_key': 'API_KEY'},
+        ]
+        cur.rowcount = 1
+        cur.fetchall.side_effect = [[]]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/projects/{self.pid}/access-requests/{rid}/deny?from=inbox',
+                headers={'HX-Request': 'true'},
+                follow_redirects=False,
+            )
+        assert r.status_code == 200
+        assert b'requests-results' in r.data
+        assert b'Access request denied' in r.data
+        assert b'<html' not in r.data
+
     def test_secret_view_keeps_secret_row_after_binding_enrichment(self):
         """Regression: the admin binding email-enrichment loop previously shadowed
         the `row` variable, clobbering the secret row and raising KeyError: 'key'

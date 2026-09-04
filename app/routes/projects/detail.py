@@ -528,6 +528,21 @@ def project_detail(project_id):
         "project_meta": project_meta,
     }
     template = "partials/project_content.html" if authz.htmx() else "project.html"
+    if authz.htmx():
+        tab_labels = {
+            "secrets": "Secrets",
+            "requests": "Requests",
+            "import": "Import / Export",
+            "access": "Access",
+            "audit": "Activity",
+            "tokens": "Machine accounts",
+            "integrations": "Integrations",
+            "webhooks": "Webhooks",
+            "settings": "Settings",
+            "meta": "Metadata",
+        }
+        pname = (project or {}).get("name") or "Project"
+        ctx["oob_title"] = f"{tab_labels.get(tab, 'Project')} - {pname}"
     return render_template(template, **ctx)
 
 

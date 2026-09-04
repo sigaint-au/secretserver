@@ -18,7 +18,8 @@
                 data-url="{{ url_for('bulk_trash') }}"
                 data-confirm="Restore the {n} selected secrets?">Restore</option>
         <option value="purge"
-                data-url="{{ url_for('bulk_trash') }}">Delete permanently</option>
+                data-url="{{ url_for('bulk_trash') }}"
+                data-confirm="Permanently delete {n} selected secret(s)? This cannot be undone.">Delete permanently</option>
       </select>
       <button type="button" id="bulk-apply" class="bulk-apply" disabled>Apply</button>
     </div>

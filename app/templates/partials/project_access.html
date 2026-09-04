@@ -58,7 +58,7 @@
       </tbody>
     </table>
   </div>
-  {% with pager=effective_access_pager %}
+  {% with pager=effective_access_pager, hx_target='project-panel' %}
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}

@@ -73,7 +73,7 @@
     {% endfor %}
     </tbody>
   </table></div>
-  {% with pager=audit_pager %}
+  {% with pager=audit_pager, hx_target='project-panel' %}
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}

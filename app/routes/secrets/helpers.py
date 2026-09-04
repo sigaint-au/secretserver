@@ -320,9 +320,16 @@ def _render_secret_view(
     if tab == "access" and not can_admin:
         tab = "secret"
     template = "partials/secret_panel.html" if authz.htmx() else "secret_view.html"
+    oob_title = None
+    if authz.htmx():
+        key = row.get("key") or "Secret"
+        oob_title = {"secret": key, "meta": f"Metadata - {key}", "access": f"Access - {key}"}.get(
+            tab, key
+        )
     return (
         render_template(
             template,
+            **({"oob_title": oob_title} if oob_title else {}),
             project_id=project_id,
             project_name=row.get("project_name") or "",
             team_id=row.get("team_id"),

@@ -239,7 +239,7 @@ syncTeamClassForm();
   <p class="muted page-desc">Transfer ownership: the chosen user becomes owner and you become admin.</p>
   <form method="post" action="{{ url_for('transfer_team_ownership', team_id=team.id) }}"
         class="settings-form"
-        onsubmit="return confirm('Transfer ownership to this user?')">
+        onsubmit="return confirm('Transfer ownership to ' + (this.email.value || 'this user') + '? You will become admin.')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <div class="field-grid">
       <label class="span-2">New owner email
@@ -257,11 +257,15 @@ syncTeamClassForm();
     Deletes this team and all of its projects, secrets, members, and machine tokens.
     This cannot be undone.
   </p>
-  <form method="post" action="{{ url_for('delete_team', team_id=team.id) }}"
-        onsubmit="return confirm('Delete team “{{ team.name }}” and everything in it? This cannot be undone.')">
+  <form method="post" action="{{ url_for('delete_team', team_id=team.id) }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <label>Type <code class="k">{{ team.name }}</code> to confirm
+      <input type="text" name="confirm_name" required autocomplete="off"
+             placeholder="{{ team.name }}"
+             data-confirm-for="delete-team-btn" data-confirm-value="{{ team.name }}">
+    </label>
     <p class="form-actions">
-      <button type="submit" data-variant="danger">Delete team</button>
+      <button type="submit" id="delete-team-btn" data-variant="danger">Delete team</button>
     </p>
   </form>
 </section>

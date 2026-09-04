@@ -1,4 +1,8 @@
-{# Extra filter kwargs preserved across pages #}
+{# Extra filter kwargs preserved across pages.
+   When hx_target is set (an HTMX-swapped region id), page links swap that
+   region instead of full-page loads. #}
+{% set _hx = hx_target is defined and hx_target %}
+{% set _hs = hx_select is defined and hx_select %}
 {% set _q = {
   'project_id': pager.project_id if pager else none,
   'tab': pager.tab if pager else none,
@@ -26,7 +30,8 @@
   <menu class="buttons">
     <li>
       {% if pager.has_prev %}
-      <a href="{{ url_for(pager.endpoint, page=pager.prev_page, **_q) }}"
+      {% set _url = url_for(pager.endpoint, page=pager.prev_page, **_q) %}
+      <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
          class="button outline small">&larr; Prev</a>
       {% else %}
       <button type="button" class="outline small" disabled aria-label="Previous page (unavailable)">
@@ -41,14 +46,16 @@
       </li>
       {% endif %}
       <li>
-        <a href="{{ url_for(pager.endpoint, page=p, **_q) }}"
+        {% set _url = url_for(pager.endpoint, page=p, **_q) %}
+        <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
            class="button {% if p == pager.page %}small{% else %}outline small{% endif %}"
            {% if p == pager.page %}aria-current="page"{% endif %}>{{ p }}</a>
       </li>
     {% endfor %}
     <li>
       {% if pager.has_next %}
-      <a href="{{ url_for(pager.endpoint, page=pager.next_page, **_q) }}"
+      {% set _url = url_for(pager.endpoint, page=pager.next_page, **_q) %}
+      <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
          class="button outline small">Next &rarr;</a>
       {% else %}
       <button type="button" class="outline small" disabled aria-label="Next page (unavailable)">

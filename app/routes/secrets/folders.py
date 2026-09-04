@@ -136,8 +136,13 @@ def folder_view(project_id, folder_id):
             start = (page - 1) * effective_access_pager["per_page"]
             effective_access = effective_access[start : start + effective_access_pager["per_page"]]
     template = "partials/folder_panel.html" if authz.htmx() else "folder_view.html"
+    oob = {}
+    if authz.htmx():
+        path = (folder or {}).get("path") or "Folder"
+        oob["oob_title"] = path if active_tab == "contents" else f"Access - {path}"
     return render_template(
         template,
+        **oob,
         folder=folder,
         project=project,
         project_id=project_id,
