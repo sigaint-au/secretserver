@@ -218,6 +218,204 @@ class TestAudit:
         assert mock_count.call_args.kwargs['actions'] is None
         assert mock_list.call_args.kwargs['actions'] is None
 
+    def test_log_org_event_commits_and_never_raises(self):
+        conn, _cur = _conn()
+        conn.autocommit = False
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch('audit.write.log_org') as mock_log:
+            audit.log_org_event(audit.ORG_PAT_CREATED, "detail")
+        mock_log.assert_called_once()
+        conn.commit.assert_called_once()
+        with patch.object(db, 'connect_admin', side_effect=RuntimeError('db down')):
+            audit.log_org_event(audit.ORG_PAT_CREATED)
+
+    def test_filter_access_rows(self):
+        rows = [
+            {'email': 'a@x.com', 'name': 'A', 'scope': 'global', 'team': '',
+             'team_role': '', 'project': '', 'project_role': '',
+             'access_via': 'global_admin'},
+            {'email': 'b@x.com', 'name': 'B', 'scope': 'team', 'team': 'Platform',
+             'team_role': 'member', 'project': '', 'project_role': '',
+             'access_via': 'team:member'},
+            {'email': 'c@x.com', 'name': 'C', 'scope': 'project', 'team': 'Platform',
+             'team_role': '', 'project': 'API', 'project_role': 'viewer',
+             'access_via': 'project:viewer'},
+        ]
+        assert len(audit.filter_access_rows(rows)) == 3
+        team_only = audit.filter_access_rows(rows, scope='team')
+        assert [r['email'] for r in team_only] == ['b@x.com']
+        plat = audit.filter_access_rows(rows, q='platform')
+        assert [r['email'] for r in plat] == ['b@x.com', 'c@x.com']
+        assert audit.filter_access_rows(rows, scope='bogus', q='zzz') == []
+
+    def test_list_login_failures(self):
+        cur = MagicMock()
+        cur.fetchall.return_value = [{
+            'email': 'a@b.c', 'ip_address': '203.0.113.9',
+            'created_at': datetime.now(timezone.utc),
+        }]
+        rows = audit.list_login_failures(cur, q='a@', limit=5)
+        sql, params = (cur.execute.call_args.args[0], cur.execute.call_args.args[1])
+        assert 'FROM private.login_failures' in sql
+        assert 'email ILIKE' in sql
+        assert 'ip_address ILIKE' in sql
+        assert params[-2:] == (5, 0)
+        assert rows[0]['when_display']
+
+    def test_count_login_failures(self):
+        cur = MagicMock()
+        cur.fetchone.return_value = {'n': 4}
+        assert audit.count_login_failures(cur, q='a@') == 4
+        assert 'private.login_failures' in cur.execute.call_args.args[0]
+
+    def test_purge_preview_zero_when_forever(self):
+        cur = MagicMock()
+        assert audit.purge_preview(cur, 0) == {
+            'secret_audit': 0, 'org_audit': 0, 'login_failures': 0,
+        }
+        cur.execute.assert_not_called()
+
+    def test_purge_preview_counts(self):
+        cur = MagicMock()
+        cur.fetchone.return_value = {'n': 2}
+        out = audit.purge_preview(cur, 30)
+        assert out == {'secret_audit': 2, 'org_audit': 2, 'login_failures': 2}
+        assert cur.execute.call_count == 3
+
+    def test_export_secret_audit_filters(self):
+        cur = MagicMock()
+        cur.fetchall.return_value = []
+        audit.export_secret_audit(
+            cur, q='key', actor='a@', action='revealed', ip='203.0',
+            hide_reveals=True,
+        )
+        sql, params = (cur.execute.call_args.args[0], cur.execute.call_args.args[1])
+        assert 'FROM api.secret_audit' in sql
+        assert "action <> 'revealed'" in sql
+        assert '%key%' in params
+        assert '%a@%' in params
+        assert 'revealed' in params
+
+    def test_export_org_audit_actions(self):
+        cur = MagicMock()
+        cur.fetchall.return_value = []
+        audit.export_org_audit(cur, actions=audit.ROLE_CHANGE_ACTIONS, q='x', actor='y')
+        sql, params = (cur.execute.call_args.args[0], cur.execute.call_args.args[1])
+        assert '= ANY' in sql
+        assert '%y%' in params
+
+    def _admin_client(self):
+        uid = str(uuid4())
+        client = store.app.test_client()
+        with client.session_transaction() as s:
+            s['user_id'] = uid
+            s['email'] = 'admin@ex.com'
+        return client
+
+    def test_access_tab_filters_and_paginates(self):
+        rows = [
+            {'email': 'a@x.com', 'name': 'A', 'scope': 'global', 'team': '',
+             'team_role': '', 'project': '', 'project_role': '',
+             'access_via': 'global_admin', 'user_id': 'u1',
+             'is_global_admin': True, 'disabled': False},
+            {'email': 'b@x.com', 'name': 'B', 'scope': 'team', 'team': 'Platform',
+             'team_role': 'member', 'project': '', 'project_role': '',
+             'access_via': 'team:member', 'user_id': 'u2',
+             'is_global_admin': False, 'disabled': False},
+        ]
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'access_review_rows', return_value=rows):
+            r = client.get('/admin/audit?tab=access&scope=team&q=platform')
+        assert r.status_code == 200
+        body = r.get_data(as_text=True)
+        assert 'b@x.com' in body
+        assert 'a@x.com' not in body
+        assert '1 access grants' in body
+
+    def test_logins_tab_renders(self):
+        rows = [{
+            'id': 1, 'email': 'victim@ex.com', 'ip_address': '203.0.113.9',
+            'created_at': datetime.now(timezone.utc), 'when_display': 'just now',
+        }]
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'count_login_failures', return_value=1), \
+             patch.object(audit, 'list_login_failures', return_value=rows):
+            r = client.get('/admin/audit?tab=logins')
+        assert r.status_code == 200
+        body = r.get_data(as_text=True)
+        assert 'Sign-in failures' in body
+        assert 'victim@ex.com' in body
+        assert '203.0.113.9' in body
+
+    def test_export_tab_shows_purge_preview(self):
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        counts = {
+            'secret_audit': 10, 'org_audit': 5, 'login_failures': 3,
+            'oldest': None, 'newest': None,
+        }
+        preview = {'secret_audit': 4, 'org_audit': 1, 'login_failures': 2}
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'audit_counts', return_value=counts), \
+             patch.object(audit, 'purge_preview', return_value=preview):
+            r = client.get('/admin/audit?tab=export')
+        assert r.status_code == 200
+        body = r.get_data(as_text=True)
+        assert 'Purging now would delete' in body
+        assert 'Sign-in failures' in body
+
+    def test_access_export_applies_filters(self):
+        import json
+
+        rows = [
+            {'email': 'a@x.com', 'name': 'A', 'scope': 'global', 'team': '',
+             'team_role': '', 'project': '', 'project_role': '',
+             'access_via': 'global_admin', 'user_id': 'u1',
+             'is_global_admin': True, 'disabled': False},
+            {'email': 'b@x.com', 'name': 'B', 'scope': 'team', 'team': 'Platform',
+             'team_role': 'member', 'project': '', 'project_role': '',
+             'access_via': 'team:member', 'user_id': 'u2',
+             'is_global_admin': False, 'disabled': False},
+        ]
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'access_review_rows', return_value=rows):
+            r = client.get('/admin/audit/access/export?format=json&scope=team')
+        assert r.status_code == 200
+        payload = json.loads(r.get_data(as_text=True))
+        assert payload['count'] == 1
+        assert payload['rows'][0]['email'] == 'b@x.com'
+
+    def test_audit_export_org_role_actions(self):
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'export_org_audit', return_value=[]) as mock_exp:
+            r = client.get(
+                '/admin/audit/export?format=csv&source=org&role_actions=roles&actor=a@'
+            )
+        assert r.status_code == 200
+        assert mock_exp.call_args.kwargs['actions'] == audit.ROLE_CHANGE_ACTIONS
+        assert mock_exp.call_args.kwargs['actor'] == 'a@'
+
+    def test_audit_export_secret_filters(self):
+        conn, _cur = _conn(fetchone={'is_global_admin': True}, fetchall=[])
+        client = self._admin_client()
+        with patch.object(db, 'connect_admin', return_value=conn), \
+             patch.object(audit, 'export_secret_audit', return_value=[]) as mock_exp:
+            r = client.get(
+                '/admin/audit/export?format=csv&source=secret'
+                '&action=revealed&hide_reveals=1'
+            )
+        assert r.status_code == 200
+        assert mock_exp.call_args.kwargs['action'] == 'revealed'
+        assert mock_exp.call_args.kwargs['hide_reveals'] is True
+
     def test_list_queries_select_ip_and_user_agent(self):
         cur = MagicMock()
         cur.fetchall.return_value = []
@@ -227,6 +425,11 @@ class TestAudit:
         audit.list_org_audit(cur, limit=1)
         assert 'ip_address' in cur.execute.call_args.args[0]
         assert 'user_agent' in cur.execute.call_args.args[0]
+        audit.list_secret_audit(cur, limit=1)
+        assert 'ip_address' in cur.execute.call_args.args[0]
+        assert 'user_agent' in cur.execute.call_args.args[0]
+        audit.list_login_failures(cur, limit=1)
+        assert 'ip_address' in cur.execute.call_args.args[0]
         audit.export_secret_audit(cur, limit=1)
         assert 'ip_address' in cur.execute.call_args.args[0]
         audit.export_org_audit(cur, limit=1)

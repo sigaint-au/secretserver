@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 
 from flask import session
 
+from core import db
+
 from .constants import ACTIONS
 
 # One JSON line per audit event on stdout, so container log shippers
@@ -161,3 +163,29 @@ def log_org(
         ip=ip or None,
         user_agent=user_agent or None,
     )
+
+
+def log_org_event(action: str, detail: str = "") -> None:
+    """Log a self-service org event on its own admin connection (best-effort).
+
+    For routes that do not already hold a cursor (password changes, 2FA,
+    PAT and CLI token lifecycle, session revocation). Never raises: audit
+    failures must not break the primary action.
+
+    Args:
+        action: Org audit action string (e.g. ORG_PAT_CREATED); required.
+        detail: Free-text detail about the change (default empty).
+
+    Returns:
+        None.
+
+    Example:
+        >>> log_org_event(ORG_CLI_TOKEN_MINTED)
+    """
+    try:
+        with db.connect_admin() as conn, conn.cursor() as cur:
+            log_org(cur, action=action, detail=detail)
+            if not conn.autocommit:
+                conn.commit()
+    except Exception:
+        logging.getLogger(__name__).exception("self-service audit event failed")

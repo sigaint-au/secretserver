@@ -94,3 +94,13 @@ class TestCliLoginRoutes:
     def test_cli_login_command_requires_login(self):
         r = store.app.test_client().post('/login/command', follow_redirects=False)
         assert r.status_code == 302
+
+    def test_cli_login_command_logs_audit_event(self):
+        with patch.object(cli_sessions, 'create', return_value='sso_secretvalue'), \
+             patch.object(settings_svc, 'public_base_url', return_value='https://secrets.example.com'), \
+             patch.object(settings_svc, 'int_setting', return_value=3600), \
+             patch('audit.log_org_event') as mock_ev:
+            r = self.client.post('/login/command', follow_redirects=False)
+        assert r.status_code == 200
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'cli_token_minted'

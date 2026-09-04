@@ -123,6 +123,20 @@ class TestPersonalTokenRoutes:
         assert r.status_code == 302
         rev.assert_called_once_with(self.uid, str(tid))
 
+    def test_create_pat_logs_audit_event(self):
+        with patch.object(pats, 'create', return_value='pat_secretvalue'), patch('audit.log_org_event') as mock_ev:
+            r = self.client.post('/profile/tokens', data={'name': 'laptop'}, follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'pat_created'
+
+    def test_delete_pat_logs_audit_event(self):
+        with patch.object(pats, 'revoke', return_value=True), patch('audit.log_org_event') as mock_ev:
+            r = self.client.post(f'/profile/tokens/{uuid4()}/delete', follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'pat_revoked'
+
     def test_delete_pat_missing(self):
         with patch.object(pats, 'revoke', return_value=False):
             r = self.client.post(f'/profile/tokens/{uuid4()}/delete', follow_redirects=False)

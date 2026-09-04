@@ -15,6 +15,8 @@ from flask import (
 
 from auth import authz, totp_svc
 
+import audit
+
 log = logging.getLogger(__name__)
 
 
@@ -86,6 +88,7 @@ def totp_setup_confirm():
     session.pop("pending_totp_secret", None)
     session.pop("totp_setup_required", None)
     session["new_recovery_codes"] = recovery
+    audit.log_org_event(audit.ORG_USER_2FA_ENABLED, "self-service 2FA enabled")
     flash("Two-factor authentication enabled", "ok")
     return redirect(url_for("totp_recovery_codes"))
 
@@ -143,6 +146,7 @@ def totp_disable():
         return redirect(url_for("profile", tab="security"))
     totp_svc.disable(uid)
     session.pop("pending_totp_secret", None)
+    audit.log_org_event(audit.ORG_USER_2FA_DISABLED, "self-service 2FA disabled")
     flash("Two-factor authentication disabled", "ok")
     return redirect(url_for("profile", tab="security"))
 

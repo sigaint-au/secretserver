@@ -77,8 +77,6 @@ curl -s -H "Authorization: Bearer $JWT" \
   "http://localhost:3000/projects?select=id,name,team_id"
 ```
 
-Also available in the UI: **My profile → Security → API access → Show JWT**.
-
 ### 4. Machine tokens (ESO / CLI / CI)
 
 Create on a project (**Integrations** / machine accounts). Project or team

@@ -15,6 +15,9 @@
   <a href="{{ url_for('admin_audit', tab='activity') }}"
      class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
   >Secret activity</a>
+  <a href="{{ url_for('admin_audit', tab='logins') }}"
+     class="page-subnav-link {% if active_tab == 'logins' %}active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
+  >Sign-in failures</a>
   <a href="{{ url_for('admin_audit', tab='export') }}"
      class="page-subnav-link {% if active_tab == 'export' %}active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
   >Export &amp; retention</a>
@@ -26,16 +29,38 @@
   <div class="section-head">
     <h2>Access review</h2>
     <div class="section-tools">
-      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='csv') }}">Export CSV</a>
-      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='json') }}">Export JSON</a>
+      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='csv', q=search_q or None, scope=access_scope or None) }}">Export CSV</a>
+      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='json', q=search_q or None, scope=access_scope or None) }}">Export JSON</a>
     </div>
   </div>
   <p class="muted">
     Who has access to what: global admins, team memberships, and project-level roles.
     Use for periodic reviews and SOC2 evidence.
   </p>
+  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+    <input type="hidden" name="tab" value="access">
+    <fieldset class="group search-input">
+      {% include "partials/search_icon.html" %}
+      <input type="search" name="q" value="{{ search_q or '' }}"
+             placeholder="Search" autocomplete="off" aria-label="Search access grants">
+    </fieldset>
+    <label>Scope
+      <select name="scope">
+        <option value="">All scopes</option>
+        <option value="global" {% if access_scope == 'global' %}selected{% endif %}>Global</option>
+        <option value="team" {% if access_scope == 'team' %}selected{% endif %}>Team</option>
+        <option value="project" {% if access_scope == 'project' %}selected{% endif %}>Project</option>
+      </select>
+    </label>
+    <button type="submit" class="button outline small">Apply</button>
+    {% if search_q or access_scope %}
+    <div class="audit-filter-actions">
+      <a class="button ghost small" href="{{ url_for('admin_audit', tab='access') }}">Clear filters</a>
+    </div>
+    {% endif %}
+  </form>
   {% if access_rows %}
-  <p class="muted">{{ access_rows|length }} access grants.</p>
+  <p class="muted">{{ access_pager.total }} access grants.</p>
   <div class="table"><table>
     <thead>
       <tr>
@@ -67,8 +92,17 @@
     {% endfor %}
     </tbody>
   </table></div>
+  {% with pager=access_pager %}
+  {% include "partials/pager.html" %}
+  {% endwith %}
   {% else %}
-  <p class="empty">No membership grants found.</p>
+  <p class="empty">
+    {% if search_q or access_scope %}
+    No access grants match these filters.
+    {% else %}
+    No membership grants found.
+    {% endif %}
+  </p>
   {% endif %}
 </section>
 
@@ -76,10 +110,15 @@
 <section>
   <div class="section-head">
     <h2>Role-change audit</h2>
+    <div class="section-tools">
+      <a class="button outline small" href="{{ url_for('admin_audit_export', format='csv', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export CSV</a>
+      <a class="button outline small" href="{{ url_for('admin_audit_export', format='json', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export JSON</a>
+    </div>
   </div>
   <p class="muted">
     Membership, role, and encryption-key changes from org audit (team/project roles, ownership, invites, LDAP maps, BYOK keys).
-    Choose All org events to also include user lifecycle, team settings, and join requests.
+    Choose All org events to also include user lifecycle, credentials and tokens,
+    sessions, team settings, and join requests.
   </p>
   <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
     <input type="hidden" name="tab" value="roles">
@@ -157,6 +196,10 @@
 <section>
   <div class="section-head">
     <h2>Secret activity</h2>
+    <div class="section-tools">
+      <a class="button outline small" href="{{ url_for('admin_audit_export', format='csv', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export CSV</a>
+      <a class="button outline small" href="{{ url_for('admin_audit_export', format='json', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export JSON</a>
+    </div>
   </div>
   <p class="muted">
     Who did what to secrets across all projects, and when.
@@ -243,6 +286,67 @@
   {% endif %}
 </section>
 
+{% elif active_tab == 'logins' %}
+<section>
+  <div class="section-head">
+    <h2>Sign-in failures</h2>
+  </div>
+  <p class="muted">
+    Failed sign-in attempts by email and IP. Use to spot brute-force patterns against accounts.
+  </p>
+  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+    <input type="hidden" name="tab" value="logins">
+    <fieldset class="group search-input">
+      {% include "partials/search_icon.html" %}
+      <input type="search" name="q" value="{{ search_q or '' }}"
+             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures">
+    </fieldset>
+    <label>From
+      <input type="date" name="since" value="{{ audit_since or '' }}">
+    </label>
+    <label>To
+      <input type="date" name="until" value="{{ audit_until or '' }}">
+    </label>
+    <button type="submit" class="button outline small">Apply</button>
+    {% if search_q or audit_since or audit_until %}
+    <div class="audit-filter-actions">
+      <a class="button ghost small" href="{{ url_for('admin_audit', tab='logins') }}">Clear filters</a>
+    </div>
+    {% endif %}
+  </form>
+  {% if login_rows %}
+  <div class="table"><table class="audit-table">
+    <thead>
+      <tr>
+        <th>When</th>
+        <th>Email</th>
+        <th>IP</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for e in login_rows %}
+      <tr>
+        <td class="muted" title="{{ e.created_at }}">{{ e.when_display }}</td>
+        <td>{{ e.email }}</td>
+        <td class="muted">{{ e.ip_address or '-' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% with pager=login_pager %}
+  {% include "partials/pager.html" %}
+  {% endwith %}
+  {% else %}
+  <p class="empty">
+    {% if search_q or audit_since or audit_until %}
+    No sign-in failures match these filters.
+    {% else %}
+    No sign-in failures recorded.
+    {% endif %}
+  </p>
+  {% endif %}
+</section>
+
 {% elif active_tab == 'export' %}
 <section>
   <div class="section-head">
@@ -259,6 +363,10 @@
     <div class="profile-stat">
       <span class="profile-stat-n">{{ counts.org_audit }}</span>
       <span class="profile-stat-l">Org audit</span>
+    </div>
+    <div class="profile-stat">
+      <span class="profile-stat-n">{{ counts.login_failures }}</span>
+      <span class="profile-stat-l">Sign-in failures</span>
     </div>
   </div>
   {% if counts.oldest %}
@@ -307,6 +415,16 @@
     </label>
     <button type="submit">Save retention</button>
   </form>
+  <p class="muted">
+    {% if retention_days|int(365) > 0 %}
+    Purging now would delete {{ purge_counts.secret_audit }} secret audit,
+    {{ purge_counts.org_audit }} org audit, and
+    {{ purge_counts.login_failures }} sign-in failure rows
+    older than {{ retention_days }} days.
+    {% else %}
+    Retention is set to forever: purging is disabled until you set a positive day count.
+    {% endif %}
+  </p>
   <form method="post" class="form-actions"
         onsubmit="return confirm('Permanently delete audit rows older than the configured retention? This cannot be undone.')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">

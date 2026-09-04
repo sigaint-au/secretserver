@@ -43,7 +43,11 @@ def _write_migrations(tmp_path, files):
 def test_migrations_ship_in_order():
     """Squashed baseline plus additive migrations, in filename order."""
     files = [p.name for p in migrations._migration_files()]
-    assert files == ["0001_init.sql", "0002_cli_session_last_used.sql"]
+    assert files == [
+        "0001_init.sql",
+        "0002_cli_session_last_used.sql",
+        "0003_login_failures_ip.sql",
+    ]
     for name in files:
         assert name[:4].isdigit()
         assert name[4] == "_"
@@ -55,6 +59,13 @@ def test_cli_session_last_used_migration():
     sql = (migrations.MIGRATIONS_DIR / "0002_cli_session_last_used.sql").read_text()
     assert "ALTER TABLE private.cli_session_tokens" in sql
     assert "ADD COLUMN IF NOT EXISTS last_used_at" in sql
+
+
+def test_login_failures_ip_migration():
+    """Sign-in-failure browser needs the client IP column on old DBs too."""
+    sql = (migrations.MIGRATIONS_DIR / "0003_login_failures_ip.sql").read_text()
+    assert "ALTER TABLE private.login_failures" in sql
+    assert "ADD COLUMN IF NOT EXISTS ip_address" in sql
 
 
 def test_baseline_covers_folders_schema_and_rls():

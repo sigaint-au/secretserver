@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .dates import _parse_day
+from .queries import _filter_clause, _org_audit_where
 
 
 def export_secret_audit(
@@ -11,14 +11,24 @@ def export_secret_audit(
     since: str = "",
     until: str = "",
     limit: int = 50000,
+    q: str = "",
+    actor: str = "",
+    action: str = "",
+    ip: str = "",
+    hide_reveals: bool = False,
 ):
-    """Export secret_audit rows for a date range (compliance/export use).
+    """Export secret_audit rows for filters (compliance/export use).
 
     Args:
         cur: Database cursor used to run the SELECT.
         since: Inclusive start date as YYYY-MM-DD (UTC start of day).
         until: Inclusive end date as YYYY-MM-DD (UTC end of day).
         limit: Maximum number of rows to return (default 50000).
+        q: Free-text filter on secret_key, action, and actor_email.
+        actor: Substring filter on actor_email (case-insensitive).
+        action: Exact action filter if it is a known ACTIONS value.
+        ip: Substring filter on ip_address (case-insensitive).
+        hide_reveals: When True, exclude 'revealed' rows (noise filter).
 
     Returns:
         List of secret_audit row mappings with project/team names joined.
@@ -28,17 +38,10 @@ def export_secret_audit(
         >>> len(rows) <= 50000
         True
     """
-    parts = [" WHERE 1=1 "]
-    params: list = []
-    since_dt = _parse_day(since, end=False)
-    if since_dt:
-        parts.append(" AND a.created_at >= %s ")
-        params.append(since_dt)
-    until_dt = _parse_day(until, end=True)
-    if until_dt:
-        parts.append(" AND a.created_at <= %s ")
-        params.append(until_dt)
-    where = "".join(parts)
+    where, params = _filter_clause(
+        q=q, actor=actor, action=action, since=since, until=until,
+        ip=ip, hide_reveals=hide_reveals,
+    )
     cur.execute(
         f"""
         SELECT a.id::text, a.created_at, a.action, a.secret_key, a.actor_email,
@@ -63,14 +66,21 @@ def export_org_audit(
     since: str = "",
     until: str = "",
     limit: int = 50000,
+    actions: tuple[str, ...] | None = None,
+    q: str = "",
+    actor: str = "",
 ):
-    """Export org_audit rows for a date range (compliance/export use).
+    """Export org_audit rows for filters (compliance/export use).
 
     Args:
         cur: Database cursor used to run the SELECT.
         since: Inclusive start date as YYYY-MM-DD (UTC start of day).
         until: Inclusive end date as YYYY-MM-DD (UTC end of day).
         limit: Maximum number of rows to return (default 50000).
+        actions: Optional tuple of action names to restrict results to
+            (None means all org actions).
+        q: Free-text search across action, detail, actor, team, and project.
+        actor: Substring filter on actor_email (case-insensitive).
 
     Returns:
         List of org_audit row mappings with team/project names joined.
@@ -80,17 +90,9 @@ def export_org_audit(
         >>> isinstance(rows, list)
         True
     """
-    parts = [" WHERE 1=1 "]
-    params: list = []
-    since_dt = _parse_day(since, end=False)
-    if since_dt:
-        parts.append(" AND a.created_at >= %s ")
-        params.append(since_dt)
-    until_dt = _parse_day(until, end=True)
-    if until_dt:
-        parts.append(" AND a.created_at <= %s ")
-        params.append(until_dt)
-    where = "".join(parts)
+    where, params = _org_audit_where(
+        actions=actions, q=q, actor=actor, since=since, until=until
+    )
     cur.execute(
         f"""
         SELECT a.id::text, a.created_at, a.action, a.detail, a.actor_email,

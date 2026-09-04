@@ -140,14 +140,14 @@ curl -s -H "Authorization: Bearer $JWT" \
 
 ---
 
-## 2b. CLI session token flow (copy login command)
+## 2b. CLI session token flow (generate login command)
 
 A CLI session token (`sso_…`) is a short-lived, user-scoped opaque token that
 lets a signed-in user hand a ready-made `corvus login` command to a shell
 without minting a long-lived PAT.
 
-Open **My profile** and click **Copy login command** in the page header. A
-dialog mints the token and shows the command:
+Open **My profile → Security → Short-lived token** and click **Generate login
+command**. A dialog mints the token and shows the command:
 
 ```bash
 corvus login --url https://secrets.example.com --token sso_…
@@ -312,9 +312,6 @@ JWT=$(curl -s -H "Authorization: Bearer pat_XXXX..." \
 curl -s -H "Authorization: Bearer $JWT" \
   "http://localhost:3000/secrets?project_id=eq.<PID>&deleted_at=is.null&select=id,key,note,kind,expires_at"
 ```
-
-The UI can also show a ready JWT under **My profile → Security → API access →
-Show JWT**.
 
 ---
 

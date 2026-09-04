@@ -40,7 +40,7 @@ def admin_audit():
         GET/POST /admin/audit?tab=access
     """
     tab = (request.args.get("tab") or request.form.get("tab") or "access").strip().lower()
-    if tab not in ("access", "roles", "activity", "export"):
+    if tab not in ("access", "roles", "activity", "logins", "export"):
         tab = "access"
 
     if request.method == "POST":
@@ -88,13 +88,25 @@ def admin_audit():
     settings = settings_svc.get_settings()
     retention_days = settings.get("audit_retention_days") or "365"
     access_rows = []
+    access_pager = None
+    access_scope = ""
     role_rows = []
     role_total = 0
     role_pager = None
     secret_rows = []
     secret_total = 0
     secret_pager = None
-    counts = {"secret_audit": 0, "org_audit": 0, "oldest": None, "newest": None}
+    login_rows = []
+    login_total = 0
+    login_pager = None
+    counts = {
+        "secret_audit": 0,
+        "org_audit": 0,
+        "login_failures": 0,
+        "oldest": None,
+        "newest": None,
+    }
+    purge_counts = {"secret_audit": 0, "org_audit": 0, "login_failures": 0}
     q = (request.args.get("q") or "").strip()
     actor = (request.args.get("actor") or "").strip()
     since = (request.args.get("since") or "").strip()
@@ -127,7 +139,25 @@ def admin_audit():
 
     with db.connect_admin() as conn, conn.cursor() as cur:
         if tab == "access":
-            access_rows = audit.access_review_rows(cur)
+            access_scope = (request.args.get("scope") or "").strip().lower()
+            if access_scope not in ("global", "team", "project"):
+                access_scope = ""
+            access_rows = audit.filter_access_rows(
+                audit.access_review_rows(cur), q=q, scope=access_scope
+            )
+            access_pager = paging.page_window(
+                len(access_rows), paging.page_arg(), per_page=25
+            )
+            access_pager.update(
+                endpoint="admin_audit",
+                tab="access",
+                q=q or None,
+                scope=access_scope or None,
+            )
+            access_rows = access_rows[
+                access_pager["offset"] : access_pager["offset"]
+                + access_pager["limit"]
+            ]
         elif tab == "roles":
             role_total = audit.count_org_audit(
                 cur,
@@ -196,13 +226,42 @@ def admin_audit():
                 limit=secret_pager["limit"],
                 offset=secret_pager["offset"],
             )
+        elif tab == "logins":
+            login_total = audit.count_login_failures(
+                cur, q=q, since=since, until=until
+            )
+            login_pager = paging.page_window(
+                login_total, paging.page_arg(), per_page=25
+            )
+            login_pager.update(
+                endpoint="admin_audit",
+                tab="logins",
+                q=q or None,
+                since=since or None,
+                until=until or None,
+            )
+            login_rows = audit.list_login_failures(
+                cur,
+                q=q,
+                since=since,
+                until=until,
+                limit=login_pager["limit"],
+                offset=login_pager["offset"],
+            )
         elif tab == "export":
             counts = audit.audit_counts(cur)
+            try:
+                retention_int = int(retention_days)
+            except ValueError:
+                retention_int = 365
+            purge_counts = audit.purge_preview(cur, retention_int)
 
     return render_template(
         "admin_audit.html",
         active_tab=tab,
         access_rows=access_rows,
+        access_pager=access_pager,
+        access_scope=access_scope,
         role_rows=role_rows,
         role_total=role_total,
         role_pager=role_pager,
@@ -211,7 +270,11 @@ def admin_audit():
         secret_total=secret_total,
         secret_pager=secret_pager,
         secret_actions=audit.ACTIONS,
+        login_rows=login_rows,
+        login_total=login_total,
+        login_pager=login_pager,
         counts=counts,
+        purge_counts=purge_counts,
         retention_days=retention_days,
         search_q=q,
         audit_actor=actor,
@@ -228,7 +291,8 @@ def admin_audit_access_export():
     """Export the access-review report as CSV or JSON download.
 
     Args:
-        None (reads query ``format``: ``csv`` or ``json``).
+        None (reads query ``format``: ``csv`` or ``json``; optional
+        ``q`` and ``scope`` apply the same filters as the access tab).
 
     Returns:
         File download Response (CSV or JSON attachment).
@@ -239,8 +303,12 @@ def admin_audit_access_export():
     fmt = (request.args.get("format") or "csv").strip().lower()
     if fmt not in ("csv", "json"):
         fmt = "csv"
+    q = (request.args.get("q") or "").strip()
+    scope = (request.args.get("scope") or "").strip()
     with db.connect_admin() as conn, conn.cursor() as cur:
-        rows = audit.access_review_rows(cur)
+        rows = audit.filter_access_rows(
+            audit.access_review_rows(cur), q=q, scope=scope
+        )
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     fields = [
         "email",
@@ -273,7 +341,11 @@ def admin_audit_export():
     """Export secret and/or org audit logs as CSV or JSON.
 
     Args:
-        None (reads query ``format``, ``source``, ``since``, ``until``).
+        None (reads query ``format``, ``source``, ``since``, ``until``;
+        optional ``q``, ``actor``, ``role_actions`` narrow org exports,
+        and ``q``, ``actor``, ``action``, ``ip``, ``hide_reveals``
+        narrow secret exports — the same filters as the roles and
+        secret-activity tabs).
 
     Returns:
         File download Response with filtered audit rows.
@@ -285,16 +357,46 @@ def admin_audit_export():
     source = (request.args.get("source") or "both").strip().lower()
     since = (request.args.get("since") or "").strip()
     until = (request.args.get("until") or "").strip()
+    q = (request.args.get("q") or "").strip()
+    actor = (request.args.get("actor") or "").strip()
+    role_actions = (request.args.get("role_actions") or "").strip().lower()
+    secret_action = (request.args.get("action") or "").strip()
+    secret_ip = (request.args.get("ip") or "").strip()
+    hide_reveals = (request.args.get("hide_reveals") or "").strip().lower() in (
+        "1", "on", "true",
+    )
     if fmt not in ("csv", "json"):
         fmt = "csv"
     if source not in ("secret", "org", "both"):
         source = "both"
+    if role_actions == "encryption":
+        export_actions: tuple[str, ...] | None = audit.ENC_CHANGE_ACTIONS
+    elif role_actions == "roles":
+        export_actions = audit.ROLE_CHANGE_ACTIONS
+    else:
+        export_actions = None
     secret_rows, org_rows = [], []
     with db.connect_admin() as conn, conn.cursor() as cur:
         if source in ("secret", "both"):
-            secret_rows = audit.export_secret_audit(cur, since=since, until=until)
+            secret_rows = audit.export_secret_audit(
+                cur,
+                since=since,
+                until=until,
+                q=q,
+                actor=actor,
+                action=secret_action,
+                ip=secret_ip,
+                hide_reveals=hide_reveals,
+            )
         if source in ("org", "both"):
-            org_rows = audit.export_org_audit(cur, since=since, until=until)
+            org_rows = audit.export_org_audit(
+                cur,
+                since=since,
+                until=until,
+                actions=export_actions,
+                q=q,
+                actor=actor,
+            )
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     if fmt == "json":
         payload = {

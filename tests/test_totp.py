@@ -121,3 +121,28 @@ class TestTotp:
         assert 'totp_recovery_codes' in init
         assert 'totp_enforce_global_admins' in init
 
+    def test_totp_enable_logs_audit_event(self):
+        store.app.config['TESTING'] = True
+        client = store.app.test_client()
+        with client.session_transaction() as s:
+            s['user_id'] = str(uuid4())
+            s['email'] = 'u@ex.com'
+            s['pending_totp_secret'] = 'SECRET'
+        with patch('auth.totp_svc.verify_code', return_value=True), patch('auth.totp_svc.enable', return_value=['code-1']), patch('audit.log_org_event') as mock_ev:
+            r = client.post('/profile/2fa/confirm', data={'code': '123456'}, follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'user_2fa_enabled'
+
+    def test_totp_disable_logs_audit_event(self):
+        store.app.config['TESTING'] = True
+        client = store.app.test_client()
+        with client.session_transaction() as s:
+            s['user_id'] = str(uuid4())
+            s['email'] = 'u@ex.com'
+        with patch('auth.totp_svc.is_enabled', return_value=True), patch('auth.totp_svc.enforce_global_admins', return_value=False), patch('auth.totp_svc.verify_user_code', return_value=(True, 'totp')), patch('auth.totp_svc.disable', return_value=None), patch('audit.log_org_event') as mock_ev:
+            r = client.post('/profile/2fa/disable', data={'code': '123456'}, follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'user_2fa_disabled'
+

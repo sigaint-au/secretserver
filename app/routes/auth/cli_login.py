@@ -9,6 +9,8 @@ from flask import render_template, request, session
 from auth import authz, cli_sessions
 from core import settings_svc
 
+import audit
+
 log = logging.getLogger(__name__)
 
 
@@ -26,6 +28,7 @@ def cli_login_command():
         Rendered ``partials/cli_login_dialog_body.html``.
     """
     raw = cli_sessions.create(session["user_id"])
+    audit.log_org_event(audit.ORG_CLI_TOKEN_MINTED, "self-service CLI login command")
     base = settings_svc.public_base_url(request.url_root)
     command = f"corvus login --url {base} --token {raw}"
     return render_template(

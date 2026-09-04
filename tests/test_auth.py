@@ -271,6 +271,43 @@ class TestAuth:
         assert r.status_code == 302
         rev.assert_called_once_with(uid, sid)
 
+    def test_change_password_logs_audit_event(self):
+        uid = str(uuid4())
+        with self.client.session_transaction() as s:
+            s['user_id'] = uid
+            s['sid'] = str(uuid4())
+        with patch('auth.passwords.change_password', return_value=(True, '')), patch('auth.user_sessions.revoke_other_sessions', return_value=2), patch('audit.log_org_event') as mock_ev:
+            r = self.client.post('/profile/password', data={'current_password': 'oldpass12', 'new_password': 'newpass12345', 'new_password_confirm': 'newpass12345'}, follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'user_password_reset'
+
+    def test_revoke_other_sessions_logs_audit_event(self):
+        uid = str(uuid4())
+        sid = str(uuid4())
+        with self.client.session_transaction() as s:
+            s['user_id'] = uid
+            s['sid'] = sid
+        with patch('auth.user_sessions.revoke_other_sessions', return_value=3), patch('audit.log_org_event') as mock_ev:
+            r = self.client.post('/profile/sessions/revoke-others', follow_redirects=False)
+        assert r.status_code == 302
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'session_revoked'
+
+    def test_revoke_single_session_logs_audit_event(self):
+        uid = str(uuid4())
+        sid = str(uuid4())
+        other = str(uuid4())
+        with self.client.session_transaction() as s:
+            s['user_id'] = uid
+            s['sid'] = sid
+        with patch('auth.user_sessions.revoke_session', return_value=True) as rev, patch('audit.log_org_event') as mock_ev:
+            r = self.client.post(f'/profile/sessions/{other}/revoke', follow_redirects=False)
+        assert r.status_code == 302
+        rev.assert_called_once_with(other, uid)
+        mock_ev.assert_called_once()
+        assert mock_ev.call_args[0][0] == 'session_revoked'
+
     def test_reset_password_mismatch(self):
         r = self.client.post('/reset-password/tok', data={'password': 'newpass12345', 'password_confirm': 'nope'})
         assert r.status_code == 400

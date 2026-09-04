@@ -14,6 +14,8 @@ from flask import (
 
 from auth import authz, pats
 
+import audit
+
 log = logging.getLogger(__name__)
 
 
@@ -42,6 +44,7 @@ def create_personal_token():
     try:
         raw = pats.create(session["user_id"], name, expires_days=expires_days)
         session["new_pat"] = raw
+        audit.log_org_event(audit.ORG_PAT_CREATED, f"self-service created token name={name}")
         flash("Personal access token created. Copy the token now. It will not be shown again.", "ok")
     except ValueError:
         flash("Token creation failed. Try again.", "error")
@@ -65,6 +68,9 @@ def delete_personal_token(token_id):
         POST /profile/tokens/<uuid>/delete
     """
     if pats.revoke(session["user_id"], str(token_id)):
+        audit.log_org_event(
+            audit.ORG_PAT_REVOKED, f"self-service revoked token_id={token_id}"
+        )
         flash("Token revoked", "ok")
     else:
         flash("Token not found", "error")

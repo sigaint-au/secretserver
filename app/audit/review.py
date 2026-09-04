@@ -112,3 +112,47 @@ def access_review_rows(cur) -> list[dict]:
             }
         )
     return rows
+
+
+def filter_access_rows(rows: list[dict], *, q: str = "", scope: str = "") -> list[dict]:
+    """Filter access-review rows by free text and scope (in Python).
+
+    Args:
+        rows: Access-review rows from :func:`access_review_rows`.
+        q: Free-text substring matched against email, name, team,
+            roles, project, and access_via (case-insensitive).
+        scope: One of ``global``, ``team``, or ``project``; anything
+            else means all scopes.
+
+    Returns:
+        Filtered list preserving the input order.
+
+    Example:
+        >>> filter_access_rows(rows, q="alice", scope="team")
+        [...]
+    """
+    scope = (scope or "").strip().lower()
+    if scope not in ("global", "team", "project"):
+        scope = ""
+    needle = (q or "").strip().casefold()
+    out = []
+    for r in rows:
+        if scope and r.get("scope") != scope:
+            continue
+        if needle:
+            hay = " ".join(
+                str(r.get(k) or "")
+                for k in (
+                    "email",
+                    "name",
+                    "team",
+                    "team_role",
+                    "project",
+                    "project_role",
+                    "access_via",
+                )
+            ).casefold()
+            if needle not in hay:
+                continue
+        out.append(r)
+    return out

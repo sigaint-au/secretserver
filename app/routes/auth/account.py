@@ -13,6 +13,7 @@ from flask import (
     url_for,
 )
 
+import audit
 from auth import authz, passwords, pats, totp_svc, user_sessions
 from core import config, db, settings_svc
 from integrations import mailer
@@ -81,6 +82,9 @@ def change_password():
     if not ok:
         flash(err or "Password change failed", "error")
         return redirect(url_for("profile", tab="security"))
+    audit.log_org_event(
+        audit.ORG_USER_PASSWORD_RESET, "self-service password change"
+    )
     # Keep current session; sign out other devices after password change
     sid = session.get("sid")
     if sid:
@@ -113,6 +117,9 @@ def revoke_other_sessions():
         flash("No active session found for this browser", "error")
         return redirect(url_for("profile", tab="security"))
     n = user_sessions.revoke_other_sessions(uid, sid)
+    audit.log_org_event(
+        audit.ORG_SESSION_REVOKED, f"self-service revoked {n} other session(s)"
+    )
     flash(f"Signed out {n} other session(s).", "ok")
     return redirect(url_for("profile", tab="security"))
 
@@ -134,10 +141,16 @@ def revoke_session(session_id):
     sid = str(session_id)
     if sid == session.get("sid"):
         user_sessions.revoke_session(sid, uid)
+        audit.log_org_event(
+            audit.ORG_SESSION_REVOKED, "self-service signed out current session"
+        )
         session.clear()
         flash("Current session signed out", "ok")
         return redirect(url_for("login"))
     if user_sessions.revoke_session(sid, uid):
+        audit.log_org_event(
+            audit.ORG_SESSION_REVOKED, f"self-service revoked session_id={sid}"
+        )
         flash("Session revoked", "ok")
     else:
         flash("Session not found or already revoked", "error")

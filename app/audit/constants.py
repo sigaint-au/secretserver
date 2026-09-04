@@ -44,6 +44,12 @@ ORG_USER_PROMOTED = "user_promoted"
 ORG_USER_DEMOTED = "user_demoted"
 ORG_USER_PASSWORD_RESET = "user_password_reset"
 ORG_USER_2FA_RESET = "user_2fa_reset"
+ORG_USER_2FA_ENABLED = "user_2fa_enabled"
+ORG_USER_2FA_DISABLED = "user_2fa_disabled"
+ORG_PAT_CREATED = "pat_created"
+ORG_PAT_REVOKED = "pat_revoked"
+ORG_CLI_TOKEN_MINTED = "cli_token_minted"
+ORG_SESSION_REVOKED = "session_revoked"
 
 _ACTION_VERB = {
     "created": "created",

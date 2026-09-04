@@ -32,12 +32,12 @@ Env **or** `~/.config/corvus/config` (`0600`). **Env wins.**
 | `pat_…` | UUID or unique **name** |
 | `sso_…` | UUID or unique **name** (short-lived, user-scoped) |
 
-### Copy login command
+### Short-lived token
 
-Instead of creating a PAT, sign in to the web UI and open **My profile**,
-then click **Copy login command** in the page header. A dialog mints a
-short-lived `sso_…` token
-(1 hour by default) and builds a ready-to-paste command:
+Instead of creating a PAT, sign in to the web UI and open **My profile →
+Security → Short-lived token**, then click **Generate login command**. A
+dialog mints a short-lived `sso_…` token (1 hour by default) and builds the
+command to paste:
 
 ```bash
 corvus login --url https://secrets.example.com --token sso_…

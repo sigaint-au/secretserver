@@ -10,7 +10,8 @@ UI, export, and retention purge.
 | Table | Scope | Contents |
 |-------|-------|----------|
 | `api.secret_audit` | Per secret / project | create, update, reveal, delete, restore, purge, machine_upsert, export, access_requested/approved/denied |
-| `api.org_audit` | Per team / project | membership changes, group role changes, project settings, ownership transfer |
+| `api.org_audit` | Per team / project | membership and role changes, project settings, ownership transfer, user lifecycle, credentials and tokens, sessions |
+| `private.login_failures` | Per email | failed sign-in attempts with client IP |
 
 Audit rows are **append-only**: they are written only via SECURITY DEFINER
 functions (`private.audit_secret`, `private.audit_org`) and cannot be inserted
@@ -41,16 +42,20 @@ Sidebar → **Administration → Auditing**. Tabs:
 
 | Tab | Contents |
 |-----|----------|
-| **Access review** | Access-related events |
-| **Role changes** | Membership / role changes |
-| **Export & retention** | Export audit data and set retention |
+| **Grants export** | Who holds which grant, with search and scope filters |
+| **Role changes** | Membership and role changes, plus encryption-key history. **All org events** adds user lifecycle, credentials and tokens, sessions, team settings, and join requests |
+| **Secret activity** | Secret events across all projects, with the same filters as the project audit log |
+| **Sign-in failures** | Failed sign-in attempts by email and IP |
+| **Export & retention** | Bulk export, row counts, retention setting, and purge |
 
 ---
 
 ## Retention & purge
 
 Retention is configured in the UI (**Administration → Auditing → Export &
-retention**, `audit_retention_days`). `0` = keep forever.
+retention**, `audit_retention_days`). `0` = keep forever. The tab shows a
+purge preview: how many secret audit, org audit, and sign-in failure rows
+fall outside the retention window before you confirm.
 
 Rows are **not** deleted automatically. A purge job must run:
 
@@ -95,8 +100,11 @@ kubectl logs job/purge-audit-manual -n corvus
 
 ## Export
 
-Global admins can export audit data from the **Auditing → Export & retention**
-tab. Use this for compliance / external auditors.
+Each browser tab (**Grants export**, **Role changes**, **Secret activity**)
+has its own Export CSV / Export JSON buttons that keep the active filters,
+so the download matches what you see. The **Export & retention** tab does
+bulk exports by source and date range. Use those for compliance / external
+auditors.
 
 ---
 

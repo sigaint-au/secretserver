@@ -54,5 +54,15 @@ class TestLockout:
         sql = ' '.join(str(c.args[0]) for c in cur.execute.call_args_list)
         assert 'INSERT INTO private.login_failures' in sql
         assert 'DELETE FROM private.login_failures' in sql
-        assert cur.execute.call_args_list[0].args[1] == ('a@b.c',)
+        assert cur.execute.call_args_list[0].args[1] == ('a@b.c', '')
+
+    def test_record_failure_stores_client_ip(self):
+        conn, cur = _conn()
+        with patch.object(db, 'connect_admin', return_value=conn):
+            with store.app.test_request_context(
+                '/', headers={'X-Forwarded-For': '203.0.113.9, 70.0.0.1'}
+            ):
+                lockout.record_failure('a@b.c')
+        assert 'ip_address' in cur.execute.call_args.args[0]
+        assert cur.execute.call_args.args[1] == ('a@b.c', '203.0.113.9')
 

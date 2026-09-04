@@ -6,6 +6,107 @@ from .constants import ACTIONS, describe_event
 from .dates import _parse_day, format_when
 
 
+def _login_failures_where(
+    *,
+    q: str = "",
+    since: str = "",
+    until: str = "",
+) -> tuple[str, list]:
+    """Build the shared WHERE clause + params for login-failure queries."""
+    parts = [" WHERE 1=1 "]
+    params: list = []
+    q = (q or "").strip()
+    if q:
+        like = f"%{q}%"
+        parts.append(" AND (email ILIKE %s OR ip_address ILIKE %s) ")
+        params.extend([like, like])
+    since_dt = _parse_day(since, end=False)
+    if since_dt:
+        parts.append(" AND created_at >= %s ")
+        params.append(since_dt)
+    until_dt = _parse_day(until, end=True)
+    if until_dt:
+        parts.append(" AND created_at <= %s ")
+        params.append(until_dt)
+    return "".join(parts), params
+
+
+def count_login_failures(
+    cur,
+    *,
+    q: str = "",
+    since: str = "",
+    until: str = "",
+) -> int:
+    """Count private.login_failures rows matching optional filters.
+
+    Args:
+        cur: Database cursor used to run the COUNT query.
+        q: Free-text filter on email and ip_address.
+        since: Inclusive start date as YYYY-MM-DD (UTC start of day).
+        until: Inclusive end date as YYYY-MM-DD (UTC end of day).
+
+    Returns:
+        Integer count of matching login-failure rows.
+
+    Example:
+        >>> n = count_login_failures(cur, q="alice")
+        >>> n >= 0
+        True
+    """
+    where, params = _login_failures_where(q=q, since=since, until=until)
+    cur.execute(
+        f"SELECT count(*) AS n FROM private.login_failures {where}",
+        params,
+    )
+    return int((cur.fetchone() or {}).get("n") or 0)
+
+
+def list_login_failures(
+    cur,
+    *,
+    limit: int = 25,
+    offset: int = 0,
+    q: str = "",
+    since: str = "",
+    until: str = "",
+):
+    """List recent login failures for brute-force review.
+
+    Args:
+        cur: Database cursor used to run the SELECT.
+        limit: Maximum number of rows to return (default 25).
+        offset: Number of rows to skip for pagination (default 0).
+        q: Free-text filter on email and ip_address.
+        since: Inclusive start date as YYYY-MM-DD (UTC start of day).
+        until: Inclusive end date as YYYY-MM-DD (UTC end of day).
+
+    Returns:
+        List of login-failure row mappings with when_display added,
+        ordered by created_at descending.
+
+    Example:
+        >>> rows = list_login_failures(cur, limit=10)
+        >>> "when_display" in rows[0]
+        True
+    """
+    where, params = _login_failures_where(q=q, since=since, until=until)
+    cur.execute(
+        f"""
+        SELECT id, email, ip_address, created_at
+        FROM private.login_failures
+        {where}
+        ORDER BY created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        (*params, limit, offset),
+    )
+    rows = cur.fetchall() or []
+    for r in rows:
+        r["when_display"] = format_when(r.get("created_at"))
+    return rows
+
+
 def list_org_for_team(cur, team_id, limit=40):
     """List recent org audit rows for a single team.
 

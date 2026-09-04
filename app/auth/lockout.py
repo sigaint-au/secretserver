@@ -69,10 +69,21 @@ def record_failure(email: str):
     if not email:
         return
     try:
+        # Lazy import keeps this module cycle-free; outside a request
+        # context there is no client IP to record.
+        from auth.user_sessions import client_meta
+
+        try:
+            _ua, ip = client_meta()
+        except RuntimeError:
+            ip = ""
+    except ImportError:
+        ip = ""
+    try:
         with db.connect_admin() as conn, conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO private.login_failures (email) VALUES (%s)",
-                (email,),
+                "INSERT INTO private.login_failures (email, ip_address) VALUES (%s, %s)",
+                (email, (ip or "")[:100]),
             )
     except Exception as e:
         log.error("lockout record failed, attempts going uncounted: %s", e)

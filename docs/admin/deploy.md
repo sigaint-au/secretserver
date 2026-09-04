@@ -101,8 +101,7 @@ Required:
 
 ## 4. PostgREST & personal access tokens
 
-`GET /api/token` returns a short-lived JWT (also under **My profile → Security
-→ API access → Show JWT**):
+`GET /api/token` returns a short-lived JWT:
 
 ```bash
 # With a browser session cookie:
