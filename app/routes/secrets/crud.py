@@ -36,6 +36,7 @@ from secret_svc.secret_ops import (
     compose_secret_value,
 )
 
+from .bindings import secret_meta_response
 from .helpers import (
     _reveal_toggle_html,
     _secrets_redirect_or_partial,
@@ -132,7 +133,6 @@ def upsert_secret_meta(project_id, secret_id):
     """Add or update a custom metadata field (writers)."""
     key = (request.form.get("key") or "").strip()
     value = metadata.clean_meta_value(request.form.get("value"))
-    meta_url = url_for("secret_view", project_id=project_id, secret_id=secret_id, tab="meta")
 
     if not metadata.validate_meta_key(key):
         flash(
@@ -140,7 +140,7 @@ def upsert_secret_meta(project_id, secret_id):
             "A–Z, a–z, 0–9, ., _, - (max 64)",
             "error",
         )
-        return redirect(meta_url)
+        return secret_meta_response(project_id, secret_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute(
             "SELECT api.can_access_secret(%s, 'write') AS w",
@@ -148,7 +148,7 @@ def upsert_secret_meta(project_id, secret_id):
         )
         if not (cur.fetchone() or {}).get("w"):
             flash("You do not have permission to perform this action", "error")
-            return redirect(meta_url)
+            return secret_meta_response(project_id, secret_id)
         try:
             cur.execute(
                 """
@@ -183,13 +183,12 @@ def upsert_secret_meta(project_id, secret_id):
                 flash("Metadata key is defined at team/project level and cannot be overridden.", "error")
             else:
                 flash("Could not save the secret. Try again.", "error")
-    return redirect(meta_url)
+    return secret_meta_response(project_id, secret_id)
 
 
 @authz.login_required
 def delete_secret_meta(project_id, secret_id, meta_key):
     """Remove a custom metadata field."""
-    meta_url = url_for("secret_view", project_id=project_id, secret_id=secret_id, tab="meta")
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute(
             "SELECT api.can_access_secret(%s, 'write') AS w",
@@ -197,7 +196,7 @@ def delete_secret_meta(project_id, secret_id, meta_key):
         )
         if not (cur.fetchone() or {}).get("w"):
             flash("You do not have permission to perform this action", "error")
-            return redirect(meta_url)
+            return secret_meta_response(project_id, secret_id)
         cur.execute(
             """
             DELETE FROM api.secret_meta m
@@ -222,7 +221,7 @@ def delete_secret_meta(project_id, secret_id, meta_key):
             )
             conn.commit()
             flash(f"Metadata “{meta_key}” removed", "ok")
-    return redirect(meta_url)
+    return secret_meta_response(project_id, secret_id)
 
 
 @authz.login_required

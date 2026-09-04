@@ -238,6 +238,49 @@ def access_tab_response(team_id):
     return redirect(url_for("team_detail", team_id=team_id, tab="access"))
 
 
+def team_meta_partial(team_id):
+    """Render the metadata-tab partial for HTMX swaps.
+
+    Args:
+        team_id: UUID of the team.
+
+    Returns:
+        Rendered ``partials/team_content.html`` for the meta tab,
+        or 404 when invisible.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        team = db.team(cur, team_id)
+        if not team:
+            return "Not found", 404
+        cur.execute("SELECT api.team_role(%s) AS r", (str(team_id),))
+        my_role = (cur.fetchone() or {}).get("r")
+        cur.execute(
+            "SELECT key, value, updated_at FROM api.team_meta WHERE team_id = %s ORDER BY key",
+            (str(team_id),),
+        )
+        team_meta = cur.fetchall() or []
+        is_admin = (
+            team_role_at_least(cur, my_role, MANAGE_TIER)
+            or bool(session.get("is_global_admin"))
+        )
+    tname = (team or {}).get("name") or "Team"
+    return render_template(
+        "partials/team_content.html",
+        oob_title=f"Metadata - {tname}",
+        team=team,
+        is_admin=is_admin,
+        active_tab="meta",
+        team_meta=team_meta,
+    )
+
+
+def team_meta_response(team_id):
+    """Return the metadata-tab partial for HTMX, else redirect to the meta tab."""
+    if authz.htmx():
+        return team_meta_partial(team_id)
+    return redirect(url_for("team_detail", team_id=team_id, tab="meta"))
+
+
 @authz.login_required
 def team_access_binding_create(team_id):
     """Create a team-scope role binding (team admin)."""

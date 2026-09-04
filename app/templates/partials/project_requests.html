@@ -2,6 +2,7 @@
 {% with oob=True %}{% include "partials/flash_messages.html" %}{% endwith %}
 {% endif %}
 {% if access_pending is defined %}{% with n=access_pending %}{% include "partials/nav_access_badge.html" %}{% endwith %}{% endif %}
+{% if grant_minutes is defined %}{% if grant_minutes < 60 %}{% set grant_lab = grant_minutes ~ ' minutes' %}{% elif grant_minutes == 60 %}{% set grant_lab = '1 hour' %}{% elif grant_minutes == 1440 %}{% set grant_lab = '1 day' %}{% else %}{% set grant_lab = (grant_minutes // 60) ~ ' hours' %}{% endif %}{% endif %}
 <div id="project-requests">
 <section>
   <div class="section-head">
@@ -56,8 +57,9 @@
                   hx-post="{{ url_for('approve_secret_access', project_id=project.id, req_id=r.id)}}?from=project"
                   hx-target="#project-requests"
                   hx-swap="outerHTML"
+                  hx-confirm="Approve reveal for {{ grant_lab|default('the selected duration') }}?"
                   class="access-approve-form"
-                  onsubmit="var s=this.querySelector('#grant-minutes-{{ r.id }}');var m=parseInt(s?s.value:'0',10);var lab=m<60?m+' minutes':(m===60?'1 hour':(m===1440?'1 day':(m/60)+' hours'));return confirm('Approve reveal for '+lab+'?') && setAccessBusy(this,'Approving…');">
+                  onsubmit="return setAccessBusy(this,'Approving…');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <label class="visually-hidden" for="grant-minutes-{{ r.id }}">Grant duration</label>
               <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action">
@@ -74,8 +76,9 @@
                   hx-post="{{ url_for('deny_secret_access', project_id=project.id, req_id=r.id)}}?from=project"
                   hx-target="#project-requests"
                   hx-swap="outerHTML"
+                  hx-confirm="Deny this reveal request?"
                   class="inline"
-                  onsubmit="return confirm('Deny this reveal request?') && setAccessBusy(this, 'Denying…')">
+                  onsubmit="return setAccessBusy(this, 'Denying…')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Deny</button>
             </form>

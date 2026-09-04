@@ -2,7 +2,9 @@
   <h2>Project metadata</h2>
   <p class="muted">Metadata here appears on every secret in the project. Keys defined on the team are inherited and cannot be changed here.</p>
   {% if can_admin %}
-  <form method="post" action="{{ url_for('upsert_project_meta', project_id=project_id) }}" class="row">
+  <form method="post" action="{{ url_for('upsert_project_meta', project_id=project_id) }}" class="row"
+        hx-post="{{ url_for('upsert_project_meta', project_id=project_id) }}"
+        hx-target="#project-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. env"></label>
     <label>Value <input name="value" maxlength="2000"></label>
@@ -23,7 +25,10 @@
           <td><span class="muted">inherited · {{ m.source }}</span></td>
           {% elif can_admin %}
           <td class="acts">
-            <form method="post" action="{{ url_for('delete_project_meta', project_id=project_id, meta_key=m.key) }}" class="inline" onsubmit="return confirm('Remove metadata \u201c{{ m.key }}\u201d?')">
+            <form method="post" action="{{ url_for('delete_project_meta', project_id=project_id, meta_key=m.key) }}" class="inline"
+                  hx-post="{{ url_for('delete_project_meta', project_id=project_id, meta_key=m.key) }}"
+                  hx-target="#project-panel" hx-swap="innerHTML"
+                  hx-confirm="Remove metadata “{{ m.key }}”?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Remove</button>
             </form>

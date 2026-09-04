@@ -600,10 +600,31 @@ document.body.addEventListener('htmx:before:swap', function (e) {
     function setAccessBusy(form, label) {
       var btn = form.querySelector('button[type="submit"]')
         || (form.id && document.querySelector('button[form="' + form.id + '"]'));
-      if (btn) { btn.disabled = true; btn.textContent = label; }
+      if (btn) {
+        if (!btn.dataset.busy) {
+          btn.dataset.busy = '1';
+          btn.dataset.label = btn.textContent;
+        }
+        btn.disabled = true;
+        btn.textContent = label;
+      }
       return true;
     }
+    /* Undo setAccessBusy (e.g. a styled confirm was dismissed after the
+       submit already marked the button busy). */
+    function restoreAccessBusy(form) {
+      if (!form || !form.querySelector) return;
+      var btn = form.querySelector('button[type="submit"]')
+        || (form.id && document.querySelector('button[form="' + form.id + '"]'));
+      if (btn && btn.dataset.busy) {
+        btn.disabled = false;
+        if (btn.dataset.label) btn.textContent = btn.dataset.label;
+        delete btn.dataset.busy;
+        delete btn.dataset.label;
+      }
+    }
     window.setAccessBusy = setAccessBusy;
+    window.restoreAccessBusy = restoreAccessBusy;
     /* Shared duplicate-submit guard for non-HTMX, non-dialog POST forms:
        disable the submit button(s) and dim the form while the request is in
        flight so a double-click cannot submit twice. Dialog and HTMX forms
@@ -723,7 +744,10 @@ document.body.addEventListener('htmx:before:swap', function (e) {
       if (d && d.open) oatCloseDialog(d);
       if (!p) return;
       if (confirmed) p.issue();
-      else p.drop();
+      else {
+        if (p.form) restoreAccessBusy(p.form);
+        p.drop();
+      }
     }
     /* Classification banner presets (server + team settings): swatches
        carry data-bg/data-fg; one delegated listener replaces the inline
@@ -736,6 +760,21 @@ document.body.addEventListener('htmx:before:swap', function (e) {
         sw.getAttribute('data-fg') || '#ffffff'
       );
     });
+    /* Reveal-request approve forms: keep the styled confirm text in sync
+       with the chosen grant duration (mirrors the server-rendered default). */
+    function grantDurationLabel(raw) {
+      var m = parseInt(raw, 10) || 0;
+      if (m < 60) return m + ' minutes';
+      if (m === 60) return '1 hour';
+      if (m === 1440) return '1 day';
+      return (m / 60) + ' hours';
+    }
+    document.addEventListener('change', function (e) {
+      var sel = e.target.closest && e.target.closest('select[id^="grant-minutes-"]');
+      if (!sel) return;
+      var form = sel.closest ? sel.closest('form') : null;
+      if (form) form.setAttribute('hx-confirm', 'Approve reveal for ' + grantDurationLabel(sel.value) + '?');
+    });
     document.addEventListener('htmx:confirm', function (e) {
       var d = document.getElementById('confirm-dlg');
       var el = e.target && e.target.getAttribute ? e.target : null;
@@ -743,7 +782,8 @@ document.body.addEventListener('htmx:before:swap', function (e) {
       if (!d || !q || !e.detail || !e.detail.issueRequest) return;
       e.preventDefault();
       if (pendingConfirm) pendingConfirm.drop();
-      pendingConfirm = { issue: e.detail.issueRequest, drop: e.detail.dropRequest };
+      var srcForm = el.tagName === 'FORM' ? el : (el.closest ? el.closest('form') : null);
+      pendingConfirm = { issue: e.detail.issueRequest, drop: e.detail.dropRequest, form: srcForm };
       document.getElementById('confirm-dlg-msg').textContent = q;
       d._opener = el;
       d.onclose = function () {

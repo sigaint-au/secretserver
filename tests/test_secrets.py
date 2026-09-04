@@ -517,7 +517,11 @@ class TestSecrets:
             {'n': 2},
         ]
         cur.rowcount = 1
-        cur.fetchall.side_effect = [[]]
+        cur.fetchall.side_effect = [[
+            {'id': rid, 'secret_id': sid, 'secret_key': 'API_KEY', 'name': 'Req',
+             'email': 'req@ex.com', 'status': 'pending', 'reason': 'need it',
+             'created_at': None},
+        ]]
         with patch.object(db, 'as_user', return_value=conn):
             r = self.client.post(
                 f'/projects/{self.pid}/access-requests/{rid}/approve?from=project',
@@ -529,6 +533,8 @@ class TestSecrets:
         assert b'project-requests' in r.data
         assert b'Access approved' in r.data
         assert b'nav-access-badge' in r.data
+        assert b'hx-confirm' in r.data
+        assert b'return confirm(' not in r.data
         assert b'<html' not in r.data
 
     def test_deny_secret_access_htmx_returns_inbox_partial(self):
@@ -541,7 +547,11 @@ class TestSecrets:
             {'n': 0},
         ]
         cur.rowcount = 1
-        cur.fetchall.side_effect = [[]]
+        cur.fetchall.side_effect = [[
+            {'id': rid, 'project_id': self.pid, 'project_name': 'prod',
+             'secret_key': 'API_KEY', 'name': 'Req', 'email': 'req@ex.com',
+             'reason': 'need it', 'created_at': None},
+        ]]
         with patch.object(db, 'as_user', return_value=conn):
             r = self.client.post(
                 f'/projects/{self.pid}/access-requests/{rid}/deny?from=inbox',
@@ -552,6 +562,8 @@ class TestSecrets:
         assert b'requests-results' in r.data
         assert b'Access request denied' in r.data
         assert b'nav-access-badge' in r.data
+        assert b'Deny this reveal request?' in r.data
+        assert b'return confirm(' not in r.data
         assert b'<html' not in r.data
 
     def _catalog(self):
@@ -641,6 +653,118 @@ class TestSecrets:
         assert r.status_code == 200
         assert b'access-rbac-panel' in r.data
         assert b'Folder binding added' in r.data
+        assert b'<html' not in r.data
+
+    def test_htmx_project_meta_upsert_returns_meta_panel(self):
+        """HTMX metadata save re-renders the project meta tab, not a redirect."""
+        tid = uuid4()
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'join api.teams' in s and 'from api.projects' in s:
+                return {'id': self.pid, 'name': 'prod', 'team_id': tid, 'team_name': 'Ops'}
+            if 'can_admin_project' in s:
+                return {'a': True}
+            if 'from api.projects where id' in s:
+                return {'team_id': tid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/projects/{self.pid}/meta',
+                data={'key': 'env', 'value': 'prod'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Project metadata' in r.data
+        assert 'saved' in r.data.decode()
+        assert b'<html' not in r.data
+
+    def _secret_tab_router(self, sid, tid, uid, rid):
+        """fetchone router for the secret access/meta tab partials (admin)."""
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.secrets s' in s and 'join api.projects' in s:
+                if 's.id, s.key, s.note' in s:
+                    return {
+                        'id': sid, 'key': 'API_KEY', 'note': '', 'kind': 'plain',
+                        'expires_at': None, 'rotation_interval_days': None,
+                        'rotation_owner': None, 'rotation_next_at': None, 'rotated_at': None,
+                        'requires_approval': None, 'access_mode': 'inherit',
+                        'created_at': None, 'updated_at': None,
+                        'last_accessed_at': None, 'last_accessed_by': None,
+                        'crypto_provider': 'master', 'project_name': 'prod',
+                        'require_reveal_approval': False, 'team_id': tid,
+                        'team_name': 'Ops', 'is_team_member': True,
+                    }
+                return {'id': sid, 'key': 'API_KEY', 'access_mode': 'inherit', 'team_id': tid}
+            if 'can_admin_project' in s:
+                return {'a': True}
+            if 'can_access_secret' in s:
+                return {'w': True}
+            if 'can_reveal_secret' in s:
+                return {'a': True, 'r': True}
+            if "api.can(" in s:
+                return {'member': True}
+            if 'private.lookup_user' in s:
+                return {'id': uid}
+            if 'from rbac.roles where name' in s:
+                return {'id': rid}
+            if s.startswith('update api.secrets'):
+                return {'key': 'API_KEY'}
+            if 'from api.secrets' in s and 'where id' in s:
+                return {'key': 'API_KEY'}
+            return None
+
+        return execute, fetchone
+
+    def test_htmx_secret_meta_upsert_returns_meta_panel(self):
+        """HTMX metadata save re-renders the secret meta tab, not a redirect."""
+        sid, tid, uid, rid = (uuid4(), uuid4(), uuid4(), uuid4())
+        execute, fetchone = self._secret_tab_router(sid, tid, uid, rid)
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch(
+            'auth.roles.role_catalog', return_value=self._catalog()
+        ):
+            r = self.client.post(
+                f'/projects/{self.pid}/secrets/{sid}/meta',
+                data={'key': 'owner', 'value': 'platform'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Custom fields' in r.data
+        assert 'saved' in r.data.decode()
+        assert b'<html' not in r.data
+
+    def test_htmx_secret_mode_save_returns_access_panel(self):
+        """HTMX access-mode save re-renders the secret access tab, not a redirect."""
+        sid, tid, uid, rid = (uuid4(), uuid4(), uuid4(), uuid4())
+        execute, fetchone = self._secret_tab_router(sid, tid, uid, rid)
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn), patch(
+            'auth.roles.role_catalog', return_value=self._catalog()
+        ):
+            r = self.client.post(
+                f'/projects/{self.pid}/secrets/{sid}/access',
+                data={'access_mode': 'restricted', 'requires_approval': 'inherit'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'access-rbac-panel' in r.data
+        assert b'Access settings saved' in r.data
         assert b'<html' not in r.data
 
     def test_htmx_secret_binding_create_returns_access_panel(self):

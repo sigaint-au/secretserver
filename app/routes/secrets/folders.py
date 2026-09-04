@@ -283,17 +283,16 @@ def folder_view(project_id, folder_id):
 @authz.login_required
 def update_folder_access(project_id, folder_id):
     """Set a folder's inherit/restricted access mode."""
-    access_url = _folder_access_url(project_id, folder_id)
     try:
         mode = _parse_access_mode(request.form)
     except ValueError:
         flash("Invalid access mode", "error")
-        return redirect(access_url)
+        return folder_access_response(project_id, folder_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can change folder access", "error")
-            return redirect(access_url)
+            return folder_access_response(project_id, folder_id)
         cur.execute(
             """
             UPDATE api.folders SET access_mode = %s
@@ -315,7 +314,7 @@ def update_folder_access(project_id, folder_id):
         else:
             conn.rollback()
             flash("Folder not found.", "error")
-    return redirect(access_url)
+    return folder_access_response(project_id, folder_id)
 
 
 @authz.login_required

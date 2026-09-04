@@ -497,6 +497,55 @@ def project_detail(project_id):
     return render_template(template, **ctx)
 
 
+def project_meta_partial(project_id):
+    """Render the metadata-tab partial for HTMX swaps.
+
+    Args:
+        project_id: UUID of the project.
+
+    Returns:
+        Rendered ``partials/project_content.html`` for the meta tab,
+        or 404 when missing.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT p.*, t.name AS team_name, t.id AS team_id,
+                   t.default_token_days
+            FROM api.projects p JOIN api.teams t ON t.id = p.team_id
+            WHERE p.id = %s
+            """,
+            (str(project_id),),
+        )
+        project = cur.fetchone()
+        if not project:
+            return "Not found", 404
+        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+        can_admin = cur.fetchone()["a"]
+        cur.execute(
+            "SELECT key, value, updated_at, source FROM private.project_meta_rows(%s::uuid)",
+            (str(project_id),),
+        )
+        project_meta = cur.fetchall() or []
+    pname = (project or {}).get("name") or "Project"
+    return render_template(
+        "partials/project_content.html",
+        oob_title=f"Metadata - {pname}",
+        project=project,
+        project_id=project_id,
+        can_admin=can_admin,
+        active_tab="meta",
+        project_meta=project_meta,
+    )
+
+
+def project_meta_response(project_id):
+    """Return the metadata-tab partial for HTMX, else redirect to the meta tab."""
+    if authz.htmx():
+        return project_meta_partial(project_id)
+    return redirect(url_for("project_detail", project_id=project_id, tab="meta"))
+
+
 @authz.login_required
 def delete_project(project_id):
     """Delete project (and secrets/tokens via CASCADE). Team owner/admin only.
@@ -594,17 +643,16 @@ def update_project_settings(project_id):
 @authz.login_required
 def upsert_project_meta(project_id):
     """Add or update a project-level metadata field (project admins only)."""
-    meta_url = url_for("project_detail", project_id=project_id, tab="meta")
     key = (request.form.get("key") or "").strip()
     value = metadata.clean_meta_value(request.form.get("value"))
     if not metadata.validate_meta_key(key):
         flash("Metadata key must start with a letter or digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
-        return redirect(meta_url)
+        return project_meta_response(project_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("You do not have permission to perform this action", "error")
-            return redirect(meta_url)
+            return project_meta_response(project_id)
         cur.execute("SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),))
         team_id = (cur.fetchone() or {}).get("team_id")
         try:
@@ -622,18 +670,17 @@ def upsert_project_meta(project_id):
                 flash("Metadata key is defined at team/project level and cannot be overridden.", "error")
             else:
                 flash("Could not save the metadata. Try again.", "error")
-    return redirect(meta_url)
+    return project_meta_response(project_id)
 
 
 @authz.login_required
 def delete_project_meta(project_id, meta_key):
     """Remove a project-level metadata field (project admins only)."""
-    meta_url = url_for("project_detail", project_id=project_id, tab="meta")
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("You do not have permission to perform this action", "error")
-            return redirect(meta_url)
+            return project_meta_response(project_id)
         cur.execute("SELECT team_id FROM api.projects WHERE id = %s", (str(project_id),))
         team_id = (cur.fetchone() or {}).get("team_id")
         try:
@@ -651,7 +698,7 @@ def delete_project_meta(project_id, meta_key):
         except Exception:
             conn.rollback()
             flash("Could not remove the metadata. Try again.", "error")
-    return redirect(meta_url)
+    return project_meta_response(project_id)
 
 
 @authz.login_required

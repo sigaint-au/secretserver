@@ -13,7 +13,9 @@
   <h2>Team metadata</h2>
   <p class="muted">Metadata here appears on every project and secret in the team.</p>
   {% if is_admin %}
-  <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="row">
+  <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="row"
+        hx-post="{{ url_for('upsert_team_meta', team_id=team.id) }}"
+        hx-target="#team-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. cost-center"></label>
     <label>Value <input name="value" maxlength="2000"></label>
@@ -32,7 +34,10 @@
           <td>{{ m.updated_at.strftime('%Y-%m-%d %H:%M') if m.updated_at else '' }}</td>
           {% if is_admin %}
           <td class="acts">
-            <form method="post" action="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}" class="inline" onsubmit="return confirm('Remove metadata \u201c{{ m.key }}\u201d?')">
+            <form method="post" action="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}" class="inline"
+                  hx-post="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}"
+                  hx-target="#team-panel" hx-swap="innerHTML"
+                  hx-confirm="Remove metadata “{{ m.key }}”?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Remove</button>
             </form>

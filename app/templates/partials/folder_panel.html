@@ -30,7 +30,9 @@
 <section>
   <h2>Access</h2>
   <p class="muted">Inherited folders follow project and team roles. Restricted folders use the bindings below, plus project admins.</p>
-  <form method="post" action="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}" class="row">
+  <form method="post" action="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}" class="row"
+        hx-post="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}"
+        hx-target="#folder-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Access mode<select name="access_mode">{% for mode in access_modes %}<option value="{{ mode }}" {% if folder.access_mode == mode %}selected{% endif %}>{{ access_mode_labels.get(mode, mode) }}</option>{% endfor %}</select></label>
     <button type="submit">Save settings</button>

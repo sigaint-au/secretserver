@@ -62,8 +62,9 @@
                  hx-post="{{ url_for('deny_secret_access', project_id=r.project_id, req_id=r.id)}}?from=inbox"
                  hx-target="#requests-results"
                  hx-swap="outerHTML"
+                 hx-confirm="Deny this reveal request?"
                  class="inline"
-                 onsubmit="return confirm('Deny this reveal request?') && setAccessBusy(this, 'Denying…')">
+                 onsubmit="return setAccessBusy(this, 'Denying…')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="link danger">Deny</button>
           </form>

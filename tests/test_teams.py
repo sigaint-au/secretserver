@@ -424,6 +424,73 @@ class TestTeams:
         assert b'Binding created' in r.data
         assert b'<html' not in r.data.lower()
 
+    def test_htmx_team_meta_upsert_returns_meta_panel(self):
+        """HTMX metadata save re-renders the meta tab, not a redirect."""
+        tid = uuid4()
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/teams/{tid}/meta',
+                data={'key': 'cost-center', 'value': 'cc-1'},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'Team metadata' in r.data
+        assert 'saved' in r.data.decode()
+        assert b'<html' not in r.data.lower()
+
+    def test_htmx_members_tab_uses_styled_confirm(self):
+        """Member remove uses hx-confirm (styled dialog), not native confirm."""
+        tid, uid = (uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            return None
+
+        member = {
+            'id': uuid4(), 'subject_kind': 'User', 'subject_id': uid,
+            'role_name': 'team-member', 'created_at': None,
+        }
+        # fetchall order: role catalog, bindings, invites, join requests
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        cur.fetchall.side_effect = [[], [member], [], []]
+        admin_conn, _ = _conn(fetchall=[])
+        with patch.object(db, 'as_user', return_value=conn), patch.object(
+            db, 'connect_admin', return_value=admin_conn
+        ), patch.object(ldap_auth, 'ldap_cfg', return_value={'ldap_enabled': 'false'}):
+            r = self.client.get(
+                f'/teams/{tid}?tab=members', headers={'HX-Request': 'true'}
+            )
+        assert r.status_code == 200
+        assert b'Remove this member?' in r.data
+        assert b'hx-confirm' in r.data
+        assert b'return confirm(' not in r.data
+
     def test_add_member_viewer_role(self):
         tid, uid = (uuid4(), uuid4())
         conn, cur = _conn(fetchone={'id': uid})

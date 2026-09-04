@@ -20,7 +20,12 @@ from core import config, db, settings_svc
 from integrations import ldap_auth
 from ui import paging
 
-from .members import enrich_join_request_emails, load_access_tab, load_members_tab
+from .members import (
+    enrich_join_request_emails,
+    load_access_tab,
+    load_members_tab,
+    team_meta_response,
+)
 
 log = logging.getLogger(__name__)
 
@@ -504,12 +509,11 @@ def delete_team(team_id):
 @authz.login_required
 def upsert_team_meta(team_id):
     """Add or update a team-level metadata field (owners/admins only)."""
-    meta_url = url_for("team_detail", team_id=team_id, tab="meta")
     key = (request.form.get("key") or "").strip()
     value = (request.form.get("value") or "").strip()
     if not re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", key):
         flash("Metadata key must start with a letter or digit and use only A-Z, a-z, 0-9, ., _, - (max 64)", "error")
-        return redirect(meta_url)
+        return team_meta_response(team_id)
     if len(value) > 2000:
         value = value[:2000]
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
@@ -519,7 +523,7 @@ def upsert_team_meta(team_id):
         role = (cur.fetchone() or {}).get("r")
         if not team_role_at_least(cur, role, MANAGE_TIER):
             flash("Only owners or admins can manage team metadata", "error")
-            return redirect(meta_url)
+            return team_meta_response(team_id)
         try:
             cur.execute(
                 "INSERT INTO api.team_meta (team_id, key, value, updated_at) VALUES (%s, %s, %s, now()) "
@@ -535,13 +539,12 @@ def upsert_team_meta(team_id):
                 flash("Metadata key is defined at team/project level and cannot be overridden.", "error")
             else:
                 flash("Could not save the metadata. Try again.", "error")
-    return redirect(meta_url)
+    return team_meta_response(team_id)
 
 
 @authz.login_required
 def delete_team_meta(team_id, meta_key):
     """Remove a team-level metadata field (owners/admins only)."""
-    meta_url = url_for("team_detail", team_id=team_id, tab="meta")
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         from auth.roles import MANAGE_TIER, team_role_at_least
 
@@ -549,7 +552,7 @@ def delete_team_meta(team_id, meta_key):
         role = (cur.fetchone() or {}).get("r")
         if not team_role_at_least(cur, role, MANAGE_TIER):
             flash("Only owners or admins can manage team metadata", "error")
-            return redirect(meta_url)
+            return team_meta_response(team_id)
         try:
             cur.execute(
                 "DELETE FROM api.team_meta WHERE team_id = %s AND key = %s RETURNING key",
@@ -565,4 +568,4 @@ def delete_team_meta(team_id, meta_key):
         except Exception:
             conn.rollback()
             flash("Could not remove the metadata. Try again.", "error")
-    return redirect(meta_url)
+    return team_meta_response(team_id)

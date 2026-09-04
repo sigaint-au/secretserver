@@ -129,8 +129,8 @@
             <form method="post"
                    action="{{ del_url }}"
                    hx-post="{{ del_url }}" hx-target="{{ hx_target }}" hx-swap="innerHTML"
-                  class="inline"
-                  onsubmit="return confirm('Remove this binding?')">
+                   hx-confirm="Remove this binding?"
+                  class="inline">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Remove</button>
             </form>

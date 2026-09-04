@@ -54,8 +54,8 @@
                   action="{{ url_for('remove_team_binding', team_id=team.id, user_id=b.subject_id) }}"
                   hx-post="{{ url_for('remove_team_binding', team_id=team.id, user_id=b.subject_id) }}"
                   hx-target="#team-members" hx-swap="outerHTML"
-                  class="inline"
-                  onsubmit="return confirm('Remove this member?')">
+                  hx-confirm="Remove this member?"
+                  class="inline">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link danger">Remove</button>
             </form>
@@ -115,7 +115,8 @@
           <form method="post" action="{{ url_for('revoke_team_invite', team_id=team.id, invite_id=i.id) }}"
                 hx-post="{{ url_for('revoke_team_invite', team_id=team.id, invite_id=i.id) }}"
                 hx-target="#team-members" hx-swap="outerHTML"
-                class="inline" onsubmit="return confirm('Revoke this invite?')">
+                hx-confirm="Revoke this invite?"
+                class="inline">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="link danger">Revoke</button>
           </form>

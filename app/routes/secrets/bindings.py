@@ -25,17 +25,11 @@ def update_secret_access(project_id, secret_id):
     """Set per-secret access mode and reveal-approval override (project admin only)."""
     mode = _parse_access_mode(request.form)
     req_appr = _parse_requires_approval(request.form)
-    access_url = url_for(
-        "secret_view",
-        project_id=project_id,
-        secret_id=secret_id,
-        tab="access",
-    )
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
         if not (cur.fetchone() or {}).get("a"):
             flash("Only project admins can change secret access", "error")
-            return redirect(access_url)
+            return secret_access_response(project_id, secret_id)
         cur.execute(
             """
             UPDATE api.secrets
@@ -60,64 +54,64 @@ def update_secret_access(project_id, secret_id):
             conn.commit()
             label = config.ACCESS_MODE_LABELS.get(mode, mode)
             flash(f"Access settings saved ({label})", "ok")
-    return redirect(access_url)
+    return secret_access_response(project_id, secret_id)
 
 
-def secret_access_partial(project_id, secret_id):
-    """Render the secret access-tab partial for HTMX swaps (no decrypt).
+def _secret_tab_ctx(cur, conn, project_id, secret_id):
+    """Shared data load for the secret access/meta tab partials (no decrypt).
 
-    Mirrors the access-tab branch of ``secret_view`` without touching the
-    secret value, so binding mutations can re-render the tab in place.
+    Mirrors the meta/access branch of ``secret_view`` without touching the
+    secret value, so tab mutations can re-render in place.
 
     Args:
+        cur: Open DB cursor (user RLS).
+        conn: Open DB connection (rolled back when the effective-access
+            lookup fails).
         project_id: UUID of the owning project.
         secret_id: UUID of the secret.
 
     Returns:
-        Rendered ``partials/secret_panel.html`` for the access tab,
-        or 404 when invisible.
+        Dict of tab context, or None when the secret is missing.
     """
     from auth import rbac_sync
     from auth.roles import roles_for_scope
     from lib.users import user_email
     from secret_svc.queries import get_secret_detail
-    from secret_svc.secret_kinds import normalize_kind
 
-    from .helpers import _render_secret_view, _reveal_access_state
+    from .helpers import _reveal_access_state
 
-    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
-        secret_role_dropdown = roles_for_scope(cur, "secret")
-        row = get_secret_detail(cur, secret_id, project_id)
-        if not row:
-            return "Not found", 404
-        row = dict(row)
-        row["shared_access"] = row.get("is_team_member") is False
-        row["last_accessed_by_email"] = ""
-        if row.get("last_accessed_by"):
-            with db.connect_admin() as aconn, aconn.cursor() as acur:
-                row["last_accessed_by_email"] = user_email(
-                    acur, str(row["last_accessed_by"])
-                )
-        cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
-        can_admin = bool((cur.fetchone() or {}).get("a"))
-        if not can_admin:
-            return "Not found", 404
+    secret_role_dropdown = roles_for_scope(cur, "secret")
+    row = get_secret_detail(cur, secret_id, project_id)
+    if not row:
+        return None
+    row = dict(row)
+    row["shared_access"] = row.get("is_team_member") is False
+    row["last_accessed_by_email"] = ""
+    if row.get("last_accessed_by"):
+        with db.connect_admin() as aconn, aconn.cursor() as acur:
+            row["last_accessed_by_email"] = user_email(
+                acur, str(row["last_accessed_by"])
+            )
+    cur.execute("SELECT api.can_admin_project(%s) AS a", (str(project_id),))
+    can_admin = bool((cur.fetchone() or {}).get("a"))
+    cur.execute(
+        "SELECT api.can_access_secret(%s, 'write') AS w",
+        (str(secret_id),),
+    )
+    can_write = bool((cur.fetchone() or {}).get("w"))
+    access_state, access_row = _reveal_access_state(
+        cur, project_id, secret_id, session["user_id"]
+    )
+    try:
         cur.execute(
-            "SELECT api.can_access_secret(%s, 'write') AS w",
+            "SELECT * FROM private.secret_meta_rows(%s::uuid)",
             (str(secret_id),),
         )
-        can_write = bool((cur.fetchone() or {}).get("w"))
-        access_state, access_row = _reveal_access_state(
-            cur, project_id, secret_id, session["user_id"]
-        )
-        try:
-            cur.execute(
-                "SELECT * FROM private.secret_meta_rows(%s::uuid)",
-                (str(secret_id),),
-            )
-            custom_meta = cur.fetchall() or []
-        except Exception:
-            custom_meta = []
+        custom_meta = cur.fetchall() or []
+    except Exception:
+        custom_meta = []
+    secret_bindings, team_groups, effective_access = [], [], []
+    if can_admin:
         try:
             cur.execute(
                 """
@@ -160,27 +154,102 @@ def secret_access_partial(project_id, secret_id):
         except Exception:
             conn.rollback()
             effective_access = []
+    return {
+        "role_dropdown": secret_role_dropdown,
+        "row": row,
+        "can_write": can_write,
+        "can_admin": can_admin,
+        "access_state": access_state,
+        "access_row": access_row,
+        "custom_meta": custom_meta,
+        "secret_bindings": secret_bindings,
+        "team_groups": team_groups,
+        "effective_access": effective_access,
+    }
+
+
+def _render_secret_tab(project_id, secret_id, ctx, *, tab):
+    """Render ``partials/secret_panel.html`` for the access or meta tab."""
+    from secret_svc.secret_kinds import normalize_kind
+
+    from .helpers import _render_secret_view
+
+    row = ctx["row"]
+    access_state = ctx["access_state"]
     body, _code = _render_secret_view(
-        role_dropdown=secret_role_dropdown,
+        role_dropdown=ctx["role_dropdown"],
         project_id=project_id,
         secret_id=secret_id,
         row=row,
         plaintext="",
         kind=normalize_kind(row.get("kind")),
-        can_write=can_write,
+        can_write=ctx["can_write"],
         is_version=False,
-        can_admin=can_admin,
-        secret_bindings=secret_bindings,
+        can_admin=ctx["can_admin"],
+        secret_bindings=ctx["secret_bindings"],
         can_reveal=access_state == "allowed",
-        team_groups=team_groups,
-        effective_access=effective_access,
-        active_tab="access",
+        team_groups=ctx["team_groups"],
+        effective_access=ctx["effective_access"],
+        active_tab=tab,
         access_blocked=access_state in ("pending", "need_request"),
         access_state=access_state,
-        access_request=access_row,
-        custom_meta=custom_meta,
+        access_request=ctx["access_row"],
+        custom_meta=ctx["custom_meta"],
     )
     return body
+
+
+def secret_access_partial(project_id, secret_id):
+    """Render the secret access-tab partial for HTMX swaps (no decrypt).
+
+    Args:
+        project_id: UUID of the owning project.
+        secret_id: UUID of the secret.
+
+    Returns:
+        Rendered ``partials/secret_panel.html`` for the access tab,
+        or 404 when invisible.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        ctx = _secret_tab_ctx(cur, conn, project_id, secret_id)
+        if ctx is None:
+            return "Not found", 404
+        if not ctx["can_admin"]:
+            return "Not found", 404
+    return _render_secret_tab(project_id, secret_id, ctx, tab="access")
+
+
+def secret_meta_partial(project_id, secret_id):
+    """Render the secret metadata-tab partial for HTMX swaps (no decrypt).
+
+    Args:
+        project_id: UUID of the owning project.
+        secret_id: UUID of the secret.
+
+    Returns:
+        Rendered ``partials/secret_panel.html`` for the meta tab,
+        or 404 when missing.
+    """
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        ctx = _secret_tab_ctx(cur, conn, project_id, secret_id)
+        if ctx is None:
+            return "Not found", 404
+    return _render_secret_tab(project_id, secret_id, ctx, tab="meta")
+
+
+def secret_meta_response(project_id, secret_id):
+    """Return the secret metadata-tab partial for HTMX, else redirect to it."""
+    if authz.htmx():
+        return secret_meta_partial(project_id, secret_id)
+    return redirect(
+        url_for(
+            "secret_view",
+            project_id=project_id,
+            secret_id=secret_id,
+            tab="meta",
+        )
+    )
+
 
 
 def secret_access_response(project_id, secret_id):
