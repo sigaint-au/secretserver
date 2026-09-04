@@ -16,6 +16,8 @@ from auth import authz, rbac_sync
 from core import db
 from lib.users import lookup_user_id
 
+from .members import groups_response
+
 
 def _group_detail_url(team_id, group_id, **extra):
     return url_for("team_group_detail", team_id=team_id, group_id=group_id, **extra)
@@ -94,10 +96,10 @@ def create_team_group(team_id):
         external_key = None
     elif not external_key:
         flash("External group key required for LDAP/OIDC groups", "error")
-        return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
+        return groups_response(team_id)
     if not name:
         flash("Group name required", "error")
-        return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
+        return groups_response(team_id)
     with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
         try:
             cur.execute(
@@ -120,11 +122,13 @@ def create_team_group(team_id):
                 f"Group “{name}” created — bind it under Members as subject Group",
                 "ok",
             )
+            if authz.htmx():
+                return groups_response(team_id)
             return redirect(_group_detail_url(team_id, gid))
         except Exception:
             conn.rollback()
             flash("Could not update the group. Try again.", "error")
-    return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
+    return groups_response(team_id)
 
 
 @authz.login_required
@@ -194,7 +198,7 @@ def delete_team_group(team_id, group_id):
             )
             conn.commit()
             flash(f"Group “{row['name']}” deleted", "ok")
-    return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
+    return groups_response(team_id)
 
 
 @authz.login_required

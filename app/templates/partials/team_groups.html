@@ -1,7 +1,13 @@
 <section>
   <div class="section-head">
     <h2>Groups</h2>
-    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="toolbar" role="search"
+          hx-get="{{ url_for('team_detail', team_id=team.id) }}"
+          hx-target="#team-groups-results"
+          hx-swap="outerHTML"
+          hx-select="#team-groups-results"
+          hx-push-url="true"
+          hx-trigger="submit, input delay:250ms from:input[name=q]">
       <input type="hidden" name="tab" value="groups">
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
@@ -9,7 +15,12 @@
                placeholder="Search" autocomplete="off" aria-label="Search groups">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Clear search</a>
+      <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
+         hx-get="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
+         hx-target="#team-groups-results"
+         hx-swap="outerHTML"
+         hx-select="#team-groups-results"
+         hx-push-url="true">Clear search</a>
       {% endif %}
     </form>
   </div>
@@ -21,7 +32,9 @@
     Map LDAP/OIDC via an external key (sync on login).
   </p>
   {% if is_admin %}
-  <form method="post" action="{{ url_for('create_team_group', team_id=team.id) }}" class="row">
+  <form method="post" action="{{ url_for('create_team_group', team_id=team.id) }}" class="row"
+        hx-post="{{ url_for('create_team_group', team_id=team.id) }}"
+        hx-target="#team-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Group name <input type="text" name="name" required placeholder="e.g. platform-ops"></label>
     <label>Source
@@ -38,6 +51,7 @@
     <button type="submit">Create group</button>
   </form>
   {% endif %}
+  <div id="team-groups-results">
   {% if groups %}
   <div class="table"><table>
     <thead><tr><th>Name</th><th>Source</th><th>External</th><th>Members</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
@@ -51,7 +65,10 @@
         <td class="acts">
           {% if is_admin %}
           <form method="post" action="{{ url_for('delete_team_group', team_id=team.id, group_id=g.id) }}"
-                class="inline" onsubmit="return confirm('Delete group “{{ g.name }}”?')">
+                hx-post="{{ url_for('delete_team_group', team_id=team.id, group_id=g.id) }}"
+                hx-target="#team-panel" hx-swap="innerHTML"
+                hx-confirm="Delete group “{{ g.name }}”?"
+                class="inline">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="link danger">Delete</button>
           </form>
@@ -64,4 +81,5 @@
   {% else %}
   <p class="empty">{% if search_q %}No groups match “{{ search_q }}”.{% else %}No groups yet.{% endif %}</p>
   {% endif %}
+  </div>
 </section>

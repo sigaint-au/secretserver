@@ -491,6 +491,76 @@ class TestTeams:
         assert b'hx-confirm' in r.data
         assert b'return confirm(' not in r.data
 
+    def test_htmx_group_create_returns_groups_panel(self):
+        """HTMX group create re-renders the groups tab, not a redirect."""
+        tid, gid = (uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            if 'insert into api.groups' in s:
+                return {'id': gid}
+            return None
+
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/teams/{tid}/groups',
+                data={'name': 'ops', 'source': 'manual', 'external_key': ''},
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'team-groups-results' in r.data
+        assert 'created' in r.data.decode()
+        assert b'<html' not in r.data.lower()
+
+    def test_htmx_group_delete_returns_groups_panel(self):
+        """HTMX group delete re-renders the groups tab with styled confirm."""
+        tid, gid = (uuid4(), uuid4())
+        last = {'s': ''}
+
+        def execute(sql, params=None):
+            last['s'] = ' '.join(str(sql).lower().split())
+
+        def fetchone():
+            s = last['s']
+            if 'from api.teams' in s and 'where id' in s:
+                return {'id': tid, 'name': 'T'}
+            if 'api.team_role' in s:
+                return {'r': 'team-owner'}
+            if 'can_manage_rbac' in s:
+                return {'ok': True}
+            if 'delete from api.groups' in s:
+                return {'name': 'ops'}
+            return None
+
+        group = {'id': gid, 'name': 'ops', 'source': 'manual', 'external_key': None, 'member_count': 0}
+        conn, cur = _conn(fetchone=fetchone, fetchall=[])
+        cur.execute.side_effect = execute
+        cur.fetchall.side_effect = [[], [group], []]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.post(
+                f'/teams/{tid}/groups/{gid}/delete',
+                headers={'HX-Request': 'true'},
+            )
+        assert r.status_code == 200
+        assert b'team-groups-results' in r.data
+        assert 'deleted' in r.data.decode()
+        assert b'Delete group' in r.data
+        assert b'hx-confirm' in r.data
+        assert b'return confirm(' not in r.data
+        assert b'<html' not in r.data.lower()
+
     def test_add_member_viewer_role(self):
         tid, uid = (uuid4(), uuid4())
         conn, cur = _conn(fetchone={'id': uid})

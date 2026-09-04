@@ -281,6 +281,87 @@ def team_meta_response(team_id):
     return redirect(url_for("team_detail", team_id=team_id, tab="meta"))
 
 
+def load_groups_tab(cur, team_id, q=""):
+    """Load groups-tab rows (team groups filtered by search).
+
+    Shared by the full team page and the HTMX groups partial so the two
+    cannot drift apart.
+
+    Args:
+        cur: Open DB cursor (user RLS).
+        team_id: UUID of the team.
+        q: Search filter (name, external key, or source).
+
+    Returns:
+        Filtered list of group rows.
+    """
+    try:
+        cur.execute(
+            "SELECT * FROM private.team_group_rows(%s::uuid)",
+            (str(team_id),),
+        )
+        groups = list(cur.fetchall() or [])
+    except Exception:
+        groups = []
+    if q:
+        ql = q.lower()
+        groups = [
+            g
+            for g in groups
+            if ql in (g.get("name") or "").lower()
+            or ql in (g.get("external_key") or "").lower()
+            or ql in (g.get("source") or "").lower()
+        ]
+    return groups
+
+
+def groups_partial(team_id):
+    """Render the groups-tab partial for HTMX swaps.
+
+    Args:
+        team_id: UUID of the team.
+
+    Returns:
+        Rendered ``partials/team_content.html`` for the groups tab,
+        or 404 when missing.
+    """
+    q = (request.args.get("q") or "").strip()
+    with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+        team = db.team(cur, team_id)
+        if not team:
+            return "Not found", 404
+        cur.execute("SELECT api.team_role(%s) AS r", (str(team_id),))
+        my_role = (cur.fetchone() or {}).get("r")
+        cur.execute(
+            "SELECT api.can_manage_rbac('team', %s::uuid) AS ok",
+            (str(team_id),),
+        )
+        can_edit_access = bool((cur.fetchone() or {}).get("ok"))
+        is_admin = (
+            team_role_at_least(cur, my_role, MANAGE_TIER)
+            or bool(session.get("is_global_admin"))
+            or can_edit_access
+        )
+        groups = load_groups_tab(cur, team_id, q)
+    tname = (team or {}).get("name") or "Team"
+    return render_template(
+        "partials/team_content.html",
+        oob_title=f"Groups - {tname}",
+        team=team,
+        is_admin=is_admin,
+        active_tab="groups",
+        groups=groups,
+        search_q=q,
+    )
+
+
+def groups_response(team_id):
+    """Return the groups-tab partial for HTMX, else redirect to the groups tab."""
+    if authz.htmx():
+        return groups_partial(team_id)
+    return redirect(url_for("team_detail", team_id=team_id, tab="groups"))
+
+
 @authz.login_required
 def team_access_binding_create(team_id):
     """Create a team-scope role binding (team admin)."""

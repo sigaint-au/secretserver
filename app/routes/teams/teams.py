@@ -23,6 +23,7 @@ from ui import paging
 from .members import (
     enrich_join_request_emails,
     load_access_tab,
+    load_groups_tab,
     load_members_tab,
     team_meta_response,
 )
@@ -205,23 +206,7 @@ def team_detail(team_id):
             )
             can_edit_access = True
         elif tab == "groups":
-            try:
-                cur.execute(
-                    "SELECT * FROM private.team_group_rows(%s::uuid)",
-                    (str(team_id),),
-                )
-                groups = list(cur.fetchall() or [])
-            except Exception:
-                groups = []
-            if q:
-                ql = q.lower()
-                groups = [
-                    g
-                    for g in groups
-                    if ql in (g.get("name") or "").lower()
-                    or ql in (g.get("external_key") or "").lower()
-                    or ql in (g.get("source") or "").lower()
-                ]
+            groups = load_groups_tab(cur, team_id, q)
             # Legacy ?group_id= → dedicated group page
             gid = (request.args.get("group_id") or "").strip()
             if gid:
