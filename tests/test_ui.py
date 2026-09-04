@@ -42,10 +42,13 @@ class TestUIShell:
         # Leftover HTML <script> wrappers from the base.html extraction make
         # the whole file a SyntaxError, so sidebar group persistence never runs
         # and clicking a nav item collapses every other <details> menu.
-        r = store.app.test_client().get("/static/app.js")
-        assert r.status_code == 200
-        assert b"<script>" not in r.data
-        assert b"</script>" not in r.data
+        c = store.app.test_client()
+        for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js"):
+            r = c.get(f"/static/{name}")
+            assert r.status_code == 200
+            assert b"<script>" not in r.data
+            assert b"</script>" not in r.data
+        r = c.get("/static/sidebar.js")
         assert b"secretstore.sidebar.groups" in r.data
 
     def test_app_has_sidebar(self):
