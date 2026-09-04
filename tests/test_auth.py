@@ -414,6 +414,7 @@ class TestAuth:
             r = self.client.get('/profile')
         assert r.status_code == 200
         assert b'My profile' in r.data
+        assert b'Copy login command' not in r.data
         assert b'?tab=account' in r.data
         assert b'?tab=security' in r.data
         assert b'?tab=myaccess' in r.data
@@ -434,8 +435,11 @@ class TestAuth:
         assert b'Active sessions' in r_sec.data
         assert b'Two-factor authentication' in r_sec.data
         assert b'Personal access tokens' in r_sec.data
-        assert b'API access' in r_sec.data
-        assert b'show-session-jwt' in r_sec.data
+        assert b'Short-lived token' in r_sec.data
+        assert b'Generate login command' in r_sec.data
+        assert b'API access' not in r_sec.data
+        assert b'show-session-jwt' not in r_sec.data
+        assert b'session-jwt' not in r_sec.data
         with patch.object(db, 'connect_admin', return_value=admin_conn), patch.object(db, 'as_user', return_value=user_conn):
             r_teams = self.client.get('/profile?tab=teams')
         assert r_teams.status_code == 200

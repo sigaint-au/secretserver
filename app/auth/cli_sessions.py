@@ -1,6 +1,6 @@
 """Short-lived CLI session tokens (user-scoped, single-purpose login handoff).
 
-Minted by the "Copy login command" flow so a user can paste a ready-made
+Minted by the "Generate login command" flow so a user can paste a ready-made
 ``corvus login`` command without exposing a long-lived PAT. Opaque ``sso_…``
 tokens, SHA-256 hashed at rest, multi-use within a fixed TTL.
 """
