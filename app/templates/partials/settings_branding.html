@@ -10,12 +10,12 @@
     <label>Brand name
       <input type="text" name="brand_name" required maxlength="80"
              value="{{ settings.brand_name or 'Corvus' }}"
-             placeholder="Corvus">
+             placeholder="Corvus" class="input">
     </label>
     <label>Tagline
       <input type="text" name="brand_tagline" maxlength="120"
              value="{{ settings.brand_tagline or 'Keep your secrets.' }}"
-             placeholder="Keep your secrets.">
+             placeholder="Keep your secrets." class="input">
     </label>
     <p class="muted field-spacer">
       Preview:
@@ -24,7 +24,7 @@
       · page titles:
       <code class="k">{{ settings.brand_name or 'Corvus' }} {{ settings.brand_tagline or 'Keep your secrets.' }}</code>
     </p>
-    <p class="form-actions"><button type="submit">Save branding</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save branding</button></p>
   </form>
 </section>
 

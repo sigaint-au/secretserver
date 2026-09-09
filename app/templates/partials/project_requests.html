@@ -11,7 +11,7 @@
   <p class="muted">Pending and recent reveal-approval requests for this project.</p>
   {% if access_requests %}
   <div class="table">
-  <table class="access-requests-table">
+  <table class="access-requests-table table">
     <thead>
       <tr>
         <th>Secret</th>
@@ -39,7 +39,7 @@
           {% if r.name %}<span class="muted">{{ r.email }}</span>{% endif %}
         </td>
         <td>
-          <span class="badge"{% if r.status == 'approved' %} data-variant="success"{% elif r.status == 'denied' %} data-variant="danger"{% elif r.status == 'pending' %} data-variant="warning"{% else %} data-variant="secondary"{% endif %}>{{ r.status }}</span>
+          <span class="badge {% if r.status == 'approved' %}badge-soft badge-success{% elif r.status == 'denied' %}badge-soft badge-error{% elif r.status == 'pending' %}badge-soft badge-warning{% else %}badge-soft{% endif %}">{{ r.status }}</span>
           {% if r.status == 'approved' and r.approved_until %}
           <span class="muted" title="{{ r.approved_until|time_when }}">{{ r.approved_until|expires }}</span>
           {% elif r.status == 'denied' and r.resolver_email %}
@@ -62,7 +62,7 @@
                   onsubmit="return setAccessBusy(this,'Approving…');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <label class="visually-hidden" for="grant-minutes-{{ r.id }}">Grant duration</label>
-              <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action">
+              <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action select">
                 {% for m in grant_choices %}
                 <option value="{{ m }}" {% if m == grant_minutes %}selected{% endif %}>
                   {% if m < 60 %}{{ m }} min{% elif m == 60 %}1 hour{% elif m == 1440 %}1 day{% else %}{{ m // 60 }} hours{% endif %}
@@ -80,7 +80,7 @@
                   class="inline"
                   onsubmit="return setAccessBusy(this, 'Denying…')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Deny</button>
+              <button type="submit" class="link link-error">Deny</button>
             </form>
           </div>
           {% endif %}

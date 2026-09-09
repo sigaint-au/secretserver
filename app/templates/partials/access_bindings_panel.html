@@ -8,7 +8,7 @@
   <div class="section-head">
     <h2>{{ panel_title|default('Role bindings') }}</h2>
     {% if full_bindings_url %}
-    <a class="button ghost small" href="{{ full_bindings_url }}">All scopes</a>
+    <a class="btn btn-ghost btn-sm" href="{{ full_bindings_url }}">All scopes</a>
     {% endif %}
   </div>
   {% if help_html %}
@@ -25,18 +25,18 @@
         <legend>Who</legend>
         <div class="field-grid">
           <label>Subject type
-            <select name="subject_kind" id="{{ pref }}-subject-kind">
+            <select name="subject_kind" id="{{ pref }}-subject-kind" class="select">
               {% for sk in subject_kinds|default(['User', 'Group', 'ServiceAccount']) %}
               <option value="{{ sk }}">{{ sk }}</option>
               {% endfor %}
             </select>
           </label>
           <label id="{{ pref }}-user" class="span-2">User email
-            <input type="email" name="subject_email" class="user-suggest"
+            <input type="email" name="subject_email" class="user-suggest input"
                    list="user-suggest-list" placeholder="name@example.com" autocomplete="off">
           </label>
           <label id="{{ pref }}-group" class="span-2" hidden>Team group
-            <select name="subject_group">
+            <select name="subject_group" class="select">
               <option value="">- select group -</option>
               {% for g in access_groups|default([]) %}
               <option value="{{ g.id }}">{{ g.name }}</option>
@@ -44,7 +44,7 @@
             </select>
           </label>
           <label id="{{ pref }}-sa" class="span-2" hidden>Machine account ID
-            <input type="text" name="subject_sa" placeholder="machine account UUID" autocomplete="off">
+            <input type="text" name="subject_sa" placeholder="machine account UUID" autocomplete="off" class="input">
           </label>
         </div>
       </fieldset>
@@ -53,7 +53,7 @@
         <legend>Role</legend>
         <div class="field-grid">
           <label class="span-2">Grant
-            <select name="role_name" required>
+            <select name="role_name" required class="select">
               {% for name, label in role_dropdown|default([]) %}
               <option value="{{ name }}"
                       {% if role_descriptions is defined and role_descriptions.get(name) %} title="{{ role_descriptions.get(name) }}"{% endif %}>{{ label }} - <code>{{ name }}</code></option>
@@ -67,7 +67,7 @@
       </fieldset>
 
       <p class="form-actions">
-        <button type="submit">Add binding</button>
+        <button type="submit" class="btn btn-neutral">Add binding</button>
       </p>
     </form>
   <script>
@@ -96,7 +96,7 @@
   <p class="muted">Direct role assignments for users, groups, and machine accounts at this scope.</p>
   {% if access_bindings %}
   <div class="table">
-    <table>
+    <table class="table">
       <thead>
         <tr>
           <th>Subject</th>
@@ -116,8 +116,8 @@
             <span class="muted">· {{ b.subject_kind }}</span>
           </td>
           <td>
-            <span class="badge" data-variant="secondary"
-                  title="{{ b.role_name }}">{{ b.role_short if b.role_short and b.role_short != b.role_name else b.role_name }}</span>
+            <span class="badge badge-soft" 
+         title="{{ b.role_name }}">{{ b.role_short if b.role_short and b.role_short != b.role_name else b.role_name }}</span>
           </td>
           <td class="muted">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
           <td class="acts">
@@ -137,7 +137,7 @@
                    hx-confirm="Remove this binding?"
                   class="inline">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Remove</button>
+              <button type="submit" class="link link-error">Remove</button>
             </form>
             {% endif %}
           </td>

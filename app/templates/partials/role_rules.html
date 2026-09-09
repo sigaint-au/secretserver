@@ -4,9 +4,9 @@
 <div class="role-rules">
   {% for rule in r.rules %}
   <span class="role-rule">
-    <span class="badge outline">{{ rule.resources|join(', ') }}</span>
+    <span class="badge badge-outline">{{ rule.resources|join(', ') }}</span>
     <span class="role-arrow" aria-hidden="true">→</span>
-    <span class="badge outline">{{ rule.verbs|join(', ') }}</span>
+    <span class="badge badge-outline">{{ rule.verbs|join(', ') }}</span>
   </span>
   {% endfor %}
 </div>

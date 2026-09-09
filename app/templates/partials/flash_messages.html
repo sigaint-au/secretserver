@@ -3,10 +3,10 @@
 {% set _msgs = messages if messages is defined else get_flashed_messages(with_categories=true) %}
 <div id="flashes"{% if oob %} hx-swap-oob="true"{% endif %}>
   {% for cat, msg in _msgs %}
-  {# oat.ink Alert #}
-  <div role="alert"{% if cat in ('error', 'danger') %} data-variant="error"{% elif cat in ('ok', 'success') %} data-variant="success"{% elif cat == 'warning' %} data-variant="warning"{% endif %}>
+  {# daisyUI Alert #}
+  <div role="alert" class="alert{% if cat in ('error', 'danger') %} alert-error{% elif cat in ('ok', 'success') %} alert-success{% elif cat == 'warning' %} alert-warning{% else %} alert-info{% endif %}">
     <span>{{ msg }}</span>
-    <button type="button" class="link" data-dismiss aria-label="Dismiss notification">Dismiss</button>
+    <button type="button" class="btn btn-ghost btn-sm" data-dismiss aria-label="Dismiss notification">Dismiss</button>
   </div>
   {% endfor %}
 </div>

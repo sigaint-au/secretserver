@@ -30,7 +30,7 @@
     <h3 class="token-list-title">Active tokens</h3>
     {% if tokens %}
     <div class="table">
-    <table>
+    <table class="table">
       <thead>
         <tr>
            <th>Name</th>
@@ -52,13 +52,13 @@
            <td class="muted">{% if t.description %}{{ t.description }}{% endif %}</td>
            <td><code class="k">{{ t.id }}</code></td>
            <td><code class="k">{{ t.token_prefix }}…</code></td>
-          <td><span class="badge" data-variant="secondary">{{ t.role or 'service-read' }}</span></td>
+          <td><span class="badge badge-soft" >{{ t.role or 'service-read' }}</span></td>
           <td class="col-note">
             {% if t.scopes %}
             <div class="token-scope-badges"
                  title="{% for sc in t.scopes %}{{ sc.secret_key or sc.key_pattern }}{% if not loop.last %}, {% endif %}{% endfor %}">
               {% for sc in t.scopes[:8] %}
-              <span class="badge outline{% if sc.key_pattern %} token-scope-glob{% endif %}"
+              <span class="badge badge-outline{% if sc.key_pattern %} token-scope-glob{% endif %}"
                     title="{% if sc.key_pattern %}Glob pattern{% else %}Exact key{% endif %}">
                 {% if sc.secret_key %}{{ sc.secret_key }}{% else %}{{ sc.key_pattern }}{% endif %}
               </span>
@@ -71,15 +71,15 @@
               {% endif %}
             </div>
             {% else %}
-            <span class="badge" data-variant="warning">no keys</span>
+            <span class="badge badge-soft badge-warning" >no keys</span>
             {% endif %}
           </td>
           <td class="muted" title="{% if t.last_used_at %}{{ t.last_used_at|time_when }}{% endif %}">{% if t.last_used_at %}{{ t.last_used_at|time_ago }}{% else %}never{% endif %}</td>
           <td class="muted" title="{{ t.created_at|time_when }}">{{ t.created_at|time_ago }}</td>
           <td class="muted"{% if t.expires_at %} title="{{ t.expires_at|time_when }}"{% endif %}>
             {% if t.expires_at %}{{ t.expires_at|expires }}{% else %}never{% endif %}
-            {% if t.due == 'overdue' %}<span class="badge" data-variant="danger">expired</span>
-            {% elif t.due == 'soon' %}<span class="badge" data-variant="warning">expiring soon</span>{% endif %}
+            {% if t.due == 'overdue' %}<span class="badge badge-soft badge-error" >expired</span>
+            {% elif t.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
           </td>
           <td class="acts">
             {% if can_admin %}
@@ -88,7 +88,7 @@
                   hx-target="#project-panel" hx-swap="innerHTML"
                   hx-confirm="Revoke token “{{ t.name }}”?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Revoke</button>
+              <button type="submit" class="link link-error">Revoke</button>
             </form>
             {% endif %}
           </td>

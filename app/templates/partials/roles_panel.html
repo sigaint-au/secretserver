@@ -4,7 +4,7 @@
   <div class="section-head">
     <h2>Built-in roles</h2>
     {% if can_edit %}
-    <a class="button outline small" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
   </div>
   <p class="muted mt-0">Built-in roles used by the Access dropdowns. Rules cannot be edited.</p>
@@ -21,7 +21,7 @@
       <tbody>
         {% for r in builtin_roles %}
         <tr>
-          <td><span class="badge" data-variant="secondary">{{ r.name }}</span></td>
+          <td><span class="badge badge-soft">{{ r.name }}</span></td>
           <td class="col-note">{{ r.description or "-" }}</td>
           <td class="col-note">{% include "partials/role_rules.html" %}</td>
         </tr>
@@ -42,7 +42,7 @@
   <div class="section-head">
     <h2>Custom roles</h2>
     {% if can_edit %}
-    <a class="button outline small" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
   </div>
   {% if not can_edit %}
@@ -62,7 +62,7 @@
       <tbody>
         {% for r in custom_roles %}
         <tr>
-          <td><span class="badge" data-variant="secondary">{{ r.name }}</span></td>
+          <td><span class="badge badge-soft">{{ r.name }}</span></td>
           <td class="col-note">{{ r.description or "-" }}</td>
           <td class="col-note">{% include "partials/role_rules.html" %}</td>
           {% if can_edit %}
@@ -71,7 +71,7 @@
                   onsubmit="return confirm('Delete role {{ r.name }}?');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="tab" value="custom">
-              <button type="submit" class="link danger">Delete</button>
+              <button type="submit" class="link link-error">Delete</button>
             </form>
           </td>
           {% endif %}
@@ -96,7 +96,7 @@
 <section>
   <div class="section-head">
     <h2>New custom role</h2>
-    <a class="button ghost small" href="{{ url_for('rbac_roles', tab='custom') }}">Back to roles</a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('rbac_roles', tab='custom') }}">Back to roles</a>
   </div>
   <form method="post" action="{{ url_for('rbac_roles_create') }}" class="settings-form" id="role-create-form">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -111,11 +111,11 @@
                  placeholder="secrets-operator"
                  pattern="[a-z0-9][a-z0-9\-]*"
                  title="Lowercase letters, numbers, hyphens"
-                 autocomplete="off">
+                 autocomplete="off" class="input">
           <span class="field-hint">Lowercase letters, numbers, hyphens</span>
         </label>
         <label>Description
-          <input type="text" name="description" placeholder="Optional summary" autocomplete="off">
+          <input type="text" name="description" placeholder="Optional summary" autocomplete="off" class="input">
         </label>
       </div>
       <fieldset class="field-group">
@@ -128,7 +128,6 @@
       </fieldset>
     </fieldset>
 
-    <ot-tabs>
       <div role="tablist" class="tabs role-mode-tabs">
         <button type="button" class="tab active" data-mode="form" id="mode-form-btn"
                 role="tab" aria-selected="true" aria-controls="mode-form-panel">Form</button>
@@ -190,11 +189,10 @@ verbs: *
 # valid verbs: {{ verbs|join(', ') }}</pre>
         </details>
       </div>
-    </ot-tabs>
 
     <p class="form-actions">
-      <button type="submit">Create role</button>
-      <a class="button ghost" href="{{ url_for('rbac_roles', tab='custom') }}">Cancel</a>
+      <button type="submit" class="btn btn-neutral">Create role</button>
+      <a class="btn btn-ghost" href="{{ url_for('rbac_roles', tab='custom') }}">Cancel</a>
     </p>
   </form>
 </section>

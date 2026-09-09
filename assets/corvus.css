@@ -1,0 +1,10 @@
+/* Corvus daisyUI bundle input (Tailwind CSS v4).
+   Rebuild with: sh scripts/build-css.sh
+   Output (committed, served self-hosted): app/static/vendor/daisyui.min.css
+   Uses daisyUI's built-in light (default) and dark (prefers-color-scheme)
+   themes; Corvus brand surfaces (sidebar, buttons) keep their tokens in
+   app/static/app.css, which loads after this bundle. */
+@import "tailwindcss";
+@source "../app/templates";
+@source "../app/static";
+@plugin "daisyui";

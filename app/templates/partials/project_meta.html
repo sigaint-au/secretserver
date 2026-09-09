@@ -6,14 +6,14 @@
         hx-post="{{ url_for('upsert_project_meta', project_id=project_id) }}"
         hx-target="#project-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. env"></label>
-    <label>Value <input name="value" maxlength="2000"></label>
-    <button type="submit">Save</button>
+    <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. env" class="input"></label>
+    <label>Value <input name="value" maxlength="2000" class="input"></label>
+    <button type="submit" class="btn btn-neutral">Save</button>
   </form>
   {% endif %}
   {% if project_meta %}
   <div class="table">
-    <table>
+    <table class="table">
       <thead><tr><th>Key</th><th>Value</th><th>Updated</th>{% if can_admin %}<th></th>{% endif %}</tr></thead>
       <tbody>
         {% for m in project_meta %}
@@ -30,7 +30,7 @@
                   hx-target="#project-panel" hx-swap="innerHTML"
                   hx-confirm="Remove metadata “{{ m.key }}”?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Remove</button>
+              <button type="submit" class="link link-error">Remove</button>
             </form>
           </td>
           {% else %}

@@ -11,13 +11,13 @@
   <form method="post" action="{{ url_for('select_team') }}" class="inline">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
-    <select name="team_id" aria-label="Select a team">
+    <select name="team_id" aria-label="Select a team" class="select">
       <option value="" selected disabled>Choose a team…</option>
       {% for t in nav_teams %}
       <option value="{{ t.id }}">{{ t.name }}</option>
       {% endfor %}
     </select>
-    <button type="submit" class="button ghost small">Go</button>
+    <button type="submit" class="btn btn-ghost btn-sm">Go</button>
   </form>
 </div>
 {% else %}
@@ -35,11 +35,11 @@
     {% include "partials/search_icon.html" %}
     <input type="search" name="q" value="{{ q or '' }}"
            placeholder="Search machine accounts" autocomplete="off"
-           aria-label="Search machine accounts">
+           aria-label="Search machine accounts" class="input">
   </fieldset>
   {% if q %}
   <div class="audit-filter-actions">
-    <a class="button ghost small" href="{{ url_for('machines_list') }}"
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('machines_list') }}"
        hx-get="{{ url_for('machines_list') }}"
        hx-target="#machines-results"
        hx-swap="outerHTML"

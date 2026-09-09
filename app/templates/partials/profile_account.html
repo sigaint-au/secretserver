@@ -13,13 +13,13 @@
       <dt>Sign-in</dt>
       <dd>
         {% if user.auth_source == 'ldap' %}
-        <span class="badge" data-variant="secondary">LDAP</span> Directory
+        <span class="badge badge-soft" >LDAP</span> Directory
         {% elif user.auth_source == 'oidc' %}
-        <span class="badge" data-variant="secondary">OIDC</span> Single sign-on
+        <span class="badge badge-soft" >OIDC</span> Single sign-on
         {% elif user.auth_source == 'local' or not user.auth_source %}
-        <span class="badge" data-variant="secondary">Local</span> Database (password)
+        <span class="badge badge-soft" >Local</span> Database (password)
         {% else %}
-        <span class="badge" data-variant="secondary">{{ user.auth_source }}</span>
+        <span class="badge badge-soft" >{{ user.auth_source }}</span>
         {% endif %}
       </dd>
     </div>
@@ -27,7 +27,7 @@
       <dt>Role</dt>
       <dd>
         {% if user.is_global_admin %}
-        <span class="badge" data-variant="secondary">Global admin</span>
+        <span class="badge badge-soft" >Global admin</span>
         {% else %}
         User
         {% endif %}
@@ -47,7 +47,7 @@
   <p class="empty">Login alerts are turned off by an administrator.</p>
   {% elif login_alerts.forced %}
   <p>
-    <span class="badge" data-variant="secondary">Required</span>
+    <span class="badge badge-soft" >Required</span>
     Server settings require a login alert email for every sign-in.
     {% if not login_alerts.smtp_ok %}
     SMTP is not fully configured, so messages may not send until email is set up.
@@ -64,7 +64,7 @@
     {% if not login_alerts.smtp_ok %}
     <p class="muted field-hint">SMTP is not fully configured, so messages may not send until email is set up.</p>
     {% endif %}
-    <p class="form-actions"><button type="submit">Save</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save</button></p>
   </form>
   {% endif %}
 </section>
@@ -75,7 +75,7 @@
     Team groups you belong to (manual, LDAP, or OIDC). Useful when debugging access.
   </p>
   {% if groups %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -98,7 +98,7 @@
           <a href="{{ url_for('team_group_detail', team_id=g.team_id, group_id=g.id) }}">{{ g.name }}</a>
           {% else %}{{ g.name }}{% endif %}
         </td>
-        <td><span class="badge" data-variant="secondary">{{ g.source }}</span></td>
+        <td><span class="badge badge-soft" >{{ g.source }}</span></td>
         <td class="muted">{{ g.member_source }}</td>
         <td class="muted"><code class="k">{{ g.external_key or '-' }}</code></td>
       </tr>

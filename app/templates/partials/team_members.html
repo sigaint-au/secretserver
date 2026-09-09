@@ -18,11 +18,11 @@
         hx-target="#team-members" hx-swap="outerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>User email
-      <input type="email" name="email" required class="user-suggest" value="{{ form_email|default('') }}"
+      <input type="email" name="email" required class="user-suggest input" value="{{ form_email|default('') }}"
              list="user-suggest-list" placeholder="e.g. alice@example.com" autocomplete="off">
     </label>
     <label>Role
-      <select name="role">
+      <select name="role" class="select">
         {% for rname, label in team_role_dropdown|default([]) %}
         {% if rname != top_role or my_role == top_role %}
         <option value="{{ rname }}" {% if rname == (form_role or default_role) %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
@@ -30,12 +30,12 @@
         {% endfor %}
       </select>
     </label>
-    <button type="submit">Add</button>
+    <button type="submit" class="btn btn-neutral">Add</button>
   </form>
   {% endif %}
   {% if members %}
   <div class="table">
-    <table>
+    <table class="table">
       <thead><tr><th>Member</th><th>Role</th><th>Created</th>{% if is_admin %}<th class="acts-col" aria-label="Actions"></th>{% endif %}</tr></thead>
       <tbody>
       {% for b in members %}
@@ -44,8 +44,8 @@
             {{ b.subject_email or b.subject_id }}
           </td>
           <td>
-            <span class="badge" data-variant="secondary"
-                  title="{{ b.role_name }}">{{ b.role_short if b.role_short and b.role_short != b.role_name else b.role_name }}</span>
+            <span class="badge badge-soft" 
+         title="{{ b.role_name }}">{{ b.role_short if b.role_short and b.role_short != b.role_name else b.role_name }}</span>
           </td>
           <td class="muted">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
           {% if is_admin %}
@@ -57,7 +57,7 @@
                   hx-confirm="Remove this member?"
                   class="inline">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Remove</button>
+              <button type="submit" class="link link-error">Remove</button>
             </form>
           </td>
           {% endif %}
@@ -90,7 +90,7 @@
         hx-target="#team-members" hx-swap="outerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Role
-      <select name="role">
+      <select name="role" class="select">
         {% for rname, label in team_role_dropdown|default([]) %}
         {% if rname != top_role %}
         <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
@@ -98,16 +98,16 @@
         {% endfor %}
       </select>
     </label>
-    <label>Expires (days) <input type="number" name="expires_days" min="1" max="90" value="7"></label>
-    <button type="submit">Create invite link</button>
+    <label>Expires (days) <input type="number" name="expires_days" min="1" max="90" value="7" class="input"></label>
+    <button type="submit" class="btn btn-neutral">Create invite link</button>
   </form>
   {% if invites %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>Role</th><th>Expires</th><th>Status</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for i in invites %}
       <tr>
-        <td><span class="badge" data-variant="secondary">{{ i.role }}</span></td>
+        <td><span class="badge badge-soft" >{{ i.role }}</span></td>
         <td class="muted" title="{{ i.expires_at|time_when }}">{{ i.expires_at|expires if i.expires_at else '-' }}</td>
         <td class="muted">{% if i.revoked_at %}revoked{% else %}active{% endif %}</td>
         <td class="acts">
@@ -118,7 +118,7 @@
                 hx-confirm="Revoke this invite?"
                 class="inline">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Revoke</button>
+            <button type="submit" class="link link-error">Revoke</button>
           </form>
           {% endif %}
         </td>
@@ -130,13 +130,13 @@
 
   <h3>Pending requests</h3>
   {% if join_requests %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>User</th><th>Role</th><th>Requested</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for r in join_requests %}
       <tr>
         <td>{{ r.name or r.email }} <span class="muted">{{ r.email }}</span></td>
-        <td><span class="badge" data-variant="secondary">{{ r.role }}</span></td>
+        <td><span class="badge badge-soft" >{{ r.role }}</span></td>
         <td class="muted" title="{{ r.created_at|time_when }}">{{ r.created_at|time_ago }}</td>
         <td class="acts">
           <form method="post" action="{{ url_for('approve_join_request', team_id=team.id, req_id=r.id) }}" class="inline"
@@ -149,7 +149,7 @@
                 hx-post="{{ url_for('reject_join_request', team_id=team.id, req_id=r.id) }}"
                 hx-target="#team-members" hx-swap="outerHTML">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Reject</button>
+            <button type="submit" class="link link-error">Reject</button>
           </form>
         </td>
       </tr>

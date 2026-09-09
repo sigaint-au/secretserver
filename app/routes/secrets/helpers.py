@@ -169,7 +169,7 @@ def _render_reveal_access_panel(
     html += (
         f"<script>"
         f'(function(){{var d=document.getElementById("access-dlg-{secret_id}");'
-        f"if(d&&window.oatOpenDialog)window.oatOpenDialog(d);"
+        f"if(d&&window.openDialog)window.openDialog(d);"
         f"else if(d&&d.showModal)d.showModal();}})();"
         f"</script>"
     )
@@ -227,7 +227,7 @@ def _reveal_toggle_html(
         >>> html = _reveal_toggle_html(project_id, secret_id, revealed=True)
     """
     cell_id, toggle_id = _reveal_cell_ids(secret_id, cell, version_id)
-    # The list-row toggle lives inside the secret kebab ot-dropdown; history
+    # The list-row toggle lives inside the secret kebab dropdown menu; history
     # toggles sit in the acts cell. Pass the popover id so the swapped-in
     # Hide control renders as a proper menu item.
     menu = None

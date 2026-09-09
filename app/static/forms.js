@@ -57,10 +57,50 @@ document.addEventListener('input', function (ev) {
   });
 })();
 
-/* Machine token create: scope chips (ot-taginput) + restrict toggle.
+/* Role editor Form/YAML switch (daisyUI tabs pattern).
+   Hook: .role-mode-tabs [role="tab"][data-mode] with #mode-<mode>-panel
+   siblings. Replaces the former oat.ink ot-tabs behavior. */
+(function () {
+  function selectTab(list, btn) {
+    const tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"][data-mode]'));
+    tabs.forEach(function (t) {
+      const on = t === btn;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      t.classList.toggle('active', on);
+      const panel = t.getAttribute('aria-controls') && document.getElementById(t.getAttribute('aria-controls'));
+      if (panel) panel.hidden = !on;
+    });
+  }
+  function boot(root) {
+    (root || document).querySelectorAll('.role-mode-tabs').forEach(function (list) {
+      if (list._modeBound) return;
+      list._modeBound = true;
+      list.addEventListener('click', function (e) {
+        const btn = e.target.closest && e.target.closest('[role="tab"][data-mode]');
+        if (btn && list.contains(btn)) selectTab(list, btn);
+      });
+      list.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        const tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"][data-mode]'));
+        const i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        e.preventDefault();
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        if (next) {
+          selectTab(list, next);
+          next.focus();
+        }
+      });
+    });
+  }
+  onContent(boot);
+})();
+
+/* Machine token create: scope chips (ss-taginput) + restrict toggle.
    Hook: form[data-scope-form] with [data-scope-toggle/body/tags/hidden],
    [data-token-role], [data-token-write-warn], [data-scope-preset] buttons.
-   The ot-taginput widget itself is untouched; only its value is read. */
+   The ss-taginput widget itself is untouched; only its value is read. */
 (function () {
   /* Read tag list from the tag input (array- or comma-string-valued). */
   function tagsOf(el) {

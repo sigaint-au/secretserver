@@ -1,7 +1,7 @@
 <section>
   <h2>Pinned secrets</h2>
   {% if pins %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Key</th>
@@ -38,13 +38,13 @@
       <input type="hidden" name="tab" value="activity">
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search recent activity">
+        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search recent activity" class="input">
       </fieldset>
-      {% if activity_q %}<a class="button ghost small" href="{{ url_for('profile', tab='activity') }}">Clear search</a>{% endif %}
+      {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if recent %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Key</th>

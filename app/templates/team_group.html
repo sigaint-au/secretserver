@@ -11,10 +11,10 @@
 <div class="page-head">
   <div class="section-head-main">
     <h1>{{ group.name }}</h1>
-    <span class="badge" data-variant="secondary">{{ group.source }}</span>
+    <span class="badge badge-soft" >{{ group.source }}</span>
   </div>
   <div class="section-tools">
-    <a class="button outline small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Back to groups</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}">Back to groups</a>
   </div>
 </div>
 <p class="page-desc muted">
@@ -28,14 +28,14 @@
   <h2>Settings</h2>
   <form method="post" action="{{ url_for('update_team_group', team_id=team.id, group_id=group.id) }}" class="row">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Name <input type="text" name="name" required value="{{ group.name }}"></label>
+    <label>Name <input type="text" name="name" required value="{{ group.name }}" class="input"></label>
     {% if group.source != 'manual' %}
     <label>Directory group key
       <input type="text" name="external_key" value="{{ group.external_key or '' }}"
-             placeholder="e.g. cn=ops,ou=groups,dc=example,dc=com  or  platform-ops">
+             placeholder="e.g. cn=ops,ou=groups,dc=example,dc=com  or  platform-ops" class="input">
     </label>
     {% endif %}
-    <button type="submit">Save</button>
+    <button type="submit" class="btn btn-neutral">Save</button>
   </form>
 </section>
 {% endif %}
@@ -48,10 +48,10 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search members">
+               placeholder="Search" autocomplete="off" aria-label="Search members" class="input">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}">Clear search</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}">Clear search</a>
       {% endif %}
     </form>
   </div>
@@ -59,20 +59,20 @@
   <form method="post" action="{{ url_for('add_group_member', team_id=team.id, group_id=group.id) }}" class="row">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>User email
-      <input type="email" name="email" required class="user-suggest"
+      <input type="email" name="email" required class="user-suggest input"
              list="user-suggest-list" placeholder="e.g. alice@example.com" autocomplete="off">
     </label>
-    <button type="submit">Add member</button>
+    <button type="submit" class="btn btn-neutral">Add member</button>
   </form>
   {% endif %}
   {% if group_members %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>User</th><th>Source</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for m in group_members %}
       <tr>
         <td>{{ m.name or m.email }} <span class="muted">{{ m.email }}</span></td>
-        <td><span class="badge" data-variant="secondary">{{ m.source }}</span></td>
+        <td><span class="badge badge-soft" >{{ m.source }}</span></td>
         <td class="acts">
           {% if is_admin %}
           <form method="post"
@@ -80,7 +80,7 @@
                 class="inline"
                 onsubmit="return confirm('Remove {{ m.email }} from this group?')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Remove</button>
+            <button type="submit" class="link link-error">Remove</button>
           </form>
           {% endif %}
         </td>
@@ -100,7 +100,7 @@
   <form method="post" action="{{ url_for('delete_team_group', team_id=team.id, group_id=group.id) }}"
         onsubmit="return confirm('Delete group “{{ group.name }}”?')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <button type="submit" data-variant="danger">Delete group</button>
+    <button type="submit" class="btn btn-error">Delete group</button>
   </form>
 </section>
 {% endif %}

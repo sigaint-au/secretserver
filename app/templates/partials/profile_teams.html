@@ -4,7 +4,7 @@
     <a href="{{ url_for('teams') }}" class="muted">All teams →</a>
   </div>
   {% if teams %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -19,7 +19,7 @@
         <td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
         <td>
         {% if t.role %}
-        <span class="badge" data-variant="secondary" title="{{ role_descriptions.get(t.role, '') }}">{{ t.role }}</span>
+        <span class="badge badge-soft" title="{{ role_descriptions.get(t.role, '') }}">{{ t.role }}</span>
         {% else %}
         <span class="muted">-</span>
         {% endif %}
@@ -39,7 +39,7 @@
 <section>
   <h2>Pending join requests</h2>
   <p class="muted">Waiting for a team owner or admin to approve.</p>
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -51,7 +51,7 @@
     {% for r in pending_joins %}
       <tr>
         <td>{{ r.team_name }}</td>
-        <td><span class="badge" data-variant="secondary">{{ r.role }}</span></td>
+        <td><span class="badge badge-soft" >{{ r.role }}</span></td>
         <td class="muted">{{ r.created_at }}</td>
       </tr>
     {% endfor %}

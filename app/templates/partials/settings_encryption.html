@@ -1,7 +1,7 @@
 {% set c = encryption.summary.counts %}
 
 {% if encryption.legacy_hsm_count %}
-<div role="alert" data-variant="warning">
+<div role="alert" class="alert alert-warning">
   <strong>⚠ {{ encryption.legacy_hsm_count }} project(s) have no HSM slot assigned and cannot be decrypted.</strong>
   Link them to a slot immediately from the slot menu below.
 </div>
@@ -12,15 +12,15 @@
     <h2>Server-wide key</h2>
   </div>
   <div class="table">
-    <table>
+    <table class="table">
       <tbody>
         <tr>
           <th scope="row">Status</th>
           <td>
             {% if encryption.master_key_is_default %}
-            <span class="badge" data-variant="danger">Default</span>
+            <span class="badge badge-soft badge-error" >Default</span>
             {% else %}
-            <span class="badge" data-variant="success">Custom</span>
+            <span class="badge badge-soft badge-success" >Custom</span>
             {% endif %}
           </td>
         </tr>
@@ -39,70 +39,70 @@
 <section class="crypto-panel">
   <div class="section-head">
     <h2>HSM slots</h2>
-    <a class="button outline small" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
   </div>
   {% if encryption.hsm_slots %}
-  <div class="table table-unclipped"><table>
+  <div class="table table-unclipped"><table class="table">
     <thead><tr><th>Name</th><th>PKCS#11 URL</th><th>Status</th><th class="acts-menu"></th></tr></thead>
     <tbody>
     {% for slot in encryption.hsm_slots %}
       <tr>
         <td>
            {{ slot.name }}
-           {% if slot.is_default %}<span class="badge" data-variant="primary">default</span>{% endif %}
+           {% if slot.is_default %}<span class="badge badge-neutral">default</span>{% endif %}
            {% if slot.project_count %}<span class="muted">({{ slot.project_count }} project keys)</span>{% endif %}
         </td>
         <td class="muted col-note"><code class="k">{{ slot.pkcs11_url|redact_pin }}</code></td>
         <td>
           {% if slot.available %}
-          <span class="badge" data-variant="success">Connected</span>
+          <span class="badge badge-soft badge-success" >Connected</span>
           {% else %}
-          <span class="badge" data-variant="danger">Offline</span>
+          <span class="badge badge-soft badge-error" >Offline</span>
           {% endif %}
         </td>
         <td class="acts-menu">
           {% set _menu = 'slot-menu-' ~ slot.id %}
-          <ot-dropdown>
-            <button type="button" class="ghost icon" popovertarget="{{ _menu }}" title="Actions for {{ slot.name }}" aria-label="Actions for {{ slot.name }}">
+          <div class="drop-pop">
+            <button type="button" class="btn btn-ghost btn-square btn-sm" style="anchor-name:--{{ _menu }}" popovertarget="{{ _menu }}" title="Actions for {{ slot.name }}" aria-label="Actions for {{ slot.name }}">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
                 <circle cx="8" cy="3" r="1.5"/>
                 <circle cx="8" cy="8" r="1.5"/>
                 <circle cx="8" cy="13" r="1.5"/>
               </svg>
             </button>
-            <menu popover id="{{ _menu }}">
-              <button type="button" role="menuitem" class="ghost"
+            <menu popover id="{{ _menu }}" class="menu dropdown-content" style="position-anchor:--{{ _menu }}">
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       data-nav="{{ url_for('hsm_slot_new_wizard', slot_id=slot.id) }}"
-                      popovertarget="{{ _menu }}" popovertargetaction="hide">Edit</button>
-              <button type="button" role="menuitem" class="ghost"
+                      popovertarget="{{ _menu }}" popovertargetaction="hide">Edit</button></li>
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       hx-post="{{ url_for('server_settings', tab='encryption') }}"
                       hx-vals='{"action":"hsm_slot_test","slot_id":"{{ slot.id }}"}'
                        data-toast-success="Connection test completed"
                       hx-target="body" hx-swap="outerHTML"
-                      popovertarget="{{ _menu }}" popovertargetaction="hide">Test connection</button>
+                      popovertarget="{{ _menu }}" popovertargetaction="hide">Test connection</button></li>
               {% if encryption.legacy_hsm_count %}
-              <button type="button" role="menuitem" class="ghost"
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       hx-post="{{ url_for('server_settings', tab='encryption') }}"
                       hx-vals='{"action":"hsm_slot_link","slot_id":"{{ slot.id }}"}'
                       hx-target="body" hx-swap="outerHTML"
                       hx-confirm="Link {{ encryption.legacy_hsm_count }} legacy HSM project(s) to this slot?"
-                      popovertarget="{{ _menu }}" popovertargetaction="hide">Link legacy project(s)</button>
+                      popovertarget="{{ _menu }}" popovertargetaction="hide">Link legacy project(s)</button></li>
               {% endif %}
-              <button type="button" role="menuitem" class="ghost"
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       hx-post="{{ url_for('server_settings', tab='encryption') }}"
                       hx-vals='{"action":"hsm_slot_rotate","slot_id":"{{ slot.id }}"}'
                       hx-target="body" hx-swap="outerHTML"
                       hx-confirm="Rotate KEK for slot '{{ slot.name }}' and re-wrap all its project keys?"
-                      popovertarget="{{ _menu }}" popovertargetaction="hide">Rotate KEK</button>
-              <hr>
-              <button type="button" role="menuitem" class="ghost" data-variant="danger"
-                      hx-post="{{ url_for('server_settings', tab='encryption') }}"
-                      hx-vals='{"action":"hsm_slot_delete","slot_id":"{{ slot.id }}"}'
-                      hx-target="body" hx-swap="outerHTML"
-                      hx-confirm="Delete HSM slot “{{ slot.name }}”?"
-                      popovertarget="{{ _menu }}" popovertargetaction="hide">Delete</button>
+                      popovertarget="{{ _menu }}" popovertargetaction="hide">Rotate KEK</button></li>
+              <li aria-hidden="true"><hr></li>
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm text-error"
+           hx-post="{{ url_for('server_settings', tab='encryption') }}"
+           hx-vals='{"action":"hsm_slot_delete","slot_id":"{{ slot.id }}"}'
+           hx-target="body" hx-swap="outerHTML"
+           hx-confirm="Delete HSM slot “{{ slot.name }}”?"
+           popovertarget="{{ _menu }}" popovertargetaction="hide">Delete</button></li>
             </menu>
-          </ot-dropdown>
+          </div>
         </td>
       </tr>
     {% endfor %}
@@ -116,14 +116,14 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="hsm_migrate_all">
     <label class="flex-2">Migrate all local project keys to HSM slot
-      <select name="target_slot" required>
+      <select name="target_slot" required class="select">
         {% for slot in encryption.hsm_slots %}
         <option value="{{ slot.id }}">{{ slot.name }}</option>
         {% endfor %}
       </select>
     </label>
     <button type="submit"
-            onclick="return confirm('Migrate all {{ c.local }} local project key(s) to the selected HSM slot? All secrets will be re-encrypted.')">
+            onclick="return confirm('Migrate all {{ c.local }} local project key(s) to the selected HSM slot? All secrets will be re-encrypted.')" class="btn btn-neutral">
       Migrate all local to HSM
     </button>
   </form>
@@ -138,17 +138,17 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ encryption_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search projects">
+               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input">
       </fieldset>
       {% if encryption_q %}
-      <a class="button ghost small" href="{{ url_for('server_settings', tab='encryption') }}">Clear search</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('server_settings', tab='encryption') }}">Clear search</a>
       {% endif %}
     </form>
   </div>
 
   {% set projects = encryption.summary.projects %}
   {% if projects %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -175,7 +175,7 @@
         </td>
         <td class="muted">
           {% if p.provider == 'hsm' %}
-            {% if p.hsm_slot_name %}{{ p.hsm_slot_name }}{% else %}<span class="badge" data-variant="danger" title="No HSM slot assigned">⚠ No slot</span>{% endif %}
+            {% if p.hsm_slot_name %}{{ p.hsm_slot_name }}{% else %}<span class="badge badge-soft badge-error" title="No HSM slot assigned">⚠ No slot</span>{% endif %}
           {% else %}-{% endif %}
         </td>
         <td class="muted">
@@ -192,22 +192,22 @@
         <td class="acts-menu">
           {% if p.provider == 'local' or (p.provider == 'hsm' and p.pending) %}
           {% set _menu = 'pp-menu-' ~ p.project_id %}
-          <ot-dropdown>
-            <button type="button" class="ghost icon" popovertarget="{{ _menu }}" title="Actions for {{ p.project_name }}" aria-label="Actions for {{ p.project_name }}">
+          <div class="drop-pop">
+            <button type="button" class="btn btn-ghost btn-square btn-sm" style="anchor-name:--{{ _menu }}" popovertarget="{{ _menu }}" title="Actions for {{ p.project_name }}" aria-label="Actions for {{ p.project_name }}">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
                 <circle cx="8" cy="3" r="1.5"/>
                 <circle cx="8" cy="8" r="1.5"/>
                 <circle cx="8" cy="13" r="1.5"/>
               </svg>
             </button>
-            <menu popover id="{{ _menu }}">
-              <button type="button" role="menuitem" class="ghost"
+            <menu popover id="{{ _menu }}" class="menu dropdown-content" style="position-anchor:--{{ _menu }}">
+              <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       data-nav="{{ url_for('project_detail', project_id=p.project_id, tab='settings') }}"
                       popovertarget="{{ _menu }}" popovertargetaction="hide">
                 {% if p.provider == 'local' %}Migrate to HSM{% elif p.pending %}Re-encrypt{% endif %}
-              </button>
+              </button></li>
             </menu>
-          </ot-dropdown>
+          </div>
           {% endif %}
         </td>
       </tr>

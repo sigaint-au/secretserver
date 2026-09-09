@@ -7,19 +7,19 @@
         <fieldset class="group search-input">
           {% include "partials/search_icon.html" %}
           <input type="search" name="q" value="{{ search_q or '' }}"
-                 placeholder="Search" autocomplete="off" aria-label="Search projects">
+                 placeholder="Search" autocomplete="off" aria-label="Search projects" class="input">
         </fieldset>
         {% if search_q %}
-        <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear search</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear search</a>
         {% endif %}
       </form>
       {% if can_create_projects %}
-      <a class="button outline small" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
       {% endif %}
     </div>
   </div>
   {% if projects %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>Name</th><th>Description</th><th>Encryption</th><th>ID</th>{% if can_manage_team %}<th class="acts-col" aria-label="Actions"></th>{% endif %}</tr></thead>
     <tbody>
     {% for p in projects %}
@@ -39,7 +39,7 @@
                 class="inline"
                 onsubmit="return confirm('Delete project “{{ p.name }}” and all its data? This cannot be undone.')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Delete</button>
+            <button type="submit" class="link link-error">Delete</button>
           </form>
         </td>
         {% endif %}

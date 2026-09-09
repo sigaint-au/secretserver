@@ -12,7 +12,7 @@
         <label class="span-2">Description
           <input type="text" name="description" maxlength="500"
                  value="{{ project.description or '' }}"
-                 placeholder="Short purpose for this project">
+                 placeholder="Short purpose for this project" class="input">
           <span class="field-hint">Shown at the top of this project alongside its name.</span>
         </label>
       </div>
@@ -26,7 +26,7 @@
           Require approval to reveal secrets
         </label>
         <label>Default access for new secrets
-          <select name="default_access_mode">
+          <select name="default_access_mode" class="select">
             <option value="inherit" {% if (project.default_access_mode or 'inherit') == 'inherit' %}selected{% endif %}>
               Inherit team / project roles
             </option>
@@ -46,7 +46,7 @@
       </div>
     </fieldset>
     <p class="form-actions">
-      <button type="submit">Save changes</button>
+      <button type="submit" class="btn btn-neutral">Save changes</button>
     </p>
   </form>
 </section>
@@ -85,7 +85,7 @@
       </div>
     </div>
     <div class="crypto-sync">
-      <span class="badge" data-variant="{% if project_crypto and not project_master_rows %}success{% elif project_master_rows %}warning{% else %}secondary{% endif %}">
+      <span class="badge {% if project_crypto and not project_master_rows %}badge-soft badge-success{% elif project_master_rows %}badge-soft badge-warning{% else %}badge-soft{% endif %}">
         {% if project_crypto and not project_master_rows %}In sync{% elif project_master_rows %}{{ project_master_rows }} pending{% else %}Server key{% endif %}
       </span>
       {% if can_manage_keys and project_crypto and project_master_rows %}
@@ -98,7 +98,7 @@
         {% if project_crypto.key_provider == 'hsm' and project_crypto.hsm_slot_id %}
         <input type="hidden" name="hsm_slot" value="{{ project_crypto.hsm_slot_id }}">
         {% endif %}
-        <button type="submit" class="button small">Re-encrypt {{ project_master_rows }}</button>
+        <button type="submit" class="btn btn-sm">Re-encrypt {{ project_master_rows }}</button>
       </form>
       {% endif %}
     </div>
@@ -120,14 +120,14 @@
       {% if hsm_slots %}
       <label class="crypto-migrate-select">
         <span class="field-label">Target slot</span>
-        <select name="target_slot">
+        <select name="target_slot" class="select">
           {% for s in hsm_slots %}
           <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
           {% endfor %}
         </select>
       </label>
       {% endif %}
-      <button type="submit" class="button outline small">Migrate to HSM</button>
+      <button type="submit" class="btn btn-outline btn-sm">Migrate to HSM</button>
     </form>
   </div>
   {% endif %}
@@ -160,7 +160,7 @@
     </fieldset>
     {% if hsm_slots %}
     <label class="crypto-hsm-slot" data-hsm-slot hidden>HSM slot
-      <select name="hsm_slot">
+      <select name="hsm_slot" class="select">
         {% for s in hsm_slots %}
         <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
         {% endfor %}
@@ -168,7 +168,7 @@
     </label>
     {% endif %}
     <p class="form-actions">
-      <button type="submit">Adopt project key</button>
+      <button type="submit" class="btn btn-neutral">Adopt project key</button>
     </p>
   </form>
   <script>
@@ -197,7 +197,7 @@
   <form method="post" action="{{ url_for('delete_project', project_id=project.id) }}"
         onsubmit="return confirm('Delete project “{{ project.name }}” and all its data? This cannot be undone.')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <button type="submit" data-variant="danger">Delete project</button>
+    <button type="submit" class="btn btn-error">Delete project</button>
   </form>
 </section>
 {% endif %}

@@ -1,7 +1,8 @@
 {# CLI login dialog. Opened from the profile security tab.
    On open it shows a "Generate command" button; submitting swaps in the
    freshly minted command + Copy button via cli_login_command. #}
-<dialog id="cli-login-dlg" closedby="any" class="access-dlg" aria-labelledby="cli-login-dlg-title">
+<dialog id="cli-login-dlg" closedby="any" class="modal access-dlg" aria-labelledby="cli-login-dlg-title">
+  <div class="modal-box">
   <form method="post"
         action="{{ url_for('cli_login_command') }}"
         hx-post="{{ url_for('cli_login_command') }}"
@@ -16,8 +17,9 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     </div>
     <footer>
-      <button type="button" class="outline" data-close-dialog="cli-login-dlg">Cancel</button>
-      <button type="submit">Generate command</button>
+      <button type="button" class="btn btn-outline" data-close-dialog="cli-login-dlg">Cancel</button>
+      <button type="submit" class="btn btn-neutral">Generate command</button>
     </footer>
   </form>
+  </div>
 </dialog>

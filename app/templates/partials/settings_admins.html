@@ -3,7 +3,7 @@
   <p class="muted">Global admins can access every team, every project, and all server settings.</p>
   {% set admin_users = users|selectattr('is_global_admin')|list %}
   {% if admin_users %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr><th>User</th><th>Role</th><th class="acts-col" aria-label="Actions"></th></tr>
     </thead>
@@ -20,7 +20,7 @@
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="action" value="demote">
             <input type="hidden" name="user_id" value="{{ u.id }}">
-            <button type="submit" class="link danger">Remove</button>
+            <button type="submit" class="link link-error">Remove</button>
           </form>
           {% else %}
           <span class="muted">you</span>
@@ -37,10 +37,10 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="promote">
     <label class="flex-2">User email
-      <input type="email" name="email" required class="user-suggest"
+      <input type="email" name="email" required class="user-suggest input"
              list="user-suggest-list" placeholder="e.g. alice@example.com" autocomplete="off">
     </label>
-    <button type="submit">Make global admin</button>
+    <button type="submit" class="btn btn-neutral">Make global admin</button>
   </form>
 </section>
 

@@ -8,14 +8,14 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search teams">
+               placeholder="Search" autocomplete="off" aria-label="Search teams" class="input">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('teams') }}">Clear search</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('teams') }}">Clear search</a>
       {% endif %}
     </form>
     {% if can_create_team %}
-    <button type="button" class="button outline small"
+    <button type="button" class="btn btn-outline btn-sm"
             data-open-dialog="create-team-dlg">Add team</button>
     {% endif %}
   </div>
@@ -24,7 +24,7 @@
 
 <section class="list-panel">
 {% if teams %}
-<div class="table"><table>
+<div class="table"><table class="table">
   <thead><tr><th>Name</th><th>Role</th><th>Projects</th></tr></thead>
   <tbody>
   {% for t in teams %}
@@ -80,7 +80,7 @@
     </li>
   </ol>
   <p class="setup-guide-action">
-    <button type="button" class="button" data-open-dialog="create-team-dlg">Create your first team</button>
+    <button type="button" class="btn" data-open-dialog="create-team-dlg">Create your first team</button>
   </p>
 </div>
 {% else %}
@@ -94,7 +94,8 @@
 </section>
 
 {% if can_create_team %}
-<dialog id="create-team-dlg" closedby="any" class="access-dlg">
+<dialog id="create-team-dlg" closedby="any" class="modal access-dlg">
+  <div class="modal-box">
   <form method="post" action="{{ url_for('create_team') }}">
     <header>
       <h3>Add team</h3>
@@ -104,14 +105,15 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <label>Name
         <input type="text" name="name" required placeholder="e.g. Platform"
-               autocomplete="off" maxlength="200">
+               autocomplete="off" maxlength="200" class="input">
       </label>
     </div>
     <footer>
-      <button type="button" class="outline" data-close-dialog="create-team-dlg">Cancel</button>
-      <button type="submit">Create team</button>
+      <button type="button" class="btn btn-outline" data-close-dialog="create-team-dlg">Cancel</button>
+      <button type="submit" class="btn btn-neutral">Create team</button>
     </footer>
   </form>
+  </div>
 </dialog>
 {% endif %}
 {% endblock %}

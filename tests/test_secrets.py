@@ -891,7 +891,7 @@ class TestSecrets:
         plain_copy = r.data[
             r.data.index(b'data-copy-target="plain-view"') - 100 :
         ]
-        assert b'class="button outline small copy-btn"' in plain_copy
+        assert b'class="btn btn-outline btn-sm copy-btn"' in plain_copy
         assert b'id="toggle-edit-mode"' in r.data
 
     def _secret_row(self, sid):

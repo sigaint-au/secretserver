@@ -4,10 +4,11 @@
   <div class="section-head">
     <h2>Folders</h2>
     <div class="section-tools">
-      <button type="button" class="button outline small" data-open-dialog="create-subfolder-dlg">Add folder</button>
+      <button type="button" class="btn btn-outline btn-sm" data-open-dialog="create-subfolder-dlg">Add folder</button>
     </div>
   </div>
-  <dialog id="create-subfolder-dlg" closedby="any" class="access-dlg">
+  <dialog id="create-subfolder-dlg" closedby="any" class="modal access-dlg">
+  <div class="modal-box">
     <form method="post" action="{{ url_for('create_folder', project_id=project_id) }}">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="back" value="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id) }}">
@@ -17,17 +18,18 @@
       </header>
       <div>
         <label>Folder path
-          <input type="text" name="path" required autocomplete="off" value="{{ folder.path }}/">
+          <input type="text" name="path" required autocomplete="off" value="{{ folder.path }}/" class="input">
         </label>
       </div>
       <footer>
-        <button type="button" class="outline" data-close-dialog="create-subfolder-dlg">Cancel</button>
-        <button type="submit">Create</button>
+        <button type="button" class="btn btn-outline" data-close-dialog="create-subfolder-dlg">Cancel</button>
+        <button type="submit" class="btn btn-neutral">Create</button>
       </footer>
     </form>
-  </dialog>
+    </div>
+</dialog>
   {% if child_folders %}
-  <div class="table"><table><thead><tr><th>Folder</th><th>Access</th></tr></thead><tbody>
+  <div class="table"><table class="table"><thead><tr><th>Folder</th><th>Access</th></tr></thead><tbody>
   {% for child in child_folders %}<tr><td><a href="{{ url_for('folder_view', project_id=project_id, folder_id=child.id) }}"><code class="k">{{ child.path }}</code></a></td><td class="muted">{{ child.access_mode }}</td></tr>{% endfor %}
   </tbody></table></div>
   {% else %}
@@ -40,8 +42,8 @@
 <section>
   <div class="section-head"><h2>Secrets</h2></div>
   {% if secrets %}
-  <div class="table"><table><thead><tr><th>Key</th><th>Kind</th><th>Updated</th></tr></thead><tbody>
-  {% for secret in secrets %}<tr><td class="col-key"><a href="{{ url_for('secret_view', project_id=project_id, secret_id=secret.id) }}"><code class="k">{{ (secret.key or '').split('/')[-1] }}</code></a></td><td><span class="badge" data-variant="secondary">{{ secret.kind or 'plain' }}</span></td><td class="muted">{{ secret.updated_at|time_ago if secret.updated_at else '-' }}</td></tr>{% endfor %}
+  <div class="table"><table class="table"><thead><tr><th>Key</th><th>Kind</th><th>Updated</th></tr></thead><tbody>
+  {% for secret in secrets %}<tr><td class="col-key"><a href="{{ url_for('secret_view', project_id=project_id, secret_id=secret.id) }}"><code class="k">{{ (secret.key or '').split('/')[-1] }}</code></a></td><td><span class="badge badge-soft" >{{ secret.kind or 'plain' }}</span></td><td class="muted">{{ secret.updated_at|time_ago if secret.updated_at else '-' }}</td></tr>{% endfor %}
   </tbody></table></div>
   {% else %}
   {% set icon = 'key' %}
@@ -58,8 +60,8 @@
         hx-post="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}"
         hx-target="#folder-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Access mode<select name="access_mode">{% for mode in access_modes %}<option value="{{ mode }}" {% if folder.access_mode == mode %}selected{% endif %}>{{ access_mode_labels.get(mode, mode) }}</option>{% endfor %}</select></label>
-    <button type="submit">Save settings</button>
+    <label>Access mode<select name="access_mode" class="select">{% for mode in access_modes %}<option value="{{ mode }}" {% if folder.access_mode == mode %}selected{% endif %}>{{ access_mode_labels.get(mode, mode) }}</option>{% endfor %}</select></label>
+    <button type="submit" class="btn btn-neutral">Save settings</button>
   </form>
 </section>
 {% set panel_title = 'Folder role bindings' %}
@@ -89,10 +91,10 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ effective_access_q or '' }}"
-               placeholder="Search access" aria-label="Search effective access" autocomplete="off">
+               placeholder="Search access" aria-label="Search effective access" autocomplete="off" class="input">
       </fieldset>
       {% if effective_access_q %}
-      <a class="button ghost small" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}"
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}"
          hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}"
          hx-target="#folder-access-results"
          hx-swap="outerHTML"
@@ -104,7 +106,7 @@
   <div id="folder-access-results">
   {% if effective_access %}
   <div class="table">
-    <table>
+    <table class="table">
       <thead>
         <tr>
           <th>Subject</th>
@@ -122,10 +124,10 @@
             {% if a.subject_name and a.subject_email %}
             <span class="muted">{{ a.subject_email }}</span>
             {% endif %}
-            {% if a.is_global_admin %}<span class="badge" data-variant="warning">global admin</span>{% endif %}
+            {% if a.is_global_admin %}<span class="badge badge-soft badge-warning" >global admin</span>{% endif %}
           </td>
-          <td><span class="badge" data-variant="secondary">{{ a.subject_kind }}</span></td>
-          <td><span class="badge" data-variant="secondary">{{ a.role_name }}</span></td>
+          <td><span class="badge badge-soft" >{{ a.subject_kind }}</span></td>
+          <td><span class="badge badge-soft" >{{ a.role_name }}</span></td>
           <td class="muted">{{ a.scope_label or a.scope_kind }}</td>
           <td class="muted">{{ a.grant_kind }}{% if a.grant_subject and a.grant_subject != a.subject_email %} · {{ a.grant_subject }}{% endif %}</td>
         </tr>

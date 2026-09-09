@@ -1,6 +1,9 @@
-    /* Corvus theme for Oat – Black / White / Grey
+    /* Corvus theme for daisyUI – Black / White / Grey
        Primary: pure black & white
        Secondary: #677381 + #47817F (no cyan)
+       Base components come from the vendored daisyUI bundle
+       (vendor/daisyui.min.css); this file carries the Corvus shell,
+       page patterns, and component overrides (loaded last, so it wins).
     */
     :root {
       color-scheme: light dark;
@@ -68,9 +71,9 @@
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
-    /* Oat's component layer overrides the UA [hidden] rule on elements that
-       force display (role=alert, .badge). Restore hidden as an author rule
-       so `hidden` genuinely hides. */
+    /* Layered vendor styles can override the UA [hidden] rule on elements
+       that force display (role=alert, .badge). Restore hidden as an author
+       rule so `hidden` genuinely hides. */
     [hidden] { display: none !important; }
 
     /* ── Classification banner ── */
@@ -447,7 +450,7 @@
     .side-team {
       padding: 0 .25rem .65rem;
     }
-    /* Toasts: oat.ink ot.toast() - no custom host */
+    /* Toasts: daisyUI .toast host (#ss-toasts, built by app.js) */
     .reveal-wrap {
       display: flex;
       flex-direction: column;
@@ -976,8 +979,8 @@
       cursor: pointer;
       line-height: 1.35;
     }
-    /* Oat uses appearance:none + fixed 1rem; never set width:auto on checkboxes
-       (collapses them into a thin line). */
+    /* Checkboxes/radios are custom-styled (fixed 1.25rem box); never set
+       width:auto on them (collapses them into a thin line). */
     .check-row input[type="checkbox"],
     .check-row input[type="radio"],
     input[type="checkbox"].bulk-secret-cb,
@@ -1118,7 +1121,7 @@
       color: var(--muted-foreground);
       margin-top: .15rem;
     }
-    /* Sidebar badge sizing (oat .badge inside dark shell) */
+    /* Sidebar badge sizing (daisyUI .badge inside dark shell) */
     .sidebar-foot .who .badge {
       flex: 0 0 auto;
       font-size: .58rem;
@@ -1324,6 +1327,14 @@
       opacity: 1;
     }
     .page-edit-link svg { display: block; }
+    /* Bare field labels (replaces the former vendor base label rule).
+       Scoped labels (.field-grid, .check-row, dialogs) keep their own. */
+    form > label {
+      display: block;
+      font-size: .875rem;
+      font-weight: 550;
+      margin: 0 0 .65rem;
+    }
     .breadcrumb {
       margin: 0 0 .65rem;
       font-size: .9em;
@@ -1331,10 +1342,12 @@
     }
     .breadcrumb a { color: inherit; text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; color: var(--foreground); }
-    .breadcrumb ol {
+    .breadcrumb ul {
       font-size: var(--text-7);
       gap: .35rem;
       flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
     }
     .empty {
       margin: .75rem 0;
@@ -1520,7 +1533,7 @@
       color: var(--muted-foreground);
     }
     .error-action { margin: 0; }
-    .error-action .button { width: 100%; }
+    .error-action .btn { width: 100%; }
     .list-panel,
     .crypto-panel {
       background: var(--card);
@@ -1617,7 +1630,7 @@
     .preset-label { margin: .5rem 0 .25rem; }
     .version-label { font-size: .8rem; }
     /* Server-side section tabs (full-page ?tab= navigation).
-       oat <ot-tabs> is for client-side tabpanels only - not a fit here. */
+       Client-side tabpanels (role editor) use the same .tabs pattern. */
     .tabs {
       display: flex;
       flex-wrap: wrap;
@@ -1841,7 +1854,7 @@
       background: transparent;
       border-bottom-color: var(--foreground);
     }
-    /* Pagination: oat menu.buttons; disabled ends use native <button disabled> */
+    /* Pagination: daisyUI join; disabled ends use native <button disabled> */
     .pager {
       margin-top: 1rem;
       margin-bottom: 0;
@@ -1851,7 +1864,7 @@
       gap: var(--space-4);
       flex-wrap: wrap;
     }
-    .pager menu.buttons {
+    .pager .join {
       margin: 0;
     }
     .pager .pager-summary { font-size: var(--text-7); }
@@ -1877,8 +1890,8 @@
     .audit-action.audit-access_approved { color: var(--success); }
     .audit-action.audit-access_requested { color: var(--warning); }
     .audit-action.audit-machine_upsert { color: var(--muted-foreground); }
-    .card.danger-zone { border-color: var(--danger); }
-    .card.danger-zone > summary { color: var(--danger); font-weight: 600; }
+    .collapse.danger-zone { border: 1px solid var(--danger); }
+    .collapse.danger-zone > .collapse-title { color: var(--danger); font-weight: 600; }
     .audit-action.audit-exported { color: var(--warning); }
     .audit-filters {
       display: flex;
@@ -1912,7 +1925,7 @@
       font-size: .925rem;
     }
     .audit-table td { vertical-align: middle; }
-    /* due labels: oat .badge data-variant danger|warning (same as kind chips) */
+    /* due labels: daisyUI .badge soft danger|warning (same as kind chips) */
     .import-box { margin: 0 0 1rem; }
     .import-box textarea { width: 100%; font-family: ui-monospace, monospace; font-size: .85rem; }
     .import-preview-table { width: 100%; margin: 0 0 1rem; }
@@ -1960,14 +1973,14 @@
     .section-tools .toolbar { margin: 0; }
     /* Toolbar action buttons (History, Delete, Add…): match search-input height.
        Include buttons nested in form.inline (e.g. Delete next to History). */
-    .section-tools > :is(a, button).button.small,
-    .section-tools form.inline > :is(a, button).button.small,
-    .section-head > :is(a, button).button.small,
-    .section-head form.inline > :is(a, button).button.small,
-    .page-head > :is(a, button).button.small,
-    .page-head form.inline > :is(a, button).button.small,
-    .audit-filters :is(a, button).button.small,
-    .review-form-row > :is(a, button).button.small {
+    .section-tools > :is(a, button).btn.btn-sm,
+    .section-tools form.inline > :is(a, button).btn.btn-sm,
+    .section-head > :is(a, button).btn.btn-sm,
+    .section-head form.inline > :is(a, button).btn.btn-sm,
+    .page-head > :is(a, button).btn.btn-sm,
+    .page-head form.inline > :is(a, button).btn.btn-sm,
+    .audit-filters :is(a, button).btn.btn-sm,
+    .review-form-row > :is(a, button).btn.btn-sm {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -2044,7 +2057,7 @@
     .section-head-actions .kv-remove:hover {
       text-decoration: underline;
     }
-    /* Secret kind chips use the same oat .badge solid style as overdue/soon. */
+    /* Secret kind chips use the same daisyUI .badge soft style as overdue/soon. */
     .secret-title {
       display: inline-flex;
       align-items: center;
@@ -2390,7 +2403,7 @@
       opacity: .45;
       cursor: not-allowed;
     }
-    /* Secret list: locked mask button (opens oat dialog) */
+    /* Secret list: locked mask button (opens dialog) */
     button.secret-masked {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: .9em;
@@ -2409,29 +2422,42 @@
       color: var(--card-foreground, var(--foreground));
       box-shadow: var(--shadow-large, 0 8px 24px rgb(0 0 0 / .15));
     }
-    dialog.access-dlg > form {
+    /* daisyUI modal-box is a neutral wrapper here; the form rules below
+       carry the dialog look (same metrics as before). */
+    dialog.access-dlg .modal-box:has(> form) {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      max-width: none;
+    }
+    dialog.access-dlg .modal-box > form {
       display: flex;
       flex-direction: column;
       margin: 0;
     }
-    dialog.access-dlg > form > header {
+    dialog.access-dlg .modal-box > form > header,
+    #confirm-dlg .modal-box > header {
       padding: 1rem 1.15rem 0.5rem;
     }
-    dialog.access-dlg > form > header h3 {
+    dialog.access-dlg .modal-box > form > header h3,
+    #confirm-dlg .modal-box > header h3 {
       margin: 0 0 0.25rem;
       font-size: 1.05rem;
     }
-    dialog.access-dlg > form > header p {
+    dialog.access-dlg .modal-box > form > header p {
       margin: 0;
       font-size: 0.875rem;
       color: var(--muted-foreground);
     }
-    dialog.access-dlg > form > div {
+    dialog.access-dlg .modal-box > form > div,
+    #confirm-dlg .modal-box > div {
       padding: 0.5rem 1.15rem 0.25rem;
       overflow: visible;
       max-height: none;
     }
-    dialog.access-dlg > form > footer {
+    dialog.access-dlg .modal-box > form > footer,
+    #confirm-dlg .modal-box > footer {
       display: flex;
       justify-content: flex-end;
       gap: 0.5rem;
@@ -2462,10 +2488,31 @@
       word-break: break-all;
       overflow-wrap: anywhere;
     }
-    /* Acts column: oat dropdown kebab */
-    td.acts-menu ot-dropdown {
+    /* Acts column: daisyUI dropdown kebab over the native popover API.
+       The trigger anchors the menu; anchor-center keeps it under the kebab
+       where CSS anchor positioning is supported. */
+    td.acts-menu .drop-pop {
       display: inline-flex;
       vertical-align: middle;
+    }
+    menu[popover].dropdown-content {
+      margin: 0;
+      padding: .4rem;
+    }
+    menu[popover].dropdown-content hr {
+      margin: .3rem 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+    @supports (top: anchor(bottom)) {
+      menu[popover].dropdown-content {
+        position: fixed;
+        top: anchor(bottom);
+        justify-self: anchor-center;
+        margin-top: .25rem;
+        max-height: min(24rem, calc(100vh - 4rem));
+        overflow-y: auto;
+      }
     }
     td.acts-menu {
       width: 2.75rem;
@@ -2577,7 +2624,7 @@
       margin-top: .85rem;
     }
     .muted { color: var(--muted-foreground); font-size: .9em; }
-    /* Flashes: oat role="alert" - slight spacing under shell header */
+    /* Flashes: daisyUI alert - slight spacing under shell header */
     [role="alert"] { margin-bottom: 1rem; }
     #flashes [role="alert"] {
       display: flex;
@@ -2592,7 +2639,7 @@
     th, td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
     tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
     th { color: var(--muted-foreground); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
-    /* Responsive table container (oat .table): horizontal scroll on narrow
+    /* Responsive table container (.table): horizontal scroll on narrow
        screens instead of overflowing the card/viewport. Also supports sticky
        key/action columns on wide tables. */
     .table {
@@ -2647,7 +2694,16 @@
     .section-head .toolbar {
       margin: 0;
     }
-    /* Search input group: icon submit + field (same metrics as oat inputs) */
+    /* Joined field group (own layout; replaces the former vendor rule). */
+    fieldset.group {
+      display: flex;
+      align-items: stretch;
+      border: none;
+      padding: 0;
+      margin: 0;
+      min-inline-size: 0;
+    }
+    /* Search input group: icon submit + field (same metrics as daisyUI inputs) */
     fieldset.group.search-input {
       display: inline-flex;
       align-items: stretch;
@@ -2663,7 +2719,7 @@
     fieldset.group.search-input:focus-within {
       outline: none;
     }
-    /* Reset oat button chrome; icon stays square and unstretched */
+    /* Reset button chrome; icon stays square and unstretched */
     fieldset.group.search-input button.search-icon {
       all: unset;
       box-sizing: border-box;
@@ -2714,7 +2770,7 @@
       width: auto;
       margin: 0 !important;
       margin-block-start: 0 !important;
-      /* Match oat defaults: padding space-2/space-3, text-7, leading-normal */
+      /* Match input defaults: padding space-2/space-3, text-7, leading-normal */
       padding: .5rem .75rem .5rem .35rem !important;
       font-size: .875rem !important;
       line-height: 1.5 !important;
@@ -2925,9 +2981,9 @@
     .acts button.link:hover { text-decoration: underline; }
     .acts form.inline { margin-right: .75rem; }
     .acts form.inline:last-child { margin-right: 0; }
-    .acts .danger,
-    a.danger,
-    button.link.danger { color: var(--danger); }
+    .acts .link-error,
+    a.link-error,
+    button.link.link-error { color: var(--danger); }
     .acts a:focus-visible,
     .acts button.link:focus-visible {
       outline: 2px solid var(--ring);
@@ -2942,8 +2998,31 @@
       border-color: var(--border);
       text-decoration: none;
     }
-    /* Link-style Reveal/Hide for the history acts cell. The kebab-menu items
-       use .ghost and must keep oat's menu-item padding, so exclude them. */
+    /* Link-style Reveal/Hide for the history acts cell. The kebab-menu
+       toggle keeps its .ghost menu-item look (pinned hook), so exclude it. */
+    .acts .reveal-toggle.ghost {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      width: 100%;
+      padding: .45rem .7rem;
+      background: transparent;
+      border: none;
+      border-radius: .375rem;
+      font-size: .875rem;
+      font-weight: 500;
+      line-height: 1.3;
+      text-align: start;
+      cursor: pointer;
+      color: var(--foreground);
+    }
+    .acts .reveal-toggle.ghost:hover {
+      background: var(--accent);
+    }
+    .acts .reveal-toggle.ghost:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: -2px;
+    }
     .acts .reveal-toggle:not(.ghost) {
       font-size: .875rem;
       text-decoration: none;
@@ -3234,14 +3313,53 @@
       cursor: pointer;
     }
     .token-scope-body { margin-top: .85rem; }
-    .token-scope-chips ot-taginput {
-      display: block;
+    .token-scope-chips ss-taginput {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .4rem;
       width: 100%;
+      padding: .5rem .6rem;
+      background: var(--background);
+      border: 1px solid var(--input);
+      border-radius: var(--radius);
     }
-    .token-scope-chips ot-taginput input {
+    .token-scope-chips ss-taginput:focus-within {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 2px rgb(from var(--ring) r g b / .2);
+    }
+    .token-scope-chips ss-taginput .badge[data-tag] {
+      gap: .35rem;
+      padding-right: .35rem;
+    }
+    .token-scope-chips ss-taginput .tag-remove {
+      all: unset;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 0 .2rem;
+      line-height: 1;
+    }
+    .token-scope-chips ss-taginput .tag-remove:hover {
+      background: rgb(from var(--muted-foreground) r g b / .25);
+    }
+    .token-scope-chips ss-taginput .tag-remove:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 1px;
+    }
+    .token-scope-chips ss-taginput input {
+      flex: 1;
       min-width: 12rem;
+      height: auto;
+      padding: .15rem .1rem;
+      background: transparent;
+      border: none;
+      box-shadow: none;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: .85rem;
+    }
+    .token-scope-chips ss-taginput input:focus {
+      outline: none;
+      box-shadow: none;
     }
     .token-scope-presets {
       display: flex;

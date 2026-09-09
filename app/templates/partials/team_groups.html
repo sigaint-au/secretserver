@@ -12,10 +12,10 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search groups">
+               placeholder="Search" autocomplete="off" aria-label="Search groups" class="input">
       </fieldset>
       {% if search_q %}
-      <a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
          hx-get="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
          hx-target="#team-groups-results"
          hx-swap="outerHTML"
@@ -36,9 +36,9 @@
         hx-post="{{ url_for('create_team_group', team_id=team.id) }}"
         hx-target="#team-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Group name <input type="text" name="name" required placeholder="e.g. platform-ops"></label>
+    <label>Group name <input type="text" name="name" required placeholder="e.g. platform-ops" class="input"></label>
     <label>Source
-      <select name="source">
+      <select name="source" class="select">
         <option value="manual">manual</option>
         <option value="ldap">ldap</option>
         <option value="oidc">oidc</option>
@@ -46,20 +46,20 @@
     </label>
     <label>Directory group key
       <input type="text" name="external_key"
-             placeholder="e.g. cn=ops,ou=groups,dc=example,dc=com  or  platform-ops">
+             placeholder="e.g. cn=ops,ou=groups,dc=example,dc=com  or  platform-ops" class="input">
     </label>
-    <button type="submit">Create group</button>
+    <button type="submit" class="btn btn-neutral">Create group</button>
   </form>
   {% endif %}
   <div id="team-groups-results">
   {% if groups %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>Name</th><th>Source</th><th>External</th><th>Members</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for g in groups %}
       <tr>
         <td><a href="{{ url_for('team_group_detail', team_id=team.id, group_id=g.id) }}">{{ g.name }}</a></td>
-        <td><span class="badge" data-variant="secondary">{{ g.source }}</span></td>
+        <td><span class="badge badge-soft" >{{ g.source }}</span></td>
         <td class="muted"><code class="k">{{ g.external_key or '-' }}</code></td>
         <td>{{ g.member_count }}</td>
         <td class="acts">
@@ -70,7 +70,7 @@
                 hx-confirm="Delete group “{{ g.name }}”?"
                 class="inline">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Delete</button>
+            <button type="submit" class="link link-error">Delete</button>
           </form>
           {% endif %}
         </td>

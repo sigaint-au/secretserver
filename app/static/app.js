@@ -72,16 +72,52 @@ document.body.addEventListener('htmx:before:swap', function (e) {
   if (type.indexOf('json') !== -1 && e.preventDefault) e.preventDefault();
 });
 
-/* Toast bridge. Exposes window.ssToast for inline callers (e.g. JWT panel);
-   HTMX failures toast globally so error bodies never need swapping in. */
+/* Toast bridge (daisyUI toast + alert). Exposes window.ssToast for inline
+   callers (e.g. JWT panel); HTMX failures toast globally so error bodies
+   never need swapping in. */
 (function () {
-  /* Show a toast via oat.ink, falling back to console if not loaded yet. */
+  /* Show a toast, falling back to console when the DOM is unavailable. */
   function toast(msg, title, opts) {
-    if (window.ot && typeof ot.toast === 'function') {
-      ot.toast(String(msg || ''), title || '', opts || { duration: 2200 });
+    const text = String(msg || '');
+    const duration = (opts && opts.duration) || 2200;
+    if (!document || !document.body) {
+      if (window.console) console.info(text);
       return;
     }
-    if (window.console) console.info(msg);
+    let host = document.getElementById('ss-toasts');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'ss-toasts';
+      host.className = 'toast toast-top toast-end';
+      host.setAttribute('aria-live', 'polite');
+      document.body.appendChild(host);
+    }
+    const kind = (title === 'Error' || title === 'error') ? 'alert-error' : 'alert-success';
+    const el = document.createElement('div');
+    el.className = 'alert ' + kind;
+    el.setAttribute('role', 'alert');
+    if (title) {
+      const head = document.createElement('strong');
+      head.textContent = title;
+      el.appendChild(head);
+    }
+    const body = document.createElement('span');
+    body.textContent = text;
+    el.appendChild(body);
+    host.appendChild(el);
+    let timer = 0;
+    const dismiss = function () {
+      if (timer) window.clearTimeout(timer);
+      if (el.parentNode) el.parentNode.removeChild(el);
+    };
+    el.addEventListener('click', dismiss);
+    el.addEventListener('mouseenter', function () {
+      if (timer) window.clearTimeout(timer);
+    });
+    el.addEventListener('mouseleave', function () {
+      timer = window.setTimeout(dismiss, 1500);
+    });
+    if (duration > 0) timer = window.setTimeout(dismiss, duration);
   }
   window.ssToast = toast;
   /* Toast on failed HTMX responses (the JSON body itself is never swapped). */

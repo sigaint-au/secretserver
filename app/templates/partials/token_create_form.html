@@ -24,21 +24,21 @@
       <legend>Token</legend>
       <div class="field-grid">
         <label>Name
-          <input type="text" name="name" value="{{ default_name }}" placeholder="e.g. eso-prod" required autocomplete="off">
+          <input type="text" name="name" value="{{ default_name }}" placeholder="e.g. eso-prod" required autocomplete="off" class="input">
         </label>
         <label>Role
-          <select name="role" data-token-role aria-label="Token role">
+          <select name="role" data-token-role aria-label="Token role" class="select">
             <option value="service-read"{% if not compact %} selected{% endif %}>Read: metadata only, no plaintext</option>
             <option value="service-reveal"{% if compact %} selected{% endif %}>Reveal (fetch secrets for ESO)</option>
             <option value="service-write">Write (fetch and update)</option>
           </select>
         </label>
         <label class="span-2">Description
-          <input type="text" name="description" maxlength="500" placeholder="e.g. ESO pull for prod cluster" autocomplete="off">
+          <input type="text" name="description" maxlength="500" placeholder="e.g. ESO pull for prod cluster" autocomplete="off" class="input">
         </label>
         <label>Expires (days)
           <input type="number" name="expires_days" min="1" max="{{ max_expiry_days|default(3650) }}"
-                 placeholder="{% if default_token_days %}{{ default_token_days }} (team default){% else %}Never{% endif %}">
+                 placeholder="{% if default_token_days %}{{ default_token_days }} (team default){% else %}Never{% endif %}" class="input">
         </label>
       </div>
     </fieldset>
@@ -50,21 +50,21 @@
           <p class="muted token-scope-hint">Limit which secret keys this token can use.</p>
         </div>
         <label class="token-scope-switch">
-          <input type="checkbox" role="switch" data-scope-toggle
+          <input type="checkbox" role="switch" class="toggle" data-scope-toggle
                  aria-controls="{{ form_id }}-scope-body" checked>
           Restrict keys
         </label>
       </div>
       <div class="token-scope-body" id="{{ form_id }}-scope-body" data-scope-body>
         <div class="token-scope-chips">
-          <ot-taginput data-scope-tags>
+          <ss-taginput data-scope-tags>
             <input type="text"
                    list="{{ form_id }}-key-suggest"
                    placeholder="Type a key or glob, then Enter (e.g. API_KEY or prod/*)"
                    maxlength="256"
                    autocomplete="off"
-                   aria-label="Add allowed secret key or pattern">
-          </ot-taginput>
+                   aria-label="Add allowed secret key or pattern" class="input">
+          </ss-taginput>
           <datalist id="{{ form_id }}-key-suggest">
             {% for sk in project_secret_keys|default([]) %}
             <option value="{{ sk }}"></option>
@@ -73,11 +73,11 @@
         </div>
         <div class="token-scope-presets" role="group" aria-label="Quick patterns">
           <span class="muted">Quick add:</span>
-          <button type="button" class="outline small" data-scope-preset="*">All keys (*)</button>
-          <button type="button" class="outline small" data-scope-preset="prod/*">prod/*</button>
-          <button type="button" class="outline small" data-scope-preset="DB_*">DB_*</button>
+          <button type="button" class="btn btn-outline small" data-scope-preset="*">All keys (*)</button>
+          <button type="button" class="btn btn-outline small" data-scope-preset="prod/*">prod/*</button>
+          <button type="button" class="btn btn-outline small" data-scope-preset="DB_*">DB_*</button>
           {% for sk in (project_secret_keys|default([]))[:5] %}
-          <button type="button" class="outline small" data-scope-preset="{{ sk }}">{{ sk }}</button>
+          <button type="button" class="btn btn-outline small" data-scope-preset="{{ sk }}">{{ sk }}</button>
           {% endfor %}
         </div>
         <p class="muted token-scope-help">
@@ -93,12 +93,12 @@
       </p>
     </div>
 
-    <div role="alert" data-variant="warning" data-token-write-warn hidden>
+    <div role="alert" data-token-write-warn hidden class="alert alert-warning">
       Write tokens create and update secrets via the machine API. Prefer reveal for ESO.
     </div>
 
     <p class="form-actions">
-      <button type="submit">Create machine account</button>
+      <button type="submit" class="btn btn-neutral">Create machine account</button>
     </p>
   </form>
 </section>

@@ -29,8 +29,8 @@
   <div class="section-head">
     <h2>Access review</h2>
     <div class="section-tools">
-      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='csv', q=search_q or None, scope=access_scope or None) }}">Export CSV</a>
-      <a class="button outline small" href="{{ url_for('admin_audit_access_export', format='json', q=search_q or None, scope=access_scope or None) }}">Export JSON</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='csv', q=search_q or None, scope=access_scope or None) }}">Export CSV</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='json', q=search_q or None, scope=access_scope or None) }}">Export JSON</a>
     </div>
   </div>
   <p class="muted">
@@ -42,26 +42,26 @@
     <fieldset class="group search-input">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search access grants">
+             placeholder="Search" autocomplete="off" aria-label="Search access grants" class="input">
     </fieldset>
     <label>Scope
-      <select name="scope">
+      <select name="scope" class="select">
         <option value="">All scopes</option>
         <option value="global" {% if access_scope == 'global' %}selected{% endif %}>Global</option>
         <option value="team" {% if access_scope == 'team' %}selected{% endif %}>Team</option>
         <option value="project" {% if access_scope == 'project' %}selected{% endif %}>Project</option>
       </select>
     </label>
-    <button type="submit" class="button outline small">Apply</button>
+    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or access_scope %}
     <div class="audit-filter-actions">
-      <a class="button ghost small" href="{{ url_for('admin_audit', tab='access') }}">Clear filters</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='access') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if access_rows %}
   <p class="muted">{{ access_pager.total }} access grants.</p>
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>User</th>
@@ -79,14 +79,14 @@
         <td>
           {{ r.name or r.email }}
           <span class="muted">{{ r.email }}</span>
-          {% if r.is_global_admin %}<span class="badge" data-variant="secondary">global admin</span>{% endif %}
-          {% if r.disabled %}<span class="badge" data-variant="danger">disabled</span>{% endif %}
+          {% if r.is_global_admin %}<span class="badge badge-soft" >global admin</span>{% endif %}
+          {% if r.disabled %}<span class="badge badge-soft badge-error" >disabled</span>{% endif %}
         </td>
-        <td><span class="badge" data-variant="secondary">{{ r.scope }}</span></td>
+        <td><span class="badge badge-soft" >{{ r.scope }}</span></td>
         <td>{{ r.team or '-' }}</td>
-        <td>{% if r.team_role %}<span class="badge" data-variant="secondary">{{ r.team_role }}</span>{% else %}-{% endif %}</td>
+        <td>{% if r.team_role %}<span class="badge badge-soft" >{{ r.team_role }}</span>{% else %}-{% endif %}</td>
         <td>{{ r.project or '-' }}</td>
-        <td>{% if r.project_role %}<span class="badge" data-variant="secondary">{{ r.project_role }}</span>{% else %}-{% endif %}</td>
+        <td>{% if r.project_role %}<span class="badge badge-soft" >{{ r.project_role }}</span>{% else %}-{% endif %}</td>
         <td class="muted"><code class="k">{{ r.access_via }}</code></td>
       </tr>
     {% endfor %}
@@ -111,8 +111,8 @@
   <div class="section-head">
     <h2>Role-change audit</h2>
     <div class="section-tools">
-      <a class="button outline small" href="{{ url_for('admin_audit_export', format='csv', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export CSV</a>
-      <a class="button outline small" href="{{ url_for('admin_audit_export', format='json', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export JSON</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export CSV</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export JSON</a>
     </div>
   </div>
   <p class="muted">
@@ -123,7 +123,7 @@
   <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
     <input type="hidden" name="tab" value="roles">
     <label>Show
-      <select name="role_actions">
+      <select name="role_actions" class="select">
         <option value="roles" {% if role_actions == 'roles' %}selected{% endif %}>Role changes</option>
         <option value="encryption" {% if role_actions == 'encryption' %}selected{% endif %}>Encryption keys</option>
         <option value="all" {% if role_actions == 'all' %}selected{% endif %}>All org events</option>
@@ -132,27 +132,27 @@
     <fieldset class="group search-input">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search role-change audit">
+             placeholder="Search" autocomplete="off" aria-label="Search role-change audit" class="input">
     </fieldset>
     <label>Actor email
       <input type="search" name="actor" value="{{ audit_actor or '' }}"
-             placeholder="e.g. alice@example.com" autocomplete="off">
+             placeholder="e.g. alice@example.com" autocomplete="off" class="input">
     </label>
     <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}">
+      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
     </label>
     <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}">
+      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
     </label>
-    <button type="submit" class="button outline small">Apply</button>
+    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_since or audit_until %}
     <div class="audit-filter-actions">
-      <a class="button ghost small" href="{{ url_for('admin_audit', tab='roles') }}">Clear filters</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='roles') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if role_rows %}
-  <div class="table"><table class="audit-table">
+  <div class="table"><table class="audit-table table">
     <thead>
       <tr>
         <th>When</th>
@@ -197,8 +197,8 @@
   <div class="section-head">
     <h2>Secret activity</h2>
     <div class="section-tools">
-      <a class="button outline small" href="{{ url_for('admin_audit_export', format='csv', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export CSV</a>
-      <a class="button outline small" href="{{ url_for('admin_audit_export', format='json', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export JSON</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export CSV</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export JSON</a>
     </div>
   </div>
   <p class="muted">
@@ -209,18 +209,18 @@
     <fieldset class="group search-input">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search secret activity">
+             placeholder="Search" autocomplete="off" aria-label="Search secret activity" class="input">
     </fieldset>
     <label>Actor email
       <input type="search" name="actor" value="{{ audit_actor or '' }}"
-             placeholder="e.g. alice@example.com" autocomplete="off">
+             placeholder="e.g. alice@example.com" autocomplete="off" class="input">
     </label>
     <label>IP address
       <input type="search" name="ip" value="{{ audit_ip or '' }}"
-             placeholder="e.g. 203.0.113.7" autocomplete="off">
+             placeholder="e.g. 203.0.113.7" autocomplete="off" class="input">
     </label>
     <label>Action
-      <select name="action">
+      <select name="action" class="select">
         <option value="">All actions</option>
         {% for a in secret_actions %}
         <option value="{{ a }}" {% if audit_action == a %}selected{% endif %}>{{ a }}</option>
@@ -228,24 +228,24 @@
       </select>
     </label>
     <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}">
+      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
     </label>
     <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}">
+      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
     </label>
     <label class="check-row">
       <input type="checkbox" name="hide_reveals" value="1" {% if hide_reveals %}checked{% endif %}>
       Hide reveals
     </label>
-    <button type="submit" class="button outline small">Apply</button>
+    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
     <div class="audit-filter-actions">
-      <a class="button ghost small" href="{{ url_for('admin_audit', tab='activity') }}">Clear filters</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='activity') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if secret_rows %}
-  <div class="table"><table class="audit-table">
+  <div class="table"><table class="audit-table table">
     <thead>
       <tr>
         <th>When</th>
@@ -299,23 +299,23 @@
     <fieldset class="group search-input">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures">
+             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures" class="input">
     </fieldset>
     <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}">
+      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
     </label>
     <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}">
+      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
     </label>
-    <button type="submit" class="button outline small">Apply</button>
+    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_since or audit_until %}
     <div class="audit-filter-actions">
-      <a class="button ghost small" href="{{ url_for('admin_audit', tab='logins') }}">Clear filters</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='logins') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if login_rows %}
-  <div class="table"><table class="audit-table">
+  <div class="table"><table class="audit-table table">
     <thead>
       <tr>
         <th>When</th>
@@ -377,25 +377,25 @@
   {% endif %}
   <form method="get" action="{{ url_for('admin_audit_export') }}" class="row row-end">
     <label>Source
-      <select name="source">
+      <select name="source" class="select">
         <option value="both">Secret + org</option>
         <option value="secret">Secret audit only</option>
         <option value="org">Org audit only</option>
       </select>
     </label>
     <label>Format
-      <select name="format">
+      <select name="format" class="select">
         <option value="csv">CSV</option>
         <option value="json">JSON</option>
       </select>
     </label>
     <label>From
-      <input type="date" name="since">
+      <input type="date" name="since" class="input">
     </label>
     <label>To
-      <input type="date" name="until">
+      <input type="date" name="until" class="input">
     </label>
-    <button type="submit">Download export</button>
+    <button type="submit" class="btn btn-neutral">Download export</button>
   </form>
 </section>
 
@@ -411,9 +411,9 @@
     <input type="hidden" name="action" value="retention">
     <label>Retention (days)
       <input type="number" name="audit_retention_days" min="0" max="36500"
-             value="{{ retention_days }}" required>
+             value="{{ retention_days }}" required class="input">
     </label>
-    <button type="submit">Save retention</button>
+    <button type="submit" class="btn btn-neutral">Save retention</button>
   </form>
   <p class="muted">
     {% if retention_days|int(365) > 0 %}
@@ -430,7 +430,7 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="tab" value="export">
     <input type="hidden" name="action" value="purge">
-    <button type="submit" data-variant="danger">Purge old audit rows now</button>
+    <button type="submit" class="btn btn-error">Purge old audit rows now</button>
   </form>
 </section>
 {% endif %}

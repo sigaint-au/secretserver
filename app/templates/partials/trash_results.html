@@ -9,7 +9,7 @@
 </form>
 <section class="list-panel">
 <div class="table pin-table">
-<table>
+<table class="table">
   <thead>
     <tr>
       <th class="pin-col" aria-label="Select"></th>
@@ -51,7 +51,7 @@
               hx-swap="outerHTML"
               hx-confirm="{{ ('Permanently delete ' ~ item.key ~ '? This cannot be undone.') }}">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button type="submit" class="link danger">Delete permanently</button>
+          <button type="submit" class="link link-error">Delete permanently</button>
         </form>
         {% else %}
         <span class="muted">Read only</span>

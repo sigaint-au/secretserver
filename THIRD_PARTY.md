@@ -13,14 +13,14 @@ not included in the runtime image.
 | Work | Version | License | Source |
 |------|---------|---------|--------|
 | htmx | 2.0.10 | 0BSD | https://github.com/bigskysoftware/htmx |
-| Oat | (minified `oat.min.css` / `oat.min.js`) | MIT | https://github.com/knadh/oat — Copyright (c) 2026 Kailash Nadh |
+| daisyUI (+ Tailwind CSS, build-time) | daisyUI 5.7.32 / Tailwind CSS 4.3.3, shipped as compiled `daisyui.min.css` (see `assets/`, `scripts/build-css.sh`) | MIT | https://github.com/saadeghi/daisyui — Copyright (c) 2020 Pouya Saadeghi |
 
-htmx 0BSD requires no attribution. Oat’s MIT notice is reproduced below.
+htmx 0BSD requires no attribution. daisyUI’s MIT notice is reproduced below.
 
 ```
 The MIT License
 
-Copyright (c) 2026 Kailash Nadh. https://nadh.in
+Copyright (c) 2020 Pouya Saadeghi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

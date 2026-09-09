@@ -19,28 +19,28 @@
     <div class="row">
       <label>App base URL
         <input type="url" id="eso-base-url" value="{{ public_base_url or '' }}"
-               placeholder="https://secretstore.example.com" required>
+               placeholder="https://secretstore.example.com" required class="input">
       </label>
       <label>Kubernetes namespace
         <input type="text" id="eso-namespace" value="default" placeholder="default"
-               pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?">
+               pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?" class="input">
       </label>
       <label>Resource name prefix
         <input type="text" id="eso-name-prefix" value="{{ project.name|lower|replace(' ', '-')|replace('_', '-') }}"
-               placeholder="my-app" pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?">
+               placeholder="my-app" pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?" class="input">
       </label>
     </div>
     <div class="row">
       <label>Machine token
         <span class="input-with-btn">
           <input type="password" id="eso-token" value="{{ new_token or '' }}"
-                 placeholder="ss_… paste or create above" autocomplete="off">
+                 placeholder="ss_… paste or create above" autocomplete="off" class="input">
           <button type="button" class="icon-btn text-btn" id="eso-token-toggle" title="Show/hide token"
                   aria-label="Show or hide token">Show</button>
         </span>
       </label>
       <label>Store kind
-        <select id="eso-store-kind">
+        <select id="eso-store-kind" class="select">
           <option value="SecretStore" selected>SecretStore (namespaced)</option>
           <option value="ClusterSecretStore">ClusterSecretStore</option>
         </select>
@@ -55,7 +55,7 @@
               data-copy-target="eso-yaml"
               data-clear-seconds="0">Copy YAML</button>
     </div>
-    <textarea id="eso-yaml" class="mono-area eso-yaml" rows="18" readonly
+    <textarea id="eso-yaml" class="mono-area eso-yaml textarea" rows="18" readonly
               spellcheck="false" aria-label="Generated ESO YAML"></textarea>
   </section>
   <p class="muted" id="eso-yaml-hint" {% if new_token %}hidden{% endif %}>

@@ -28,9 +28,9 @@
   {% if action %}
   <p class="empty-state-action">
     {% if action_href %}
-    <a class="button" href="{{ action_href }}">{{ action }}</a>
+    <a class="btn" href="{{ action_href }}">{{ action }}</a>
     {% else %}
-    <button type="button" class="button" data-open-dialog="{{ action_dialog }}">{{ action }}</button>
+    <button type="button" class="btn" data-open-dialog="{{ action_dialog }}">{{ action }}</button>
     {% endif %}
   </p>
   {% endif %}

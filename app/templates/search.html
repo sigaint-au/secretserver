@@ -10,12 +10,12 @@
     {% include "partials/search_icon.html" %}
     <input type="search" name="q" value="{{ search_q or '' }}"
            placeholder="Search" autocomplete="off"
-           aria-label="Global search">
+           aria-label="Global search" class="input">
   </fieldset>
   {% if scope == 'secrets' %}
   <label>
     <span class="field-label">Kind</span>
-    <select name="kind" aria-label="Filter secrets by kind">
+    <select name="kind" aria-label="Filter secrets by kind" class="select">
       <option value="">All kinds</option>
       {% for k in secret_kinds or [] %}
       <option value="{{ k }}" {% if filter_kind == k %}selected{% endif %}>{{ k }}</option>
@@ -24,7 +24,7 @@
   </label>
   <label>
     <span class="field-label">Expiry</span>
-    <select name="due" aria-label="Filter secrets by expiry">
+    <select name="due" aria-label="Filter secrets by expiry" class="select">
       <option value="">Any</option>
       <option value="overdue" {% if filter_due == 'overdue' %}selected{% endif %}>Overdue</option>
       <option value="soon" {% if filter_due == 'soon' %}selected{% endif %}>Expiring soon</option>
@@ -34,7 +34,7 @@
   {% endif %}
   {% if search_q or scope %}
   <div class="audit-filter-actions">
-    <a class="button ghost small" href="{{ url_for('global_search') }}">Clear search</a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('global_search') }}">Clear search</a>
   </div>
   {% endif %}
 </form>
@@ -47,7 +47,7 @@
   <section>
     <h2>Teams <span class="muted">({{ teams_total }})</span></h2>
     {% if teams %}
-    <div class="table"><table>
+    <div class="table"><table class="table">
       <thead><tr><th>Name</th></tr></thead>
       <tbody>
       {% for t in teams %}
@@ -64,7 +64,7 @@
   <section>
     <h2>Projects <span class="muted">({{ projects_total }})</span></h2>
     {% if projects %}
-    <div class="table"><table>
+    <div class="table"><table class="table">
       <thead><tr><th>Project</th><th>Team</th><th>Description</th></tr></thead>
       <tbody>
       {% for p in projects %}
@@ -85,7 +85,7 @@
   <section>
     <h2>Secrets <span class="muted">({{ secrets_total }})</span></h2>
     {% if secrets %}
-    <div class="table secrets-table"><table>
+    <div class="table secrets-table"><table class="table">
       <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
       <tbody>
       {% for s in secrets %}
@@ -94,12 +94,12 @@
             <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
               <code class="k">{{ s.key }}</code>
             </a>
-            {% if s.due == 'overdue' %}<span class="badge" data-variant="danger">overdue</span>
-            {% elif s.due == 'soon' %}<span class="badge" data-variant="warning">expiring soon</span>{% endif %}
-            {% if s.rotation_due == 'overdue' %}<span class="badge" data-variant="danger">rotation overdue</span>
-            {% elif s.rotation_due == 'soon' %}<span class="badge" data-variant="warning">rotation soon</span>{% endif %}
+            {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error" >overdue</span>
+            {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
+            {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error" >rotation overdue</span>
+            {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning" >rotation soon</span>{% endif %}
           </td>
-          <td><span class="badge" data-variant="secondary">{{ s.kind or 'plain' }}</span></td>
+          <td><span class="badge badge-soft" >{{ s.kind or 'plain' }}</span></td>
           <td><a href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
           <td class="muted">{{ s.team_name }}</td>
           <td class="col-note muted">{{ s.note }}</td>
@@ -125,7 +125,7 @@
     </span>
   </h2>
   {% if teams %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>Name</th></tr></thead>
     <tbody>
     {% for t in teams %}
@@ -151,7 +151,7 @@
     </span>
   </h2>
   {% if projects %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>Project</th><th>Team</th></tr></thead>
     <tbody>
     {% for p in projects %}
@@ -180,7 +180,7 @@
     </span>
   </h2>
   {% if secrets %}
-  <div class="table secrets-table"><table>
+  <div class="table secrets-table"><table class="table">
     <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
     <tbody>
     {% for s in secrets %}
@@ -189,12 +189,12 @@
           <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
             <code class="k">{{ s.key }}</code>
           </a>
-          {% if s.due == 'overdue' %}<span class="badge" data-variant="danger">overdue</span>
-          {% elif s.due == 'soon' %}<span class="badge" data-variant="warning">expiring soon</span>{% endif %}
-          {% if s.rotation_due == 'overdue' %}<span class="badge" data-variant="danger">rotation overdue</span>
-          {% elif s.rotation_due == 'soon' %}<span class="badge" data-variant="warning">rotation soon</span>{% endif %}
+          {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error" >overdue</span>
+          {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
+          {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error" >rotation overdue</span>
+          {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning" >rotation soon</span>{% endif %}
         </td>
-        <td><span class="badge" data-variant="secondary">{{ s.kind or 'plain' }}</span></td>
+        <td><span class="badge badge-soft" >{{ s.kind or 'plain' }}</span></td>
         <td><a href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
         <td class="muted">{{ s.team_name }}</td>
         <td class="col-note muted">{{ s.note }}</td>

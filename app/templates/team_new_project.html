@@ -22,11 +22,11 @@
     <div class="field-grid">
       <label class="span-2">Name
         <input type="text" name="name" required placeholder="e.g. production-api"
-               autocomplete="off" maxlength="200">
+               autocomplete="off" maxlength="200" class="input">
       </label>
       <label class="span-2">Description
         <input type="text" name="description" maxlength="500"
-               placeholder="optional" autocomplete="off">
+               placeholder="optional" autocomplete="off" class="input">
       </label>
     </div>
   </section>
@@ -66,7 +66,7 @@
       </label>
       {% if hsm_slots %}
       <label>HSM slot
-        <select name="hsm_slot">
+        <select name="hsm_slot" class="select">
           {% for s in hsm_slots %}
           <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
           {% endfor %}
@@ -78,8 +78,8 @@
   </section>
 
   <p class="create-actions">
-    <a class="button ghost" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Cancel</a>
-    <button type="submit">Create project</button>
+    <a class="btn btn-ghost" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Cancel</a>
+    <button type="submit" class="btn btn-neutral">Create project</button>
   </p>
 </form>
 {% endblock %}

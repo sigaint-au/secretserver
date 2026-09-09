@@ -21,16 +21,16 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ effective_access_q or '' }}"
-               placeholder="Search access" aria-label="Search effective access" autocomplete="off">
+               placeholder="Search access" aria-label="Search effective access" autocomplete="off" class="input">
       </fieldset>
       {% if effective_access_q %}
-      <a class="button ghost small" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear search</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear search</a>
       {% endif %}
     </form>
   </div>
   {% if effective_access %}
   <div class="table">
-    <table>
+    <table class="table">
       <thead>
         <tr>
           <th>Subject</th>
@@ -48,10 +48,10 @@
             {% if a.subject_name and a.subject_email %}
             <span class="muted">{{ a.subject_email }}</span>
             {% endif %}
-            {% if a.is_global_admin %}<span class="badge" data-variant="warning">global admin</span>{% endif %}
+            {% if a.is_global_admin %}<span class="badge badge-soft badge-warning" >global admin</span>{% endif %}
           </td>
-          <td><span class="badge" data-variant="secondary">{{ a.subject_kind }}</span></td>
-          <td><span class="badge" data-variant="secondary">{{ a.role_name }}</span></td>
+          <td><span class="badge badge-soft" >{{ a.subject_kind }}</span></td>
+          <td><span class="badge badge-soft" >{{ a.role_name }}</span></td>
           <td class="muted">{{ a.scope_label or a.scope_kind }}</td>
           <td class="muted">{{ a.grant_kind }}{% if a.grant_subject and a.grant_subject != a.subject_email %} · {{ a.grant_subject }}{% endif %}</td>
         </tr>

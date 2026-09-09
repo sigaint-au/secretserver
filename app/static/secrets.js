@@ -195,8 +195,25 @@
             el.textContent = '••••••••';
           }
         });
-        /* Disabled copy buttons cannot leak the masked value. */
-        wrap.querySelectorAll('.copy-btn').forEach(function (b) { b.disabled = true; });
+        /* The hidden .env copy has no .secret-value class: mask it too. */
+        var hiddenEnv = wrap.querySelector('#kv-all-env');
+        if (hiddenEnv) hiddenEnv.textContent = '••••••••';
+        /* Disabled copy/download buttons cannot leak the masked value. */
+        wrap.querySelectorAll('.copy-btn, .dl-btn').forEach(function (b) { b.disabled = true; });
+        var hideNote = wrap.querySelector('.auto-hide-note');
+        if (hideNote) {
+          hideNote.removeAttribute('data-hide-until');
+          hideNote.innerHTML = '<span class="auto-hide-label">Hidden</span>';
+        }
+        /* Offer a way back: reload re-renders the revealed value. */
+        if (!wrap.querySelector('.reveal-again-btn')) {
+          var again = document.createElement('button');
+          again.type = 'button';
+          again.className = 'btn btn-outline btn-sm reveal-again-btn';
+          again.textContent = 'Show again';
+          again.addEventListener('click', function () { window.location.reload(); });
+          wrap.insertBefore(again, wrap.firstChild);
+        }
         if (window.ssToast) window.ssToast('Secret hidden — reload to reveal again');
         return;
       }

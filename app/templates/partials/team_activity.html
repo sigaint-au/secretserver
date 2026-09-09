@@ -8,13 +8,13 @@
       <input type="hidden" name="tab" value="activity">
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search activity">
+        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search activity" class="input">
       </fieldset>
-      {% if activity_q %}<a class="button ghost small" href="{{ url_for('team_detail', team_id=team.id, tab='activity') }}">Clear search</a>{% endif %}
+      {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if org_events %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
     <tbody>
     {% for e in org_events %}

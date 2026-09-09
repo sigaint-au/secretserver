@@ -5,7 +5,7 @@
   <p class="muted">Prefer encrypted JSON for backups; plaintext formats ask for confirmation first.</p>
   <form class="export-form row" id="export-form" action="#" method="get">
     <label class="export-format">Format
-      <select id="export-format" name="format" aria-label="Export format">
+      <select id="export-format" name="format" aria-label="Export format" class="select">
         <option value="{{ url_for('export_secrets', project_id=project.id, format='json', mode='enc') }}"
                 data-plain="0" selected>Encrypted JSON</option>
         <option value="{{ url_for('export_secrets', project_id=project.id, format='env', mode='plain') }}"
@@ -17,7 +17,7 @@
       </select>
     </label>
     <p class="form-actions export-go">
-      <button type="submit">Download</button>
+      <button type="submit" class="btn btn-neutral">Download</button>
     </p>
   </form>
   <script>
@@ -44,11 +44,11 @@
   <form method="post" action="{{ url_for('import_preview', project_id=project.id) }}"
         enctype="multipart/form-data" class="import-box">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>File <input type="file" name="file" accept=".env,.txt,.csv,.json,text/*"></label>
+    <label>File <input type="file" name="file" accept=".env,.txt,.csv,.json,text/*" class="file-input"></label>
     <label>Or paste
-      <textarea name="payload" rows="12" placeholder="KEY=value&#10;OTHER=secret"></textarea>
+      <textarea name="payload" rows="12" placeholder="KEY=value&#10;OTHER=secret" class="textarea"></textarea>
     </label>
-    <button type="submit">Preview import</button>
+    <button type="submit" class="btn btn-neutral">Preview import</button>
   </form>
   {% else %}
   <p class="muted">You need write access to import secrets.</p>

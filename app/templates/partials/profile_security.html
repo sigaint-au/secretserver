@@ -4,7 +4,7 @@
     <code class="k">corvus login</code> command.
     Each token lasts a short time, so make a new command each time you sign in.</p>
   <p class="form-actions">
-    <button type="button" class="button outline" data-open-dialog="cli-login-dlg">Generate login command</button>
+    <button type="button" class="btn btn-outline" data-open-dialog="cli-login-dlg">Generate login command</button>
   </p>
 </section>
 
@@ -25,15 +25,15 @@
   <form method="post" action="{{ url_for('create_personal_token') }}" class="row row-end">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label class="flex-2">Name
-      <input type="text" name="name" required maxlength="80" placeholder="laptop-cli" autocomplete="off">
+      <input type="text" name="name" required maxlength="80" placeholder="laptop-cli" autocomplete="off" class="input">
     </label>
     <label>Expires (days)
-      <input type="number" name="expires_days" min="1" max="3650" placeholder="never">
+      <input type="number" name="expires_days" min="1" max="3650" placeholder="never" class="input">
     </label>
-    <button type="submit">Create token</button>
+    <button type="submit" class="btn btn-neutral">Create token</button>
   </form>
   {% if personal_tokens %}
-  <div class="table"><table class="table-spaced">
+  <div class="table"><table class="table-spaced table">
     <thead>
       <tr>
         <th>Name</th>
@@ -58,7 +58,7 @@
           <form method="post" action="{{ url_for('delete_personal_token', token_id=t.id) }}" class="inline"
                 onsubmit="return confirm('Revoke token “{{ t.name }}”?')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Revoke</button>
+            <button type="submit" class="link link-error">Revoke</button>
           </form>
         </td>
       </tr>
@@ -72,7 +72,7 @@
   <h2>Two-factor authentication</h2>
   {% if totp_enabled %}
   <p>
-    <span class="badge" data-variant="secondary">Enabled</span>
+    <span class="badge badge-soft" >Enabled</span>
     {% if user.totp_enabled_at %}
     <span class="muted" title="{{ user.totp_enabled_at|time_when }}">since {{ user.totp_enabled_at|time_ago }}</span>
     {% endif %}
@@ -83,9 +83,9 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label class="flex-2">Confirm with code
       <input type="text" name="code" required autocomplete="one-time-code"
-             placeholder="123456 or xxxx-xxxx">
+             placeholder="123456 or xxxx-xxxx" class="input">
     </label>
-    <button type="submit">Regenerate recovery codes</button>
+    <button type="submit" class="btn btn-neutral">Regenerate recovery codes</button>
   </form>
   {% if not totp_enforced_for_user %}
   <form method="post" action="{{ url_for('totp_disable') }}" class="mt-1"
@@ -93,9 +93,9 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Disable (confirm with code)
       <input type="text" name="code" required autocomplete="one-time-code"
-             placeholder="123456 or xxxx-xxxx">
+             placeholder="123456 or xxxx-xxxx" class="input">
     </label>
-    <p class="form-actions"><button type="submit" data-variant="danger">Disable 2FA</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-error">Disable 2FA</button></p>
   </form>
   {% endif %}
   {% else %}
@@ -103,7 +103,7 @@
     Use an authenticator app at sign-in.
     {% if totp_enforced_for_user %}<strong>Required for global admins.</strong>{% endif %}
   </p>
-  <p class="form-actions"><a class="button outline" href="{{ url_for('totp_setup') }}">Set up 2FA</a></p>
+  <p class="form-actions"><a class="btn btn-outline" href="{{ url_for('totp_setup') }}">Set up 2FA</a></p>
   {% endif %}
 </section>
 
@@ -114,15 +114,15 @@
   <form method="post" action="{{ url_for('change_password') }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <label>Current password
-      <input type="password" name="current_password" required autocomplete="current-password">
+      <input type="password" name="current_password" required autocomplete="current-password" class="input">
     </label>
     <label>New password
-      <input type="password" name="new_password" required minlength="12" autocomplete="new-password">
+      <input type="password" name="new_password" required minlength="12" autocomplete="new-password" class="input">
     </label>
     <label>Confirm new password
-      <input type="password" name="new_password_confirm" required minlength="12" autocomplete="new-password">
+      <input type="password" name="new_password_confirm" required minlength="12" autocomplete="new-password" class="input">
     </label>
-    <p class="form-actions"><button type="submit">Update password</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Update password</button></p>
   </form>
 </section>
 {% else %}
@@ -143,13 +143,13 @@
     <form method="post" action="{{ url_for('revoke_other_sessions') }}" class="inline"
           onsubmit="return confirm('Sign out all other devices?')">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <button type="submit" class="button ghost small">Sign out other sessions</button>
+      <button type="submit" class="btn btn-ghost btn-sm">Sign out other sessions</button>
     </form>
     {% endif %}
   </div>
   <p class="muted">Devices signed in to your account.</p>
   {% if active_sessions %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>Device / browser</th>
@@ -166,7 +166,7 @@
             {{ (s.user_agent or 'Unknown client')[:72] }}{% if s.user_agent and s.user_agent|length > 72 %}…{% endif %}
           </span>
           {% if current_sid and s.id|string == current_sid|string %}
-          <span class="badge" data-variant="secondary">This device</span>
+          <span class="badge badge-soft" >This device</span>
           {% endif %}
         </td>
         <td class="muted">{{ s.ip or '-' }}</td>
@@ -177,7 +177,7 @@
                 class="inline"
                 onsubmit="return confirm('{% if current_sid and s.id|string == current_sid|string %}Sign out this device?{% else %}Sign out this session?{% endif %}')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">
+            <button type="submit" class="link link-error">
               {% if current_sid and s.id|string == current_sid|string %}Sign out{% else %}Revoke{% endif %}
             </button>
           </form>

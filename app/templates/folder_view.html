@@ -9,12 +9,12 @@
 ] %}
 {% include "partials/breadcrumb.html" %}
 <div class="page-head">
-  <div class="section-head-main"><span class="badge" data-variant="secondary">Folder</span><h1><code class="k">{{ folder.path }}</code></h1></div>
+  <div class="section-head-main"><span class="badge badge-soft" >Folder</span><h1><code class="k">{{ folder.path }}</code></h1></div>
   <div class="section-tools">
     {% if can_admin %}
     <form method="post" action="{{ url_for('delete_folder', project_id=project_id, folder_id=folder_id) }}" class="inline" onsubmit="return confirm('Delete this empty folder?')">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <button type="submit" class="button outline small" data-variant="danger">Delete folder</button>
+      <button type="submit" class="btn btn-outline btn-sm btn-error" >Delete folder</button>
     </form>
     {% endif %}
   </div>

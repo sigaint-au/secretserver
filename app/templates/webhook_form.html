@@ -4,7 +4,7 @@
 <div class="page-head">
   <h1>{{ heading }}</h1>
   <div class="section-tools">
-    <a class="button ghost small" href="{{ back }}">← Back</a>
+    <a class="btn btn-ghost btn-sm" href="{{ back }}">← Back</a>
   </div>
 </div>
 <p class="page-desc muted">Scope: <strong>{{ scope_name }}</strong></p>
@@ -14,7 +14,7 @@
   <section>
     <div class="section-head"><h2>Recent deliveries</h2></div>
     {% if deliveries %}
-    <div class="table"><table class="table-spaced">
+    <div class="table"><table class="table-spaced table">
       <thead><tr><th>When</th><th>Event</th><th>Result</th><th>Took</th></tr></thead>
       <tbody>
         {% for d in deliveries %}
@@ -22,8 +22,8 @@
           <td>{{ d.created_at.strftime('%Y-%m-%d %H:%M:%S') if d.created_at }}</td>
           <td><code>{{ d.event }}</code></td>
           <td>
-            {% if d.ok %}<span class="badge" data-variant="success">{{ d.status_code }}</span>
-            {% else %}<span class="badge" data-variant="danger">{{ d.status_code or 'ERR' }}</span>{% endif %}
+            {% if d.ok %}<span class="badge badge-soft badge-success" >{{ d.status_code }}</span>
+            {% else %}<span class="badge badge-soft badge-error" >{{ d.status_code or 'ERR' }}</span>{% endif %}
             {% if d.error %}<span class="muted">{{ d.error }}</span>{% endif %}
           </td>
           <td>{{ d.duration_ms }} ms</td>
@@ -51,12 +51,12 @@
       <div class="field-grid">
         <label>Name
           <input name="name" maxlength="80" required
-                 value="{{ webhook.name if webhook else '' }}" placeholder="deploy-hook">
+                 value="{{ webhook.name if webhook else '' }}" placeholder="deploy-hook" class="input">
         </label>
         <label class="span-2">Payload URL
           <input name="url" type="url" required
                  value="{{ webhook.url if webhook else '' }}"
-                 placeholder="https://example.internal/hooks/corvus">
+                 placeholder="https://example.internal/hooks/corvus" class="input">
           {% if mode == 'create' %}
           <span class="field-hint">Payloads are signed with HMAC-SHA256 in the <code>X-Corvus-Signature</code> header.</span>
           {% endif %}
@@ -64,7 +64,7 @@
         {% if mode == 'create' %}
         <label class="span-2">Signing secret
           <input name="secret_token" autocomplete="off"
-                 placeholder="Leave blank to generate">
+                 placeholder="Leave blank to generate" class="input">
           <span class="field-hint">Shown once after you add the webhook.</span>
         </label>
         {% endif %}
@@ -105,12 +105,12 @@
       {% endif %}
     </fieldset>
 
-    <p id="wh-events-error" hidden role="alert" data-variant="error" class="form-error">
+    <p id="wh-events-error" hidden role="alert" class="form-error alert alert-error">
       Select at least one event before saving.
     </p>
 
     <p class="form-actions">
-      <button type="submit" class="button">{{ 'Save changes' if mode == 'edit' else 'Add webhook' }}</button>
+      <button type="submit" class="btn">{{ 'Save changes' if mode == 'edit' else 'Add webhook' }}</button>
     </p>
   </form>
   <script>
@@ -130,13 +130,15 @@
   </script>
 
   {% if mode == 'edit' %}
-  <details class="card danger-zone">
-    <summary>Danger zone</summary>
+  <details class="collapse collapse-arrow danger-zone">
+    <summary class="collapse-title">Danger zone</summary>
+    <div class="collapse-content">
     <form method="post" action="{{ url_for('webhook_delete', webhook_id=webhook.id) }}">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="back" value="{{ back }}">
-      <button type="submit" class="button" data-variant="danger">Delete webhook</button>
+      <button type="submit" class="btn btn-error">Delete webhook</button>
     </form>
+    </div>
   </details>
   {% endif %}
 </div>

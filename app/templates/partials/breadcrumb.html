@@ -1,19 +1,18 @@
-{# Oat.ink breadcrumb component (nav + ol.unstyled.hstack).
+{# Breadcrumb (daisyUI breadcrumbs).
    Expects `breadcrumbs` = list of (label, url_or_None) pairs. The last entry is
    the current page and is marked with aria-current="page" (not a link).
    Example:
      {% set breadcrumbs = [('Teams', url_for('teams')), (team.name, url_for('team_detail', team_id=team.id)), (group.name, none)] %}
      {% include "partials/breadcrumb.html" %}
 #}
-<nav aria-label="Breadcrumb" class="breadcrumb">
-  <ol class="unstyled hstack">
+<nav aria-label="Breadcrumb" class="breadcrumb breadcrumbs">
+  <ul>
     {% for label, url in breadcrumbs %}
     {% if not loop.last %}
-    <li><a href="{{ url }}" class="unstyled">{{ label }}</a></li>
-    <li aria-hidden="true">/</li>
+    <li><a href="{{ url }}">{{ label }}</a></li>
     {% else %}
     <li aria-current="page"><strong>{{ label }}</strong></li>
     {% endif %}
     {% endfor %}
-  </ol>
+  </ul>
 </nav>

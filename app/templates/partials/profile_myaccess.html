@@ -10,13 +10,13 @@
       <fieldset class="group search-input">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ my_access_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}">
+               placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}" class="input">
       </fieldset>
-      {% if my_access_q %}<a class="button ghost small" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear search</a>{% endif %}
+      {% if my_access_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if user.is_global_admin %}
-  <div role="alert" data-variant="warning">
+  <div role="alert" class="alert alert-warning">
     You are a <strong>global admin</strong> and can access every team, project, and secret.
   </div>
   {% endif %}
@@ -35,7 +35,7 @@
 
   {% if my_access_rows %}
   <div class="table">
-      <table>
+      <table class="table">
         <thead>
           <tr>
             <th>{{ my_access_scope_header }}</th>
@@ -52,10 +52,10 @@
               {% else %}{{ r.scope_label or '-' }}{% endif %}
             </td>
             <td>
-              <span class="badge" data-variant="secondary" title="{{ r.role_description or r.role_name }}">{{ r.role_name }}</span>
+              <span class="badge badge-soft" title="{{ r.role_description or r.role_name }}">{{ r.role_name }}</span>
             </td>
             <td>
-              <span class="badge">{{ r.grant_kind }}</span>
+              <span class="badge badge-neutral">{{ r.grant_kind }}</span>
               {{ r.grant_subject }}
             </td>
             <td class="muted">{{ r.created_at|time_ago if r.created_at else '-' }}</td>

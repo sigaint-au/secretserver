@@ -12,12 +12,12 @@
   <label>Authentication code
     <input type="text" name="code" required autocomplete="one-time-code"
            inputmode="numeric" pattern="[0-9A-Za-z\- ]{6,20}"
-           placeholder="123456 or xxxx-xxxx" autofocus>
+           placeholder="123456 or xxxx-xxxx" autofocus class="input">
   </label>
-  <button type="submit">Verify code</button>
+  <button type="submit" class="btn btn-neutral">Verify code</button>
 </form>
 <form method="post" action="{{ url_for('logout') }}" class="inline">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <button type="submit" class="ghost">Log out</button>
+  <button type="submit" class="btn btn-ghost">Log out</button>
 </form>
 {% endblock %}

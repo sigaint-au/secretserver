@@ -6,7 +6,7 @@
   Open it to activate your account, then sign in.</p>
 <form method="post" action="{{ url_for('resend_verification') }}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <button type="submit" class="ghost">Resend verification email</button>
+  <button type="submit" class="btn btn-ghost">Resend verification email</button>
 </form>
 <p class="muted"><a href="{{ url_for('login') }}">Back to sign in</a></p>
 {% endblock %}

@@ -12,7 +12,7 @@
     <label>Banner text
       <input type="text" name="classification_text" maxlength="120"
              value="{{ settings.classification_text }}"
-             placeholder="OFFICIAL - SENSITIVE" required>
+             placeholder="OFFICIAL - SENSITIVE" required class="input">
     </label>
     <div class="row">
       <div>
@@ -20,10 +20,10 @@
         <div class="color-field">
           <input type="color" id="classification_color_picker"
                  value="{{ settings.classification_color }}"
-                 oninput="document.getElementById('classification_color').value=this.value; updatePreview();">
+                 oninput="document.getElementById('classification_color').value=this.value; updatePreview();" class="input">
           <input type="text" name="classification_color" id="classification_color"
                  value="{{ settings.classification_color }}" pattern="#[0-9A-Fa-f]{6}"
-                 required oninput="syncColor('classification_color'); updatePreview();">
+                 required oninput="syncColor('classification_color'); updatePreview();" class="input">
         </div>
       </div>
       <div>
@@ -31,10 +31,10 @@
         <div class="color-field">
           <input type="color" id="classification_fg_picker"
                  value="{{ settings.classification_fg }}"
-                 oninput="document.getElementById('classification_fg').value=this.value; updatePreview();">
+                 oninput="document.getElementById('classification_fg').value=this.value; updatePreview();" class="input">
           <input type="text" name="classification_fg" id="classification_fg"
                  value="{{ settings.classification_fg }}" pattern="#[0-9A-Fa-f]{6}"
-                 required oninput="syncColor('classification_fg'); updatePreview();">
+                 required oninput="syncColor('classification_fg'); updatePreview();" class="input">
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@
          style="background: {{ settings.classification_color }}; color: {{ settings.classification_fg }};">
       {{ settings.classification_text or 'Preview' }}
     </div>
-    <p class="form-actions"><button type="submit">Save banner</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save banner</button></p>
   </form>
 </section>
 {% include "partials/color_picker_js.html" %}

@@ -1,9 +1,10 @@
-{# Compact oat.ink <dialog> for reveal access. Must NOT sit inside another <form>.
+{# Compact daisyUI modal <dialog> for reveal access. Must NOT sit inside another <form>.
    Open: data-open-dialog="{{ dlg_id }}" (polyfilled) or commandfor + show-modal.
 #}
 {% set dlg_id = 'access-dlg-' ~ secret_id %}
 {% set state = state|default('need_request') %}
-<dialog id="{{ dlg_id }}" closedby="any" class="access-dlg" aria-labelledby="{{ dlg_id }}-title">
+<dialog id="{{ dlg_id }}" closedby="any" class="modal access-dlg" aria-labelledby="{{ dlg_id }}-title">
+  <div class="modal-box">
   {% if state == 'pending' %}
   <form method="dialog">
     <header>
@@ -11,7 +12,7 @@
       <p>Waiting for approval to reveal <code>{{ secret_key }}</code>.</p>
     </header>
     <footer>
-      <button value="ok">Done</button>
+      <button value="ok" class="btn btn-neutral">Done</button>
     </footer>
   </form>
   {% elif state == 'denied' %}
@@ -22,7 +23,7 @@
       <code class="k">secret-reveal</code> or enable requests in team settings.</p>
     </header>
     <footer>
-      <button value="ok">Done</button>
+      <button value="ok" class="btn btn-neutral">Done</button>
     </footer>
   </form>
   {% else %}
@@ -44,13 +45,14 @@
         Why do you need access?
         <input type="text" name="reason" maxlength="500"
                placeholder="e.g. debugging prod auth, ticket #1234 (optional)"
-               autocomplete="off">
+               autocomplete="off" class="input">
       </label>
     </div>
     <footer>
-      <button type="button" class="outline" data-close-dialog="{{ dlg_id }}">Cancel</button>
-      <button type="submit">Request access</button>
+      <button type="button" class="btn btn-outline" data-close-dialog="{{ dlg_id }}">Cancel</button>
+      <button type="submit" class="btn btn-neutral">Request access</button>
     </footer>
   </form>
   {% endif %}
+  </div>
 </dialog>

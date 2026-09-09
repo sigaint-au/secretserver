@@ -22,9 +22,9 @@
     <fieldset class="group search-input">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search webhooks">
+             placeholder="Search" autocomplete="off" aria-label="Search webhooks" class="input">
     </fieldset>
-    {% if search_q %}<a class="button ghost small" href="{{ list_url }}"
+    {% if search_q %}<a class="btn btn-ghost btn-sm" href="{{ list_url }}"
        {% if webhooks_hx|default(false) %}hx-get="{{ list_url }}"
        hx-target="#webhook-results"
        hx-swap="outerHTML"
@@ -32,13 +32,13 @@
        hx-push-url="true"{% endif %}>Clear search</a>{% endif %}
   </form>
   {% if scope_kind %}
-  <a class="button outline small" href="{{ url_for('webhook_new', scope=scope_kind, scope_id=scope_ref or '', back=list_url) }}">Add webhook</a>
+  <a class="btn btn-outline btn-sm" href="{{ url_for('webhook_new', scope=scope_kind, scope_id=scope_ref or '', back=list_url) }}">Add webhook</a>
   {% endif %}
 </div>
 <div id="webhook-results">
 <section class="list-panel">
 {% if webhooks %}
-<div class="table"><table class="table-spaced">
+<div class="table"><table class="table-spaced table">
   <thead>
     <tr>
       <th>Name</th><th>Endpoint</th><th>Events</th>{% if show_scope %}<th>Scope</th>{% endif %}<th>Status</th><th>Last delivery</th>
@@ -50,14 +50,14 @@
       <td><a href="{{ url_for('webhook_view', webhook_id=w.id, back=list_url) }}"><strong>{{ w.name }}</strong></a></td>
       <td class="mono muted col-url">{{ w.url }}</td>
       <td class="muted">{{ w.events | length }} event{{ 's' if w.events | length != 1 }}</td>
-      {% if show_scope %}<td class="muted">{{ w.scope_label or w.scope_kind }} <span class="badge" data-variant="secondary">{{ w.scope_kind }}</span></td>{% endif %}
-      <td><span class="badge" data-variant="{% if w.active %}success{% else %}secondary{% endif %}">{{ 'Active' if w.active else 'Paused' }}</span></td>
+      {% if show_scope %}<td class="muted">{{ w.scope_label or w.scope_kind }} <span class="badge badge-soft" >{{ w.scope_kind }}</span></td>{% endif %}
+      <td><span class="badge {% if w.active %}badge-soft badge-success{% else %}badge-soft{% endif %}">{{ 'Active' if w.active else 'Paused' }}</span></td>
       <td class="muted">
         {% set d = w.deliveries[0] if w.deliveries else None %}
         {% if d %}
           {{ d.created_at.strftime('%Y-%m-%d %H:%M') if d.created_at }} —
-          {% if d.ok %}<span class="badge" data-variant="success">{{ d.status_code }}</span>
-          {% else %}<span class="badge" data-variant="danger">{{ d.status_code or 'ERR' }}</span>{% endif %}
+          {% if d.ok %}<span class="badge badge-soft badge-success" >{{ d.status_code }}</span>
+          {% else %}<span class="badge badge-soft badge-error" >{{ d.status_code or 'ERR' }}</span>{% endif %}
         {% else %}never{% endif %}
       </td>
     </tr>

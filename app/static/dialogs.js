@@ -1,7 +1,7 @@
 /* Dialogs, busy buttons, and the styled HTMX confirm.
    Hooks: [data-open-dialog], [data-close-dialog], [data-dismiss],
    [data-submit-form], [commandfor][command], [data-nav], #confirm-dlg.
-   Exposes window.oatOpenDialog/oatCloseDialog/setAccessBusy/restoreAccessBusy
+   Exposes window.openDialog/closeDialog/setAccessBusy/restoreAccessBusy
    for inline callers. All delegated: swapped-in dialogs just work. */
 'use strict';
 
@@ -9,7 +9,7 @@
    Openers are tracked on dlg._opener so focus returns on close. */
 (function () {
   /* Open a <dialog> modally (fallback: open attribute) and focus it. */
-  function oatOpenDialog(dlg) {
+  function openDialog(dlg) {
     if (!dlg) return;
     if (typeof dlg.showModal === 'function') {
       if (!dlg.open) dlg.showModal();
@@ -21,7 +21,7 @@
     if (focusEl && focusEl.focus) setTimeout(function () { focusEl.focus(); }, 20);
   }
   /* Close a dialog and restore focus to its opener when still connected. */
-  function oatCloseDialog(dlg) {
+  function closeDialog(dlg) {
     if (!dlg) return;
     if (typeof dlg.close === 'function') dlg.close();
     else dlg.removeAttribute('open');
@@ -29,8 +29,8 @@
     dlg._opener = null;
     if (opener && opener.isConnected && !opener.disabled) opener.focus();
   }
-  window.oatOpenDialog = oatOpenDialog;
-  window.oatCloseDialog = oatCloseDialog;
+  window.openDialog = openDialog;
+  window.closeDialog = closeDialog;
 
   /* Access approve/deny: disable + relabel the submit button for consistent
      busy feedback (approve buttons live outside their form via form=).
@@ -76,7 +76,7 @@
       const dlg = id ? document.getElementById(id) : null;
       if (dlg) {
         dlg._opener = openBtn;
-        oatOpenDialog(dlg);
+        openDialog(dlg);
       }
       return;
     }
@@ -85,7 +85,7 @@
       e.preventDefault();
       const cid = closeBtn.getAttribute('data-close-dialog');
       const cdlg = cid ? document.getElementById(cid) : closeBtn.closest('dialog');
-      if (cdlg) oatCloseDialog(cdlg);
+      if (cdlg) closeDialog(cdlg);
       return;
     }
     const dismissBtn = e.target.closest && e.target.closest('[data-dismiss]');
@@ -109,7 +109,7 @@
       else form.submit();
       return;
     }
-    /* commandfor polyfill (oat docs) for browsers without Invoker Commands */
+    /* commandfor polyfill for browsers without Invoker Commands */
     const cmdBtn = e.target.closest && e.target.closest('[commandfor][command]');
     if (cmdBtn) {
       const tid = cmdBtn.getAttribute('commandfor');
@@ -118,14 +118,14 @@
       if (!tel) return;
       if (cmd === 'show-modal') {
         e.preventDefault();
-        oatOpenDialog(tel);
+        openDialog(tel);
       } else if (cmd === 'close') {
         e.preventDefault();
-        oatCloseDialog(tel);
+        closeDialog(tel);
       }
       return;
     }
-    /* History (and other data-nav) from ot-dropdown menus */
+    /* History (and other data-nav) from dropdown menus */
     const navBtn = e.target.closest && e.target.closest('[data-nav]');
     if (navBtn) {
       e.preventDefault();
@@ -153,7 +153,7 @@
     const p = pendingConfirm;
     pendingConfirm = null;
     const d = document.getElementById('confirm-dlg');
-    if (d && d.open) oatCloseDialog(d);
+    if (d && d.open) closeDialog(d);
     if (!p) return;
     if (confirmed) p.issue();
     else {
@@ -207,14 +207,14 @@
     d.onclose = function () {
       if (pendingConfirm) settleConfirm(false);
     };
-    oatOpenDialog(d);
+    openDialog(d);
   });
   /* After an access-request POST re-renders a dialog, keep it open. */
   function reopenAccessDialog(t) {
     if (!t) return;
-    if (t.matches && t.matches('dialog') && t.open === false) oatOpenDialog(t);
+    if (t.matches && t.matches('dialog') && t.open === false) openDialog(t);
     if (t.id && String(t.id).indexOf('access-dlg-') === 0) {
-      if (!t.open) oatOpenDialog(t);
+      if (!t.open) openDialog(t);
     }
   }
   onContent(reopenAccessDialog);

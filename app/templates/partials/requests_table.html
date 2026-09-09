@@ -6,7 +6,7 @@
 <div id="requests-results">
 {% if requests %}
 <div class="table">
-<table class="access-requests-table">
+<table class="access-requests-table table">
   <thead>
     <tr>
       <th>Project</th>
@@ -50,7 +50,7 @@
                 onsubmit="return setAccessBusy(this, 'Approving…')">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <label class="visually-hidden" for="grant-minutes-{{ r.id }}">Grant duration</label>
-          <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action">
+          <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action select">
             {% for m in grant_choices %}
             <option value="{{ m }}" {% if m == grant_minutes %}selected{% endif %}>
               {% if m < 60 %}{{ m }} min{% elif m == 60 %}1 hour{% elif m == 1440 %}1 day{% else %}{{ m // 60 }} hours{% endif %}
@@ -68,7 +68,7 @@
                  class="inline"
                  onsubmit="return setAccessBusy(this, 'Denying…')">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <button type="submit" class="link danger">Deny</button>
+            <button type="submit" class="link link-error">Deny</button>
           </form>
         </div>
       </td>

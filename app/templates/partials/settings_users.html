@@ -6,7 +6,7 @@
     Resetting 2FA clears TOTP and recovery codes.
   </p>
   {% if all_users %}
-  <div class="table"><table>
+  <div class="table"><table class="table">
     <thead>
       <tr>
         <th>User</th>
@@ -24,27 +24,27 @@
           {{ u.name or '-' }}
           <span class="muted">{{ u.email }}</span>
           {% if u.id|string == session.user_id %}
-          <span class="badge" data-variant="secondary">you</span>
+          <span class="badge badge-soft" >you</span>
           {% endif %}
         </td>
         <td class="muted">{{ u.auth_source or 'local' }}</td>
         <td>
           {% if u.is_global_admin %}
-          <span class="badge" data-variant="secondary">Global admin</span>
+          <span class="badge badge-soft" >Global admin</span>
           {% else %}
           <span class="muted">User</span>
           {% endif %}
         </td>
         <td>
           {% if u.totp_enabled_at %}
-          <span class="badge" data-variant="secondary">On</span>
+          <span class="badge badge-soft" >On</span>
           {% else %}
           <span class="muted">Off</span>
           {% endif %}
         </td>
         <td>
           {% if u.disabled_at %}
-          <span class="badge" data-variant="secondary" title="{{ u.disabled_at }}">Disabled</span>
+          <span class="badge badge-soft" title="{{ u.disabled_at }}">Disabled</span>
           {% else %}
           <span class="muted">Active</span>
           {% endif %}
@@ -65,7 +65,7 @@
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_disable">
               <input type="hidden" name="user_id" value="{{ u.id }}">
-              <button type="submit" class="link danger">Disable</button>
+              <button type="submit" class="link link-error">Disable</button>
             </form>
             {% endif %}
             {% if u.auth_source == 'local' and not u.disabled_at %}
@@ -83,7 +83,7 @@
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_reset_2fa">
               <input type="hidden" name="user_id" value="{{ u.id }}">
-              <button type="submit" class="link danger">Reset 2FA</button>
+              <button type="submit" class="link link-error">Reset 2FA</button>
             </form>
             {% endif %}
           {% else %}

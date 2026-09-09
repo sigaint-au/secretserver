@@ -14,7 +14,7 @@
           <input type="number" name="default_token_days" min="1"
                  max="{{ max_expiry_days|default(3650) }}"
                  value="{{ team.default_token_days or '' }}"
-                 placeholder="none">
+                 placeholder="none" class="input">
           <span class="field-hint">Blank means tokens do not expire unless set per token.</span>
         </label>
       </div>
@@ -28,7 +28,7 @@
       </label>
       <span class="field-hint">Viewers still see names. Owners and admins approve the value.</span>
     </fieldset>
-    <p class="form-actions"><button type="submit">Save settings</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save settings</button></p>
     </div>
   </section>
 
@@ -55,18 +55,18 @@
             <input type="text" name="classification_text" id="classification_text" maxlength="120"
                    value="{{ team.classification_text or classification.text or 'OFFICIAL' }}"
                    placeholder="OFFICIAL - SENSITIVE"
-                   oninput="updatePreview()">
+                   oninput="updatePreview()" class="input">
           </label>
           <div>
             <label>Background</label>
             <div class="color-field">
               <input type="color" id="classification_color_picker"
                      value="{{ team.classification_color or classification.color or '#677381' }}"
-                     oninput="document.getElementById('classification_color').value=this.value; updatePreview();">
+                     oninput="document.getElementById('classification_color').value=this.value; updatePreview();" class="input">
               <input type="text" name="classification_color" id="classification_color"
                      value="{{ team.classification_color or classification.color or '#677381' }}"
                      pattern="#[0-9A-Fa-f]{6}"
-                     oninput="syncColor('classification_color'); updatePreview();">
+                     oninput="syncColor('classification_color'); updatePreview();" class="input">
             </div>
           </div>
           <div>
@@ -74,11 +74,11 @@
             <div class="color-field">
               <input type="color" id="classification_fg_picker"
                      value="{{ team.classification_fg or classification.fg or '#ffffff' }}"
-                     oninput="document.getElementById('classification_fg').value=this.value; updatePreview();">
+                     oninput="document.getElementById('classification_fg').value=this.value; updatePreview();" class="input">
               <input type="text" name="classification_fg" id="classification_fg"
                      value="{{ team.classification_fg or classification.fg or '#ffffff' }}"
                      pattern="#[0-9A-Fa-f]{6}"
-                     oninput="syncColor('classification_fg'); updatePreview();">
+                     oninput="syncColor('classification_fg'); updatePreview();" class="input">
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@
         </div>
       </fieldset>
     </div>
-    <p class="form-actions"><button type="submit">Save settings</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save settings</button></p>
   </section>
 </form>
 {% set _preview_id = 'team-banner-preview' %}
@@ -129,25 +129,25 @@ syncTeamClassForm();
   </p>
 
   <fieldset class="field-group">
-    <legend>LDAP{% if not ldap_enabled %} <span class="badge" data-variant="secondary">off</span>{% endif %}</legend>
+    <legend>LDAP{% if not ldap_enabled %} <span class="badge badge-soft" >off</span>{% endif %}</legend>
     {% if not ldap_enabled %}
     <p class="muted">LDAP login is disabled in server settings.</p>
     {% endif %}
     {% if ldap_maps %}
-    <div class="table"><table>
+    <div class="table"><table class="table">
       <thead><tr><th>Directory group</th><th>Role</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
       <tbody>
       {% for m in ldap_maps %}
         <tr>
           <td><code class="k">{{ m.ldap_group }}</code></td>
-          <td><span class="badge" data-variant="secondary">{{ m.role }}</span></td>
+          <td><span class="badge badge-soft" >{{ m.role }}</span></td>
           <td class="acts">
             <form method="post"
                   action="{{ url_for('delete_team_ldap_map', team_id=team.id, map_id=m.id) }}"
                   class="inline"
                   onsubmit="return confirm('Remove this LDAP mapping?')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Remove</button>
+              <button type="submit" class="link link-error">Remove</button>
             </form>
           </td>
         </tr>
@@ -162,40 +162,40 @@ syncTeamClassForm();
       <div class="field-grid">
         <label class="span-2">Group CN or DN
           <input type="text" name="ldap_group" required
-                 placeholder="eng-secrets or cn=eng-secrets,cn=groups,dc=example,dc=com">
+                 placeholder="eng-secrets or cn=eng-secrets,cn=groups,dc=example,dc=com" class="input">
         </label>
         <label>Team role
-          <select name="role">
+          <select name="role" class="select">
             {% for rname, label in dir_role_dropdown|default([]) %}
             <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
             {% endfor %}
           </select>
         </label>
       </div>
-      <p class="form-actions"><button type="submit">Add LDAP map</button></p>
+      <p class="form-actions"><button type="submit" class="btn btn-neutral">Add LDAP map</button></p>
     </form>
   </fieldset>
 
   <fieldset class="field-group">
-    <legend>OIDC / SSO{% if not oidc_enabled %} <span class="badge" data-variant="secondary">off</span>{% endif %}</legend>
+    <legend>OIDC / SSO{% if not oidc_enabled %} <span class="badge badge-soft" >off</span>{% endif %}</legend>
     {% if not oidc_enabled %}
     <p class="muted">OIDC login is disabled in server settings.</p>
     {% endif %}
     {% if oidc_maps %}
-    <div class="table"><table>
+    <div class="table"><table class="table">
       <thead><tr><th>Token group</th><th>Role</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
       <tbody>
       {% for m in oidc_maps %}
         <tr>
           <td><code class="k">{{ m.oidc_group }}</code></td>
-          <td><span class="badge" data-variant="secondary">{{ m.role }}</span></td>
+          <td><span class="badge badge-soft" >{{ m.role }}</span></td>
           <td class="acts">
             <form method="post"
                   action="{{ url_for('delete_team_oidc_map', team_id=team.id, map_id=m.id) }}"
                   class="inline"
                   onsubmit="return confirm('Remove this OIDC mapping?')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button type="submit" class="link danger">Remove</button>
+              <button type="submit" class="link link-error">Remove</button>
             </form>
           </td>
         </tr>
@@ -210,17 +210,17 @@ syncTeamClassForm();
       <div class="field-grid">
         <label class="span-2">Groups claim value
           <input type="text" name="oidc_group" required
-                 placeholder="e.g. eng-secrets">
+                 placeholder="e.g. eng-secrets" class="input">
         </label>
         <label>Team role
-          <select name="role">
+          <select name="role" class="select">
             {% for rname, label in dir_role_dropdown|default([]) %}
             <option value="{{ rname }}" {% if rname == default_role %}selected{% endif %} title="{{ label }}">{{ rname }}{% if label and label != rname %} - {{ label }}{% endif %}</option>
             {% endfor %}
           </select>
         </label>
       </div>
-      <p class="form-actions"><button type="submit">Add OIDC map</button></p>
+      <p class="form-actions"><button type="submit" class="btn btn-neutral">Add OIDC map</button></p>
     </form>
   </fieldset>
 </section>
@@ -235,11 +235,11 @@ syncTeamClassForm();
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <div class="field-grid">
       <label class="span-2">New owner email
-        <input type="email" name="email" required class="user-suggest"
+        <input type="email" name="email" required class="user-suggest input"
                list="user-suggest-list" placeholder="new-owner@example.com" autocomplete="off">
       </label>
     </div>
-    <p class="form-actions"><button type="submit">Transfer ownership</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Transfer ownership</button></p>
   </form>
 </section>
 
@@ -254,10 +254,10 @@ syncTeamClassForm();
     <label>Type <code class="k">{{ team.name }}</code> to confirm
       <input type="text" name="confirm_name" required autocomplete="off"
              placeholder="{{ team.name }}"
-             data-confirm-for="delete-team-btn" data-confirm-value="{{ team.name }}">
+             data-confirm-for="delete-team-btn" data-confirm-value="{{ team.name }}" class="input">
     </label>
     <p class="form-actions">
-      <button type="submit" id="delete-team-btn" data-variant="danger">Delete team</button>
+      <button type="submit" id="delete-team-btn" class="btn btn-error">Delete team</button>
     </p>
   </form>
 </section>

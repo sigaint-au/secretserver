@@ -5,7 +5,7 @@
   <h1>Set up two-factor authentication</h1>
 </div>
 {% if required %}
-<p role="alert" data-variant="error">Global admins must enable two-factor authentication before using Corvus.</p>
+<p role="alert" class="alert alert-error">Global admins must enable two-factor authentication before using Corvus.</p>
 {% endif %}
 <p class="page-desc muted">
   Scan the QR code with your authenticator app, then enter the code to confirm.
@@ -30,9 +30,9 @@
     <label>Code from authenticator
       <input type="text" name="code" required autocomplete="one-time-code"
              inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
-             placeholder="123456" autofocus>
+             placeholder="123456" autofocus class="input">
     </label>
-    <p class="form-actions"><button type="submit">Enable two-factor authentication</button></p>
+    <p class="form-actions"><button type="submit" class="btn btn-neutral">Enable two-factor authentication</button></p>
   </form>
 </section>
 
