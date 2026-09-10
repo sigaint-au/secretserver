@@ -12,7 +12,7 @@
   <div class="flex flex-wrap items-center gap-2"><span class="badge badge-soft">Folder</span><h1 class="text-2xl font-bold"><code class="font-mono">{{ folder.path }}</code></h1></div>
   <div class="flex flex-wrap items-center gap-2">
     {% if can_admin %}
-    <form method="post" action="{{ url_for('delete_folder', project_id=project_id, folder_id=folder_id) }}" class="inline" onsubmit="return confirm('Delete this empty folder?')">
+    <form method="post" action="{{ url_for('delete_folder', project_id=project_id, folder_id=folder_id) }}" class="inline" data-confirm="Delete this empty folder?">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <button type="submit" class="btn btn-outline btn-sm btn-error">Delete folder</button>
     </form>

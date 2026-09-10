@@ -60,7 +60,7 @@
     <pre class="secret-value font-mono text-sm" id="{{ val_id }}" tabindex="0">{{ value }}</pre>
     {% else %}
     <input type="text" id="{{ val_id }}" class="secret-value input w-full font-mono"
-           value="{{ value }}" readonly onclick="this.select()" title="Click to select">
+           value="{{ value }}" readonly title="Click to select">
     {% endif %}
   </div>
   {% if structured and expires_display %}

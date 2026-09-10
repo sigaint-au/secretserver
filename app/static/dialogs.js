@@ -148,6 +148,12 @@ function restoreAccessBusy(form) {
       ) {
         return;
       }
+      if (
+        window.__corvusBulkConfirm &&
+        window.__corvusBulkConfirm()
+      ) {
+        return;
+      }
       settleConfirm(true);
     }
   });

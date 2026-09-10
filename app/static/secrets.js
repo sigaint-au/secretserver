@@ -100,6 +100,22 @@
   });
 })();
 
+/* Click-to-select for readonly revealed values (replaces inline
+   onclick handlers). Delegated; focusing via keyboard is untouched. */
+document.addEventListener("click", function (evt) {
+  var el =
+    evt.target && evt.target.closest
+      ? evt.target.closest("input.secret-value[readonly]")
+      : null;
+  if (el && typeof el.select === "function") {
+    try {
+      el.select();
+    } catch (err) {
+      /* Selection unsupported: the value stays readable. */
+    }
+  }
+});
+
 /* Grant-window and auto-hide countdown labels. Hooks: [data-grant-until]
    and [data-hide-until]; refreshed by one shared 1s ticker that stops
    itself when no live node remains. */
@@ -337,27 +353,59 @@
     var url = opt && opt.getAttribute("data-url");
     if (!url) return;
     var ask = opt && opt.getAttribute("data-confirm");
-    if (ask) {
-      ask = String(ask).replace(/\{n\}/g, String(n));
-      if (!window.confirm(ask)) return;
-    }
-    if (
-      action.value === "purge" &&
-      !window.confirm(
+    if (ask) ask = String(ask).replace(/\{n\}/g, String(n));
+    /* Single irreversible confirm for permanent bulk delete (count-aware). */
+    if (action.value === "purge" && !ask) {
+      ask =
         "Permanently delete " + n + (n === 1 ? " secret" : " secrets") +
-          " forever? This cannot be undone."
-      )
-    ) {
+        " forever? This cannot be undone.";
+    }
+    var stampAndSubmit = function () {
+      var field =
+        form.querySelector("#bulk-action-field") ||
+        document.getElementById("bulk-action-field");
+      if (field) field.value = action.value;
+      form.setAttribute("action", url);
+      form.method = "post";
+      form.submit();
+    };
+    if (ask) {
+      confirmBulk(ask, btn, stampAndSubmit);
       return;
     }
-    var field =
-      form.querySelector("#bulk-action-field") ||
-      document.getElementById("bulk-action-field");
-    if (field) field.value = action.value;
-    form.setAttribute("action", url);
-    form.method = "post";
-    form.submit();
+    stampAndSubmit();
   });
+
+  /* Styled confirm for bulk actions (replaces native confirm()). The
+     dialog OK path drains pendingBulk via __corvusBulkConfirm;
+     dismissal drops the action. Native confirm is the fallback when
+     the dialog is unavailable. */
+  var pendingBulk = null;
+  function confirmBulk(message, opener, proceed) {
+    var dlg = document.getElementById("confirm-dlg");
+    if (!dlg || typeof window.openDialog !== "function") {
+      if (window.confirm(message)) proceed();
+      return;
+    }
+    pendingBulk = proceed;
+    document.getElementById("confirm-dlg-msg").textContent = message;
+    dlg._opener = opener || null;
+    dlg.onclose = function () {
+      pendingBulk = null;
+    };
+    window.openDialog(dlg);
+  }
+  window.__corvusBulkConfirm = function () {
+    var fn = pendingBulk;
+    if (!fn) return false;
+    pendingBulk = null;
+    var dlg = document.getElementById("confirm-dlg");
+    if (dlg && dlg.open && typeof window.closeDialog === "function") {
+      window.closeDialog(dlg);
+    }
+    fn();
+    return true;
+  };
 
   if (typeof window.onContent === "function") window.onContent(sync);
   else sync();
