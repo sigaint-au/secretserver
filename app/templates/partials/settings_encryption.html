@@ -7,7 +7,7 @@
 </div>
 {% endif %}
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Server-wide key</h2>
   </div>
@@ -36,7 +36,7 @@
   </div>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">HSM slots</h2>
     <a class="btn btn-outline btn-sm" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
@@ -131,7 +131,7 @@
   {% endif %}
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Project posture</h2>
     <form method="get" action="{{ url_for('server_settings') }}" class="flex flex-wrap items-center gap-2" role="search">

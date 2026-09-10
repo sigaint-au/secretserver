@@ -1,4 +1,4 @@
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Global admins</h2>
   <p class="text-sm opacity-70">Global admins can access every team, every project, and all server settings.</p>
   {% set admin_users = users|selectattr('is_global_admin')|list %}

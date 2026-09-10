@@ -1,4 +1,4 @@
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Server URL</h2>
   <p class="text-sm opacity-70">
     Public base URL of this application (no trailing slash). Used for OIDC redirect URIs
@@ -16,7 +16,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Login banner</h2>
   <p class="text-sm opacity-70">
     Add the required disclosure notice and an optional link to your system-use policy.
@@ -51,7 +51,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Reveal &amp; clipboard</h2>
   <p class="text-sm opacity-70">
     Clipboard auto-clear and reveal auto-hide are per-device defaults; the scope
@@ -84,7 +84,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Account registration</h2>
   <p class="text-sm opacity-70">
     Control whether new local accounts can be created at <code class="font-mono">/register</code>.
@@ -102,7 +102,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Team creation</h2>
   <p class="text-sm opacity-70">
     When disabled, only global admins can create teams. Existing teams are unchanged.
@@ -119,7 +119,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Two-factor authentication</h2>
   <p class="text-sm opacity-70">
     Any user can enable TOTP. When enforced below, global admins must enroll and cannot disable 2FA.
@@ -136,7 +136,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
       <h2 class="text-lg font-bold">Token expiry policy</h2>
@@ -148,7 +148,7 @@
     <input type="hidden" name="action" value="token_policy">
     <p id="token-policy-help" class="text-xs opacity-70">Maximum lifetime is measured in days and applies when an expiry is required. Lifetime fields are enabled only while the matching expiry requirement is on.</p>
     <div class="grid gap-4 sm:grid-cols-2">
-      <fieldset class="fieldset rounded-box border border-base-300 p-4">
+      <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
         <legend class="sr-only">Personal access tokens</legend>
         <label class="flex items-center gap-2" for="require-pat-expiry">
           <input type="checkbox" name="require_pat_expiry" id="require-pat-expiry" class="checkbox" value="1"
@@ -163,7 +163,7 @@
                  aria-label="Maximum personal access token lifetime in days" class="input">
         </div>
       </fieldset>
-      <fieldset class="fieldset rounded-box border border-base-300 p-4">
+      <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
         <legend class="sr-only">Machine tokens</legend>
         <label class="flex items-center gap-2" for="require-machine-token-expiry">
           <input type="checkbox" name="require_machine_token_expiry" id="require-machine-token-expiry" class="checkbox" value="1"

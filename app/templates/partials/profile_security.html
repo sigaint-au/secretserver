@@ -1,4 +1,4 @@
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Short-lived token</h2>
   <p class="text-sm opacity-70">You sign in on the CLI with a
     <code class="font-mono">corvus login</code> command.
@@ -19,7 +19,7 @@
 </div>
 {% endif %}
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Personal access tokens</h2>
   <p class="text-sm opacity-70">Long-lived <code class="font-mono">pat_…</code> tokens for CLI. Exchange via <code class="font-mono">/api/token</code>.</p>
   <form method="post" action="{{ url_for('create_personal_token') }}" class="flex flex-wrap items-end gap-4">
@@ -70,7 +70,7 @@
   {% endif %}
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Two-factor authentication</h2>
   {% if totp_enabled %}
   <p class="text-sm">
@@ -112,7 +112,7 @@
 </section>
 
 {% if user.auth_source == 'local' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Change password</h2>
   <p class="text-sm opacity-70">Signs out other devices.</p>
   <form method="post" action="{{ url_for('change_password') }}" class="flex flex-col gap-4">
@@ -133,7 +133,7 @@
   </form>
 </section>
 {% else %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Password</h2>
   <p class="text-sm opacity-70">
     {% if user.auth_source == 'oidc' %}Managed by OIDC SSO.
@@ -143,7 +143,7 @@
 </section>
 {% endif %}
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Active sessions</h2>
     {% if active_sessions and active_sessions|length > 1 %}

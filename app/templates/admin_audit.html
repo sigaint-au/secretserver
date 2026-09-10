@@ -27,7 +27,7 @@
 <div class="flex min-w-0 flex-1 flex-col gap-4">
 
 {% if active_tab == 'access' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Access review</h2>
     <div class="flex flex-wrap items-center gap-2">
@@ -108,7 +108,7 @@
 </section>
 
 {% elif active_tab == 'roles' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Role-change audit</h2>
     <div class="flex flex-wrap items-center gap-2">
@@ -196,7 +196,7 @@
 </section>
 
 {% elif active_tab == 'activity' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Secret activity</h2>
     <div class="flex flex-wrap items-center gap-2">
@@ -293,7 +293,7 @@
 </section>
 
 {% elif active_tab == 'logins' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Sign-in failures</h2>
   </div>
@@ -354,7 +354,7 @@
 </section>
 
 {% elif active_tab == 'export' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Audit export</h2>
   </div>
@@ -409,7 +409,7 @@
   </form>
 </section>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Retention</h2>
   <p class="text-sm opacity-70">
     Configure how long audit rows are kept. Set to <strong>0</strong> to keep forever.

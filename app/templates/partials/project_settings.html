@@ -6,7 +6,7 @@
   </div>
   <form method="post" action="{{ url_for('update_project_settings', project_id=project.id) }}" data-dirty-guard>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <fieldset class="rounded-box border border-base-300 p-4">
+    <fieldset class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
       <legend>Project</legend>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="grid gap-1 sm:col-span-2">Description
@@ -17,7 +17,7 @@
         </label>
       </div>
     </fieldset>
-    <fieldset class="rounded-box border border-base-300 p-4">
+    <fieldset class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
       <legend>Reveal access</legend>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="flex items-center gap-2 sm:col-span-2">
@@ -105,7 +105,7 @@
   </div>
 
   {% if hsm_available and project_crypto and project_crypto.key_provider == 'local' and can_manage_keys %}
-  <div class="rounded-box border border-base-300 p-4">
+  <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
     <div>
       <strong>Upgrade to hardware security (HSM)</strong>
       <p class="text-sm opacity-70">Re-wraps this project's key with an external PKCS#11 HSM token. The server re-encrypts every secret under the new HSM KEK.</p>

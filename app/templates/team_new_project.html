@@ -17,7 +17,7 @@
       onsubmit="var h=this.querySelector('input[name=encryption]:checked');return h&&h.value==='hsm'?confirm('Create with an HSM-wrapped key? The HSM must stay available for future access.'):true;">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  <section class="rounded-box border border-base-300 p-4">
+  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Basics</h2></div>
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-1 sm:col-span-2">
@@ -33,7 +33,7 @@
     </div>
   </section>
 
-  <section class="rounded-box border border-base-300 p-4">
+  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Encryption</h2></div>
     <fieldset>
       <legend class="sr-only">Encryption</legend>

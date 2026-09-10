@@ -1,6 +1,6 @@
 {% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
 {% endif %}{% if active_tab == 'builtin' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Built-in roles</h2>
     {% if can_edit %}
@@ -38,7 +38,7 @@
 {% endif %}
 
 {% if active_tab == 'custom' %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">Custom roles</h2>
     {% if can_edit %}
@@ -93,7 +93,7 @@
 {% endif %}
 
 {% if active_tab == 'create' and can_edit %}
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">New custom role</h2>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('rbac_roles', tab='custom') }}">Back to roles</a>

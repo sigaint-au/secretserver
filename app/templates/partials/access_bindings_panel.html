@@ -4,7 +4,7 @@
             form_id_prefix, help_html (optional), full_bindings_url (optional)
 #}
 {% set pref = form_id_prefix|default('access') %}
-<section class="access-rbac-panel rounded-box border border-base-300 p-4">
+<section class="access-rbac-panel rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">{{ panel_title|default('Role bindings') }}</h2>
     {% if full_bindings_url %}

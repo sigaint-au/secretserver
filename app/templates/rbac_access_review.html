@@ -6,7 +6,7 @@
 </div>
 <p class="text-sm opacity-70">Who can perform a verb on a resource at a given scope (uses <code class="font-mono">api.can</code>).</p>
 
-<form method="get" action="{{ url_for('rbac_access_review') }}" class="rounded-box border border-base-300 p-4" role="search">
+<form method="get" action="{{ url_for('rbac_access_review') }}" class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm" role="search">
   <div class="flex flex-wrap items-end gap-4">
     <div class="grid gap-1">
       <label class="label" for="rev-verb"><span>Verb</span></label>
@@ -66,7 +66,7 @@
   </p>
 </form>
 
-<section class="rounded-box border border-base-300 p-4">
+<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Subjects with access</h2>
   {% if not scope_id and scope_kind != 'cluster' %}
   <p class="text-sm opacity-70">Choose a team or project scope and run Review.</p>
