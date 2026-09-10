@@ -53,27 +53,7 @@
     </p>
     {% endif %}
   </div>
-  <aside class="hidden lg:flex flex-col justify-center gap-6 bg-neutral text-neutral-content p-10" aria-label="About Corvus">
-    <div>
-      {% include "partials/brand_logo.html" %}
-      <p class="text-2xl font-bold">{{ brand_name or 'Corvus' }}</p>
-      {% if brand_tagline %}<p class="opacity-70">{{ brand_tagline }}</p>{% endif %}
-    </div>
-    <ul class="flex flex-col gap-4">
-      <li>
-        <strong class="block">Self-hosted</strong>
-        <span class="opacity-70">Secrets stay on your infrastructure, encrypted at rest.</span>
-      </li>
-      <li>
-        <strong class="block">Scoped access</strong>
-        <span class="opacity-70">Teams, projects, and per-secret roles decide who can reveal.</span>
-      </li>
-      <li>
-        <strong class="block">Audited</strong>
-        <span class="opacity-70">Every reveal is logged with actor and timestamp.</span>
-      </li>
-    </ul>
-  </aside>
+  {% include "partials/auth_brand_panel.html" %}
 </div>
 {% endblock %}
 {% block extra %}

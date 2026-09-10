@@ -11,7 +11,7 @@
   <script src="{{ url_for('static', filename='vendor/alpine.min.js') }}" defer></script>
   <meta name="csrf-token" content="{{ csrf_token }}">
 </head>
-<body x-data>
+<body x-data class="bg-base-200">
   <a class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-base-100 focus:p-2" href="#main-content">Skip to content</a>
   {% if classification and classification.enabled %}
   <div class="alert alert-warning rounded-none" role="status">
@@ -22,9 +22,9 @@
   {% if session.get('user_id') %}
   <div class="drawer lg:drawer-open" x-data="{ drawer: false }">
     <input id="app-drawer" type="checkbox" class="drawer-toggle" x-model="drawer">
-    <div class="drawer-content">
-      <div class="navbar bg-base-100 lg:hidden">
-        <label for="app-drawer" id="side-toggle" class="btn btn-ghost btn-square"
+    <div class="drawer-content bg-base-200">
+      <header class="navbar sticky top-0 z-30 border-b border-base-300 bg-base-200/85 backdrop-blur">
+        <label for="app-drawer" id="side-toggle" class="btn btn-ghost btn-square lg:hidden"
                aria-controls="app-sidebar" aria-expanded="false"
                aria-label="Open navigation menu"
                @click="drawer = !drawer">
@@ -33,13 +33,32 @@
             <path d="M4 7h16M4 12h16M4 17h16"/>
           </svg>
         </label>
-        <a class="flex flex-1 items-center gap-2 text-lg font-bold" href="{{ url_for('projects_list') }}">
+        <a class="flex items-center gap-2 text-lg font-bold lg:hidden" href="{{ url_for('projects_list') }}">
           {% include "partials/brand_logo.html" %}
           <span>{{ brand_name or 'Corvus' }}</span>
         </a>
+        <div class="flex-1"></div>
         {% include "partials/theme_toggle.html" %}
-      </div>
-      <main id="main-content" class="p-4 lg:p-6">
+        <div class="dropdown dropdown-end">
+          <button type="button" tabindex="0" aria-label="Account menu"
+                  class="btn btn-ghost btn-circle avatar placeholder">
+            <span class="bg-primary text-primary-content flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold">
+              {{ (session.email or '?')[:1]|upper }}
+            </span>
+          </button>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-40 mt-2 w-60 p-2 shadow-xl">
+            <li class="menu-title truncate">{{ session.email }}</li>
+            <li><a href="{{ url_for('profile') }}">My profile</a></li>
+            <li>
+              <form method="post" action="{{ url_for('logout') }}">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                <button type="submit" class="w-full text-left">Log out</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </header>
+      <main id="main-content" class="mx-auto w-full max-w-7xl p-4 lg:p-8">
         {% include "partials/flash_messages.html" %}
 
         {% include "partials/confirm_dialog.html" %}
@@ -49,27 +68,29 @@
     </div>
     <div class="drawer-side">
       <label for="app-drawer" id="side-backdrop" class="drawer-overlay" aria-label="Close navigation menu" @click="drawer = false"></label>
-      <aside id="app-sidebar" class="bg-base-200 flex min-h-full w-64 flex-col gap-2 p-4">
-        <a class="flex items-center gap-2 px-2 pt-1 text-lg font-bold" href="{{ url_for('projects_list') }}">
-          {% include "partials/brand_logo.html" %}
-          <span class="truncate">
-            {{ brand_name or 'Corvus' }}
-            {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
+      <aside id="app-sidebar" class="bg-neutral text-neutral-content flex min-h-full w-72 flex-col gap-1 p-4">
+        <a class="flex items-center gap-3 px-2 pt-1 pb-4" href="{{ url_for('projects_list') }}">
+          <span class="bg-primary text-primary-content flex h-10 w-10 items-center justify-center rounded-xl shadow">
+            {% include "partials/brand_logo.html" %}
+          </span>
+          <span class="min-w-0">
+            <span class="block truncate text-lg leading-tight font-bold">{{ brand_name or 'Corvus' }}</span>
+            {% if brand_tagline %}<span class="block truncate text-xs uppercase tracking-wider opacity-60">{{ brand_tagline }}</span>{% endif %}
           </span>
         </a>
         <form method="get" action="{{ url_for('global_search') }}" role="search">
           <label for="side-search-q" class="sr-only">Search</label>
           <div class="join w-full">
-            <input type="search" id="side-search-q" name="q" placeholder="Search"
+            <input type="search" id="side-search-q" name="q" placeholder="Search secrets…"
                    autocomplete="off" aria-label="Search" class="input input-sm join-item min-w-0 flex-1"
                    value="{{ request.args.get('q','') if request.endpoint == 'global_search' else '' }}">
             {% include "partials/search_icon.html" %}
           </div>
         </form>
-        <form method="post" action="{{ url_for('select_team') }}">
+        <form method="post" action="{{ url_for('select_team') }}" class="rounded-xl bg-white/5 p-2">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
-          <label for="side-team-select" class="label px-2 text-xs font-semibold uppercase opacity-60">Team</label>
+          <label for="side-team-select" class="label px-1 text-[11px] font-semibold tracking-wider uppercase opacity-60">Team</label>
           <div class="join w-full">
             <select id="side-team-select" name="team_id" aria-label="Team"
                     class="select select-sm join-item min-w-0 flex-1">
@@ -81,7 +102,7 @@
               {% endfor %}
               {% endif %}
             </select>
-            <button type="submit" class="btn btn-ghost btn-sm join-item">Go</button>
+            <button type="submit" class="btn btn-primary btn-sm join-item">Go</button>
           </div>
         </form>
         <nav class="flex-1" aria-label="Workspace">
@@ -89,11 +110,11 @@
             {% for g in nav_groups %}
             <li>
               <details data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
-                <summary>{{ g['label'] }}</summary>
+                <summary class="text-[11px] font-semibold tracking-wider uppercase opacity-60">{{ g['label'] }}</summary>
                 <ul>
                   {% for it in g['items'] %}
                   <li>
-                    <a data-nav-link{% if it['active'] %} class="menu-active" aria-current="page"{% endif %} href="{{ it['href'] }}">{% if it['icon'] %}{% with name=it['icon'] %}{% include "partials/nav_icon.html" %}{% endwith %}{% endif %}{{ it['label'] }}{% if it['badge'] %}<span class="badge badge-soft badge-sm ms-auto" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
+                    <a data-nav-link{% if it['active'] %} class="menu-active" aria-current="page"{% endif %} href="{{ it['href'] }}">{% if it['icon'] %}{% with name=it['icon'] %}{% include "partials/nav_icon.html" %}{% endwith %}{% endif %}{{ it['label'] }}{% if it['badge'] %}<span class="badge badge-primary badge-sm ms-auto" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
                   </li>
                   {% endfor %}
                 </ul>
@@ -102,13 +123,13 @@
             {% endfor %}
           </ul>
         </nav>
-        <nav class="border-t border-base-300 pt-2" aria-label="Pinned and recent">
+        <nav class="border-t border-white/10 pt-2" aria-label="Pinned and recent">
           <ul class="menu w-full p-0">
             {% include "partials/side_pins.html" %}
             {% if nav_recent %}
             <li>
               <details id="side-recent" data-side-group="recent" open>
-                <summary>Recent</summary>
+                <summary class="text-[11px] font-semibold tracking-wider uppercase opacity-60">Recent</summary>
                 <ul>
                   {% for s in nav_recent %}
                   <li>
@@ -125,17 +146,20 @@
             {% endif %}
           </ul>
         </nav>
-        <div class="border-t border-base-300 pt-2">
-          <ul class="menu w-full p-0">
-            <li>
-              <a href="{{ url_for('profile') }}" title="{{ session.email }} - My profile" class="truncate">{{ session.email }}</a>
-            </li>
-          </ul>
-          <div class="flex items-center gap-2 px-2 py-1">
-            {% if is_global_admin %}<span class="badge badge-soft badge-sm">Global admin</span>{% endif %}
-            <span class="ms-auto">{% include "partials/theme_toggle.html" %}</span>
+        <div class="rounded-xl bg-white/5 p-3">
+          <a href="{{ url_for('profile') }}" title="{{ session.email }} - My profile"
+             class="flex items-center gap-2">
+            <span class="bg-secondary text-secondary-content flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+              {{ (session.email or '?')[:1]|upper }}
+            </span>
+            <span class="min-w-0 flex-1 truncate text-sm">{{ session.email }}</span>
+            {% if is_global_admin %}<span class="badge badge-primary badge-sm shrink-0">Global admin</span>{% endif %}
+          </a>
+          <div class="mt-2 flex items-center justify-between">
+            <span class="text-xs opacity-60">Theme</span>
+            {% include "partials/theme_toggle.html" %}
           </div>
-          <form method="post" action="{{ url_for('logout') }}">
+          <form method="post" action="{{ url_for('logout') }}" class="mt-1">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="btn btn-ghost btn-sm w-full justify-start">Log out</button>
           </form>
@@ -145,12 +169,14 @@
     </div>
   </div>
   {% else %}
-  <div class="flex min-h-screen flex-col justify-center gap-4 p-4">
+  <div class="from-primary/15 via-base-200 to-secondary/15 flex min-h-screen flex-col justify-center gap-4 bg-gradient-to-br p-4">
     <div class="{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-md shadow-xl{% endblock %}">
       <div class="card-body">
         <div class="flex items-center justify-between gap-2">
           <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
-            {% include "partials/brand_logo.html" %}
+            <span class="bg-primary text-primary-content flex h-9 w-9 items-center justify-center rounded-xl">
+              {% include "partials/brand_logo.html" %}
+            </span>
             <span>
               {{ brand_name or 'Corvus' }}
               {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}

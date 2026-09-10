@@ -1,9 +1,13 @@
 /* Theme controller: explicit light/dark choice, applied before first paint.
-   Runs synchronously in <head>. Hook: input[data-theme-toggle]
-   (checked = dark). Persists in localStorage under "corvus-theme";
-   falls back to prefers-color-scheme. No cookies, no server round-trip. */
+   Runs synchronously in <head>. Themes are the custom "corvus" (light)
+   and "corvus-dark" builds; legacy stored "light"/"dark" values migrate
+   forward. Hook: input[data-theme-toggle] (checked = dark). Persists in
+   localStorage under "corvus-theme"; falls back to prefers-color-scheme.
+   No cookies, no server round-trip. */
 (function () {
   var STORE_KEY = "corvus-theme";
+  var LIGHT = "corvus";
+  var DARK = "corvus-dark";
 
   function readStored() {
     try {
@@ -15,15 +19,20 @@
 
   function systemTheme() {
     try {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
     } catch (err) {
-      return "light";
+      return LIGHT;
     }
   }
 
+  function normalize(saved) {
+    if (saved === DARK || saved === "dark") return DARK;
+    if (saved === LIGHT || saved === "light") return LIGHT;
+    return null;
+  }
+
   function effective() {
-    var saved = readStored();
-    return saved === "dark" || saved === "light" ? saved : systemTheme();
+    return normalize(readStored()) || systemTheme();
   }
 
   function paint(name) {
@@ -31,13 +40,13 @@
     Array.prototype.forEach.call(
       document.querySelectorAll('input[data-theme-toggle]'),
       function (box) {
-        box.checked = name === "dark";
+        box.checked = name === DARK;
       }
     );
   }
 
   function onToggle(box) {
-    var name = box.checked ? "dark" : "light";
+    var name = box.checked ? DARK : LIGHT;
     try {
       window.localStorage.setItem(STORE_KEY, name);
     } catch (err) {
@@ -52,7 +61,7 @@
       function (box) {
         if (box.__corvusTheme) return;
         box.__corvusTheme = true;
-        box.checked = document.documentElement.getAttribute("data-theme") === "dark";
+        box.checked = document.documentElement.getAttribute("data-theme") === DARK;
         box.addEventListener("change", function () {
           onToggle(box);
         });
