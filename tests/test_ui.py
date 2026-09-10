@@ -436,12 +436,13 @@ class TestUIShell:
         assert "never" in html  # unused token reports "never"
         assert 'class="table"' in html  # machine table is scrollable/responsive
 
-    def test_project_tabs_use_nav_links_not_tablist_role(self):
-        # Server-side page navigation is plain links (no fake tablist), so
-        # screen readers announce them as links, not broken tabs. Scope the
-        # check to the actual <nav class="page-subnav ..."> markup (not the
-        # shared <style> block, whose `.role-mode-tabs [role=tablist]` selector
-        # legitimately contains `role=` text).
+    def test_project_subnav_is_vertical_menu_not_tabs(self):
+        # Server-side page navigation is a vertical side menu of plain links
+        # (no fake tablist), so screen readers announce them as links, not
+        # broken tabs. Scope the check to the actual <nav class="page-subnav
+        # ..."> markup (not the shared <style> block, whose
+        # `.role-mode-tabs [role=tablist]` selector legitimately contains
+        # `role=` text).
         from flask import render_template
 
         project = {
@@ -458,5 +459,8 @@ class TestUIShell:
         tabs = html[i:j] if i != -1 and j != -1 else ""
         assert 'role="tablist"' not in tabs
         assert 'role="tab"' not in tabs
+        assert '<ul class="menu menu-horizontal' in tabs
+        assert "lg:menu-vertical" in tabs
         assert "page-subnav-link" in tabs
-        assert "page-subnav-link active" in tabs
+        assert "page-subnav-link menu-active" in tabs
+        assert "tab-active" not in tabs

@@ -19,14 +19,16 @@
     {% endif %}
   </div>
 </div>
-<div class="flex flex-col gap-4">
-<nav class="page-subnav tabs" aria-label="Folder sections">
-  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link {% if active_tab == 'contents' %}active{% endif %} tab{% if active_tab == 'contents' %} tab-active{% endif %}"{% if active_tab == 'contents' %} aria-current="page"{% endif %} href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}">Contents</a>
+<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Folder sections">
+<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
+  <li><a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link{% if active_tab == 'contents' %} menu-active{% endif %}"{% if active_tab == 'contents' %} aria-current="page"{% endif %} href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='contents') }}">Contents</a></li>
   {% if can_admin %}
-  <a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link {% if active_tab == 'access' %}active{% endif %} tab{% if active_tab == 'access' %} tab-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %} href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}">Access</a>
+  <li><a hx-get="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}" hx-target="#folder-panel" hx-swap="innerHTML transition:true" hx-push-url="true" class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %} href="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id, tab='access') }}">Access</a></li>
   {% endif %}
+</ul>
 </nav>
-<div class="flex min-w-0 flex-col gap-4" id="folder-panel" tabindex="-1">
+<div class="flex min-w-0 flex-1 flex-col gap-4" id="folder-panel" tabindex="-1">
 {% include "partials/folder_panel.html" %}
 </div>
 </div>

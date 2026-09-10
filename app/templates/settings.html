@@ -4,18 +4,20 @@
 <div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-bold">Server settings</h1></div>
 <p class="text-sm opacity-70">Global admins only. Changes apply immediately.</p>
 
-<div class="flex flex-col gap-4">
-<nav class="page-subnav tabs" aria-label="Server settings sections">
+<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Server settings sections">
+<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
   {% for cat_key, cat_label, subs in categories %}
-  <span class="page-subnav-header menu-title">{{ cat_label }}</span>
+  <li class="menu-title">{{ cat_label }}</li>
   {% for sub_key, sub_label in subs %}
-  <a href="{{ url_for('server_settings', tab=sub_key) }}"
-     class="page-subnav-link {% if active_tab == sub_key %}active{% endif %} tab{% if active_tab == sub_key %} tab-active{% endif %}"{% if active_tab == sub_key %} aria-current="page"{% endif %}
-  >{{ sub_label }}</a>
+  <li><a href="{{ url_for('server_settings', tab=sub_key) }}"
+     class="page-subnav-link{% if active_tab == sub_key %} menu-active{% endif %}"{% if active_tab == sub_key %} aria-current="page"{% endif %}
+  >{{ sub_label }}</a></li>
   {% endfor %}
   {% endfor %}
+</ul>
 </nav>
-<div class="flex min-w-0 flex-col gap-4">
+<div class="flex min-w-0 flex-1 flex-col gap-4">
 
 {% if active_tab == 'general' %}{% include "partials/settings_general.html" %}
 {% elif active_tab == 'branding' %}{% include "partials/settings_branding.html" %}

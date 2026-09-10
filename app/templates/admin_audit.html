@@ -4,25 +4,27 @@
 <div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-bold">Auditing</h1></div>
 <p class="text-sm opacity-70">Global admins only. Review access, secret activity, role changes, and audit records.</p>
 
-<div class="flex flex-col gap-4">
-<nav class="page-subnav tabs" aria-label="Auditing sections">
-  <a href="{{ url_for('admin_audit', tab='access') }}"
-     class="page-subnav-link {% if active_tab == 'access' %}active{% endif %} tab{% if active_tab == 'access' %} tab-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %}
-  >Grants export</a>
-  <a href="{{ url_for('admin_audit', tab='roles') }}"
-     class="page-subnav-link {% if active_tab == 'roles' %}active{% endif %} tab{% if active_tab == 'roles' %} tab-active{% endif %}"{% if active_tab == 'roles' %} aria-current="page"{% endif %}
-  >Role changes</a>
-  <a href="{{ url_for('admin_audit', tab='activity') }}"
-     class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %} tab{% if active_tab == 'activity' %} tab-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
-  >Secret activity</a>
-  <a href="{{ url_for('admin_audit', tab='logins') }}"
-     class="page-subnav-link {% if active_tab == 'logins' %}active{% endif %} tab{% if active_tab == 'logins' %} tab-active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
-  >Sign-in failures</a>
-  <a href="{{ url_for('admin_audit', tab='export') }}"
-     class="page-subnav-link {% if active_tab == 'export' %}active{% endif %} tab{% if active_tab == 'export' %} tab-active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
-  >Export &amp; retention</a>
+<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Auditing sections">
+<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
+  <li><a href="{{ url_for('admin_audit', tab='access') }}"
+     class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %}
+  >Grants export</a></li>
+  <li><a href="{{ url_for('admin_audit', tab='roles') }}"
+     class="page-subnav-link{% if active_tab == 'roles' %} menu-active{% endif %}"{% if active_tab == 'roles' %} aria-current="page"{% endif %}
+  >Role changes</a></li>
+  <li><a href="{{ url_for('admin_audit', tab='activity') }}"
+     class="page-subnav-link{% if active_tab == 'activity' %} menu-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
+  >Secret activity</a></li>
+  <li><a href="{{ url_for('admin_audit', tab='logins') }}"
+     class="page-subnav-link{% if active_tab == 'logins' %} menu-active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
+  >Sign-in failures</a></li>
+  <li><a href="{{ url_for('admin_audit', tab='export') }}"
+     class="page-subnav-link{% if active_tab == 'export' %} menu-active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
+  >Export &amp; retention</a></li>
+</ul>
 </nav>
-<div class="flex min-w-0 flex-col gap-4">
+<div class="flex min-w-0 flex-1 flex-col gap-4">
 
 {% if active_tab == 'access' %}
 <section class="rounded-box border border-base-300 p-4">

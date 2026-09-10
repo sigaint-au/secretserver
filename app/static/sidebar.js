@@ -104,19 +104,19 @@
   });
 })();
 
-/* Page subnav tab active state switcher on HTMX navigation. The server
-   re-renders panels but not the subnav, so the active pill is moved
+/* Page subnav menu active state switcher on HTMX navigation. The server
+   re-renders panels but not the subnav, so the active highlight is moved
    client-side on hx-get link clicks (cosmetic; server state is canonical). */
 document.addEventListener('click', function (e) {
   const link = e.target.closest && e.target.closest('.page-subnav-link');
   if (!link || !link.hasAttribute('hx-get')) return;
   const nav = link.closest('.page-subnav');
   if (!nav) return;
-  /* Clear the active pill from every subnav link. */
+  /* Clear the active highlight from every subnav link. */
   nav.querySelectorAll('.page-subnav-link').forEach(function (el) {
-    el.classList.remove('active');
+    el.classList.remove('menu-active');
     el.removeAttribute('aria-current');
   });
-  link.classList.add('active');
+  link.classList.add('menu-active');
   link.setAttribute('aria-current', 'page');
 });
