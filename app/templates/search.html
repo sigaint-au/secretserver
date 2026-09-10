@@ -6,12 +6,9 @@
 </div>
 <form method="get" action="{{ url_for('global_search') }}" class="flex flex-wrap items-end gap-4" role="search">
   {% if scope %}<input type="hidden" name="scope" value="{{ scope }}">{% endif %}
-  <fieldset class="join w-full">
-    {% include "partials/search_icon.html" %}
-    <input type="search" name="q" value="{{ search_q or '' }}"
-           placeholder="Search" autocomplete="off"
-           aria-label="Global search" class="input join-item w-full">
-  </fieldset>
+  {% with input_value=search_q, aria_label='Global search' %}
+  {% include "partials/search_field.html" %}
+  {% endwith %}
   {% if scope == 'secrets' %}
   <label class="grid gap-1">
     <span class="text-sm opacity-70">Kind</span>
@@ -47,11 +44,11 @@
   <section>
     <h2 class="text-lg font-bold">Teams <span class="opacity-70">({{ teams_total }})</span></h2>
     {% if teams %}
-    <div class="overflow-x-auto"><table class="table">
+    <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
       <thead><tr><th>Name</th></tr></thead>
       <tbody>
       {% for t in teams %}
-        <tr><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
+        <tr class="hover"><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
       {% endfor %}
       </tbody>
     </table></div>
@@ -64,11 +61,11 @@
   <section>
     <h2 class="text-lg font-bold">Projects <span class="opacity-70">({{ projects_total }})</span></h2>
     {% if projects %}
-    <div class="overflow-x-auto"><table class="table">
+    <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
       <thead><tr><th>Project</th><th>Team</th><th>Description</th></tr></thead>
       <tbody>
       {% for p in projects %}
-        <tr>
+        <tr class="hover">
           <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
           <td class="opacity-70"><a class="link" href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
           <td class="opacity-70">{{ p.description or '-' }}</td>
@@ -85,11 +82,11 @@
   <section>
     <h2 class="text-lg font-bold">Secrets <span class="opacity-70">({{ secrets_total }})</span></h2>
     {% if secrets %}
-    <div class="overflow-x-auto"><table class="table">
+    <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
       <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
       <tbody>
       {% for s in secrets %}
-        <tr>
+        <tr class="hover">
           <td>
             <a class="link" href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
               <code class="font-mono">{{ s.key }}</code>
@@ -125,11 +122,11 @@
     </span>
   </h2>
   {% if teams %}
-  <div class="overflow-x-auto"><table class="table">
+  <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
     <thead><tr><th>Name</th></tr></thead>
     <tbody>
     {% for t in teams %}
-      <tr><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
+      <tr class="hover"><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
@@ -151,11 +148,11 @@
     </span>
   </h2>
   {% if projects %}
-  <div class="overflow-x-auto"><table class="table">
+  <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
     <thead><tr><th>Project</th><th>Team</th></tr></thead>
     <tbody>
     {% for p in projects %}
-      <tr>
+      <tr class="hover">
         <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
         <td class="opacity-70"><a class="link" href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
       </tr>
@@ -180,11 +177,11 @@
     </span>
   </h2>
   {% if secrets %}
-  <div class="overflow-x-auto"><table class="table">
+  <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
     <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
     <tbody>
     {% for s in secrets %}
-      <tr>
+      <tr class="hover">
         <td>
           <a class="link" href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
             <code class="font-mono">{{ s.key }}</code>

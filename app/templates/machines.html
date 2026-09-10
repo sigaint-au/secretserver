@@ -31,12 +31,9 @@
       hx-swap="outerHTML"
       hx-push-url="true"
       hx-trigger="submit, input delay:250ms from:input[name=q]">
-  <fieldset class="join w-full">
-    {% include "partials/search_icon.html" %}
-    <input type="search" name="q" value="{{ q or '' }}"
-           placeholder="Search machine accounts" autocomplete="off"
-           aria-label="Search machine accounts" class="input join-item w-full">
-  </fieldset>
+  {% with input_value=q, placeholder='Search machine accounts', aria_label='Search machine accounts' %}
+  {% include "partials/search_field.html" %}
+  {% endwith %}
   {% if q %}
   <div class="flex items-center gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('machines_list') }}"

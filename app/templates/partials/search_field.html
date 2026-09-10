@@ -1,0 +1,8 @@
+{# Search field unit: icon + input. Expects input_value; optional
+   input_name (default 'q'), placeholder (default 'Search'), aria_label
+   (default 'Search'), input_id. Set via {% with %} at the include site. #}
+<fieldset class="join w-full">
+  {% include "partials/search_icon.html" %}
+  <input type="search" name="{{ input_name|default('q') }}"{% if input_id is defined and input_id %} id="{{ input_id }}"{% endif %} value="{{ input_value or '' }}"
+         placeholder="{{ placeholder|default('Search') }}" autocomplete="off" aria-label="{{ aria_label|default('Search') }}" class="input join-item w-full">
+</fieldset>

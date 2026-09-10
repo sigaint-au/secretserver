@@ -6,11 +6,9 @@
   {% if team %}
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('projects_list') }}" class="flex flex-wrap items-center gap-2" role="search">
-      <fieldset class="join w-full">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item w-full">
-      </fieldset>
+      {% with input_value=search_q, aria_label='Search projects' %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('projects_list') }}">Clear search</a>
       {% endif %}

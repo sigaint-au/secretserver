@@ -7,11 +7,9 @@
     <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="myaccess">
       <input type="hidden" name="scope" value="{{ my_access_scope }}">
-      <fieldset class="join">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ my_access_q or '' }}" id="myaccess-q"
-               placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}" class="input join-item">
-      </fieldset>
+      {% with input_value=my_access_q, input_id='myaccess-q', aria_label='Search ' ~ my_access_scope_label %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if my_access_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear search</a>{% endif %}
     </form>
   </div>

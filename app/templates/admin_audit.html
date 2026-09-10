@@ -41,11 +41,9 @@
   </p>
   <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="access">
-    <fieldset class="join">
-      {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-access-q"
-             placeholder="Search" autocomplete="off" aria-label="Search access grants" class="input join-item">
-    </fieldset>
+    {% with input_value=search_q, input_id='audit-access-q', aria_label='Search access grants' %}
+    {% include "partials/search_field.html" %}
+    {% endwith %}
     <div class="grid gap-1">
       <label class="label" for="audit-access-scope"><span>Scope</span></label>
       <select name="scope" id="audit-access-scope" class="select">
@@ -133,11 +131,9 @@
         <option value="all" {% if role_actions == 'all' %}selected{% endif %}>All org events</option>
       </select>
     </div>
-    <fieldset class="join">
-      {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-roles-q"
-             placeholder="Search" autocomplete="off" aria-label="Search role-change audit" class="input join-item">
-    </fieldset>
+    {% with input_value=search_q, input_id='audit-roles-q', aria_label='Search role-change audit' %}
+    {% include "partials/search_field.html" %}
+    {% endwith %}
     <div class="grid gap-1">
       <label class="label" for="audit-roles-actor"><span>Actor email</span></label>
       <input type="search" name="actor" id="audit-roles-actor" value="{{ audit_actor or '' }}"
@@ -213,11 +209,9 @@
   </p>
   <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="activity">
-    <fieldset class="join">
-      {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-activity-q"
-             placeholder="Search" autocomplete="off" aria-label="Search secret activity" class="input join-item">
-    </fieldset>
+    {% with input_value=search_q, input_id='audit-activity-q', aria_label='Search secret activity' %}
+    {% include "partials/search_field.html" %}
+    {% endwith %}
     <div class="grid gap-1">
       <label class="label" for="audit-activity-actor"><span>Actor email</span></label>
       <input type="search" name="actor" id="audit-activity-actor" value="{{ audit_actor or '' }}"
@@ -308,11 +302,9 @@
   </p>
   <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="logins">
-    <fieldset class="join">
-      {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-logins-q"
-             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures" class="input join-item">
-    </fieldset>
+    {% with input_value=search_q, input_id='audit-logins-q', aria_label='Search sign-in failures' %}
+    {% include "partials/search_field.html" %}
+    {% endwith %}
     <div class="grid gap-1">
       <label class="label" for="audit-logins-since"><span>From</span></label>
       <input type="date" name="since" id="audit-logins-since" value="{{ audit_since or '' }}" class="input">

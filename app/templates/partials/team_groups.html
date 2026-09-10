@@ -9,11 +9,9 @@
           hx-push-url="true"
           hx-trigger="submit, input delay:250ms from:input[name=q]">
       <input type="hidden" name="tab" value="groups">
-      <fieldset class="join">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ search_q or '' }}" id="team-groups-q"
-               placeholder="Search" autocomplete="off" aria-label="Search groups" class="input join-item">
-      </fieldset>
+      {% with input_value=search_q, input_id='team-groups-q', aria_label='Search groups' %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
          hx-get="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"

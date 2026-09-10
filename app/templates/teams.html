@@ -5,11 +5,9 @@
   <h1 class="text-2xl font-bold">Teams</h1>
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('teams') }}" class="flex flex-wrap items-center gap-2" role="search">
-      <fieldset class="join">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ search_q or '' }}" id="teams-q"
-               placeholder="Search" autocomplete="off" aria-label="Search teams" class="input join-item">
-      </fieldset>
+      {% with input_value=search_q, input_id='teams-q', aria_label='Search teams' %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('teams') }}">Clear search</a>
       {% endif %}
@@ -24,14 +22,14 @@
 
 <section class="flex min-w-0 flex-col gap-4">
 {% if teams %}
-<div class="overflow-x-auto"><table class="table">
+<div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
   <thead><tr><th>Name</th><th>Role</th><th>Projects</th></tr></thead>
   <tbody>
   {% for t in teams %}
-    <tr>
-      <td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
-      <td class="opacity-70">{{ t.role }}</td>
-      <td>{{ t.project_count }}</td>
+    <tr class="hover">
+      <td><a class="link font-medium" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
+      <td><span class="badge badge-soft badge-sm">{{ t.role }}</span></td>
+      <td><span class="badge badge-soft badge-sm">{{ t.project_count }}</span></td>
     </tr>
   {% endfor %}
   </tbody>

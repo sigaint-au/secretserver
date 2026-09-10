@@ -8,8 +8,8 @@
   {% if search_q %}<input type="hidden" name="q" value="{{ search_q }}">{% endif %}
 </form>
 <section class="flex min-w-0 flex-col gap-4">
-<div class="overflow-x-auto">
-<table class="table">
+<div class="overflow-x-auto rounded-box border border-base-300">
+<table class="table table-zebra table-pin-rows">
   <thead>
     <tr>
       <th class="w-8" aria-label="Select"></th>
@@ -22,7 +22,7 @@
   </thead>
   <tbody>
   {% for item in items %}
-    <tr id="trash-row-{{ item.id }}">
+    <tr id="trash-row-{{ item.id }}" class="hover">
       <td class="w-8">
         {% if item.can_write %}
         <input form="bulk-trash" type="checkbox" class="checkbox bulk-secret-cb" name="secret_ids"

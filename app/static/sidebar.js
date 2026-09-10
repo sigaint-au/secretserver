@@ -1,8 +1,72 @@
-/* Sidebar navigation: mobile toggle, subnav state. Sections always render
-   expanded as daisyUI menu-title headers (no collapsible toggles).
-   Hooks: #side-toggle, #side-backdrop, #app-sidebar, .page-subnav-link.
-   Binds once; sidebar markup is static. */
+/* Sidebar navigation: collapsible section persistence, mobile toggle,
+   subnav state. Sections render as daisyUI menu details/summary submenus.
+   Hooks: [data-side-group] (<details>), #side-toggle, #side-backdrop,
+   #app-sidebar, .page-subnav-link. Binds once; sidebar markup is static. */
 'use strict';
+
+/* Persist sidebar <details> open/closed across full page navigations.
+   Toggle wins over server-rendered defaults; OOB swaps can replace nodes
+   anywhere, so sync always scans the whole document. */
+(function () {
+  const KEY = 'secretstore.sidebar.groups';
+  /* Read persisted group state; corrupt or missing storage reads as empty. */
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch { return {}; }
+  }
+  /* Write group state; private-mode quota errors are swallowed. */
+  function save(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  }
+  /* Apply persisted open state to each group (unknown groups untouched). */
+  function apply(root) {
+    const state = load();
+    /* Restore one group's persisted open state. */
+    (root || document).querySelectorAll('[data-side-group]').forEach(function (el) {
+      const id = el.getAttribute('data-side-group');
+      if (!id || !Object.prototype.hasOwnProperty.call(state, id)) return;
+      el.open = !!state[id];
+    });
+  }
+  /* Remember sections the server opened so a later page cannot collapse them
+     just because its endpoint default is different (toggle still wins). */
+  function seedOpen(root) {
+    const state = load();
+    let changed = false;
+    /* Seed state from server-opened groups not yet recorded. */
+    (root || document).querySelectorAll('[data-side-group]').forEach(function (el) {
+      const id = el.getAttribute('data-side-group');
+      if (!id || !el.open || Object.prototype.hasOwnProperty.call(state, id)) return;
+      state[id] = true;
+      changed = true;
+    });
+    if (changed) save(state);
+  }
+  /* Bind each group once (sideBound guard): persist on every toggle. */
+  function bind(root) {
+    /* Bind one group once; re-scans skip already-bound nodes. */
+    (root || document).querySelectorAll('[data-side-group]').forEach(function (el) {
+      if (el.dataset.sideBound === '1') return;
+      el.dataset.sideBound = '1';
+      /* Persist this group's open state whenever the user toggles it. */
+      el.addEventListener('toggle', function () {
+        const id = el.getAttribute('data-side-group');
+        if (!id) return;
+        const state = load();
+        state[id] = !!el.open;
+        save(state);
+      });
+    });
+  }
+  /* Apply + seed + bind for the given root. */
+  function sync(root) {
+    apply(root);
+    seedOpen(root);
+    bind(root);
+  }
+  /* OOB swaps may replace nodes outside the swap target: always document. */
+  onContent(function () { sync(document); });
+})();
 
 /* Mobile sidebar toggle; state is the body.side-open class. */
 (function () {

@@ -36,10 +36,9 @@
     </div>
     <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="activity">
-      <fieldset class="join">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ activity_q or '' }}" id="profile-activity-q" placeholder="Search activity" aria-label="Search recent activity" class="input join-item">
-      </fieldset>
+      {% with input_value=activity_q, input_id='profile-activity-q', placeholder='Search activity', aria_label='Search recent activity' %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>

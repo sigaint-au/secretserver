@@ -202,11 +202,11 @@ def nav_groups() -> list[dict]:
 
     Single source of truth for sidebar grouping/active-state so new routes
     only need to be added here, not threaded through template tuples.
-    Sections always render expanded as daisyUI ``menu-title`` headers.
 
     Returns:
-        List of group dicts: ``key``, ``label``, and ``items``
-        (label/href/active/badge).
+        List of group dicts: ``key`` (localStorage id), ``label``, ``open``
+        (server default; the toggle persists user changes), and ``items``
+        (label/href/active/badge/icon).
     """
     from flask import request
 
@@ -222,7 +222,7 @@ def nav_groups() -> list[dict]:
     def item(label: str, endpoint: str, eps, **kw) -> dict:
         active = ep in eps
         return {"label": label, "href": url_for(endpoint), "active": active,
-                "badge": kw.get("badge")}
+                "badge": kw.get("badge"), "icon": kw.get("icon")}
 
     workspace_eps = (
         "projects_list", "project_detail", "create_secret", "delete_secret",
@@ -234,7 +234,7 @@ def nav_groups() -> list[dict]:
         "add_team_ldap_map", "delete_team_ldap_map", "delete_team",
         "delete_project_from_team",
     )
-    org_items: list[dict] = [item("Teams", "teams", teams_eps)]
+    org_items: list[dict] = [item("Teams", "teams", teams_eps, icon="users")]
     # Role bindings scoped to the session team lives under Organisation;
     # the scope-less view lives under Administration. Exactly one highlights.
     if not session.get("is_global_admin") and session.get("team_id"):
@@ -244,21 +244,26 @@ def nav_groups() -> list[dict]:
                             scope_id=session.get("team_id")),
             "active": is_rbac_bindings and rbac_scoped,
             "badge": None,
+            "icon": "shield",
         })
     org_items.append(item(
         "Access requests", "access_requests_inbox", ("access_requests_inbox",),
+        icon="inbox",
     ))
 
     groups: list[dict] = [
         {
             "key": "workspace", "label": "Workspace",
             "items": [
-                item("Projects", "projects_list", workspace_eps),
-                item("Secrets", "secrets_list", ("secrets_list",)),
+                item("Projects", "projects_list", workspace_eps,
+                     icon="folder"),
+                item("Secrets", "secrets_list", ("secrets_list",),
+                     icon="key"),
                 item("Shared secrets", "shared_secrets_list",
-                     ("shared_secrets_list",)),
-                item("Machine accounts", "machines_list", ("machines_list",)),
-                item("Trash", "trash", ("trash",)),
+                     ("shared_secrets_list",), icon="share"),
+                item("Machine accounts", "machines_list", ("machines_list",),
+                     icon="cpu"),
+                item("Trash", "trash", ("trash",), icon="trash"),
             ],
         },
         {
@@ -266,29 +271,51 @@ def nav_groups() -> list[dict]:
         },
         {
             "key": "profile", "label": "Account",
-            "items": [item("My profile", "profile", ("profile",))],
+            "items": [item("My profile", "profile", ("profile",),
+                            icon="user")],
         },
     ]
 
+    claimed_eps = set(workspace_eps) | set(teams_eps) | {
+        "access_requests_inbox", "profile", "secrets_list",
+        "shared_secrets_list", "machines_list", "trash",
+    } | set(rbac_eps) | {
+        "rbac_roles", "rbac_roles_create", "rbac_roles_delete",
+        "rbac_access_review", "admin_audit", "admin_audit_access_export",
+        "admin_audit_export", "server_settings",
+    }
+    groups[0]["open"] = any(i["active"] for i in groups[0]["items"]) or (
+        ep not in claimed_eps and ep != "profile")
+    for g in groups[1:]:
+        g["open"] = any(i["active"] for i in g["items"])
+
     if session.get("is_global_admin"):
+        admin_open = (is_rbac_bindings and not rbac_scoped) or ep in (
+            "rbac_roles", "rbac_roles_create", "rbac_roles_delete",
+            "rbac_access_review", "admin_audit", "admin_audit_access_export",
+            "admin_audit_export", "server_settings",
+        )
         groups.append({
             "key": "administration", "label": "Administration",
+            "open": admin_open,
             "items": [
                 {
                     "label": "Role bindings",
                     "href": url_for("rbac_bindings", scope="team"),
                     "active": is_rbac_bindings and not rbac_scoped,
                     "badge": None,
+                    "icon": "shield",
                 },
                 item("Roles", "rbac_roles",
-                     ("rbac_roles", "rbac_roles_create", "rbac_roles_delete")),
+                     ("rbac_roles", "rbac_roles_create", "rbac_roles_delete"),
+                     icon="tag"),
                 item("Access review", "rbac_access_review",
-                     ("rbac_access_review",)),
+                     ("rbac_access_review",), icon="clipboard"),
                 item("Auditing", "admin_audit",
                      ("admin_audit", "admin_audit_access_export",
-                      "admin_audit_export")),
+                      "admin_audit_export"), icon="audit"),
                 item("Server settings", "server_settings",
-                     ("server_settings",)),
+                     ("server_settings",), icon="sliders"),
             ],
         })
     return groups

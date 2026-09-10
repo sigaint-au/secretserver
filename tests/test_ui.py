@@ -40,8 +40,8 @@ class TestUIShell:
 
     def test_app_js_is_plain_javascript(self):
         # Leftover HTML <script> wrappers from the base.html extraction make
-        # the whole file a SyntaxError, so the sidebar subnav highlight
-        # never moves on HTMX navigation.
+        # the whole file a SyntaxError, so sidebar group persistence never runs
+        # and clicking a nav item collapses every other <details> menu.
         c = store.app.test_client()
         for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js", "theme.js"):
             r = c.get(f"/static/{name}")
@@ -49,6 +49,7 @@ class TestUIShell:
             assert b"<script>" not in r.data
             assert b"</script>" not in r.data
         r = c.get("/static/sidebar.js")
+        assert b"secretstore.sidebar.groups" in r.data
         assert b"menu-active" in r.data
 
     def test_app_has_sidebar(self):
@@ -308,11 +309,10 @@ class TestUIShell:
         assert r2.status_code == 200
         assert r2.data.count(b">Role bindings</a>") == 1
 
-    def test_non_admin_role_bindings_highlights_organisation_link(self):
+    def test_non_admin_role_bindings_keeps_organisation_open(self):
         # Members reach Role bindings from Organisation. That endpoint used to
-        # be classified as Administration, so no Organisation link highlighted
-        # (Administration is hidden for non-admins). Sections always render
-        # expanded; exactly one link carries the active highlight.
+        # be classified as Administration, so the Organisation <details> closed
+        # and nothing replaced it (Administration is hidden for non-admins).
         tid = str(uuid4())
         team = {
             "id": tid,
@@ -357,9 +357,8 @@ class TestUIShell:
         ):
             r = c.get(f"/rbac/bindings?scope=team&scope_id={tid}")
         assert r.status_code == 200
-        assert b'<li class="menu-title">Organisation</li>' in r.data
-        assert b'<li class="menu-title">Administration</li>' not in r.data
-        assert r.data.count(b"menu-active") == 1
+        assert b'data-side-group="account" open' in r.data
+        assert b'data-side-group="administration"' not in r.data
         # Same default as other Organisation pages (e.g. Teams).
         teams = store.app.test_client()
         with teams.session_transaction() as s:
@@ -373,9 +372,9 @@ class TestUIShell:
         ):
             r_teams = teams.get("/teams")
         assert r_teams.status_code == 200
-        assert b'<li class="menu-title">Organisation</li>' in r_teams.data
+        assert b'data-side-group="account" open' in r_teams.data
 
-    def test_global_admin_role_bindings_highlights_administration_link(self):
+    def test_global_admin_role_bindings_keeps_administration_open(self):
         tid = str(uuid4())
         team = {
             "id": tid,
@@ -420,8 +419,8 @@ class TestUIShell:
         ):
             r = c.get("/rbac/bindings?scope=team")
         assert r.status_code == 200
-        assert b'<li class="menu-title">Administration</li>' in r.data
-        assert r.data.count(b"menu-active") == 1
+        assert b'data-side-group="administration" open' in r.data
+        assert b'data-side-group="account" open' not in r.data
 
     def test_app_has_skip_link_and_responsive_table_css(self):
         c = store.app.test_client()
@@ -458,7 +457,7 @@ class TestUIShell:
         with store.app.test_request_context("/machines"):
             html = render_template("machines.html", team=team, tokens=[token])
         assert "never" in html  # unused token reports "never"
-        assert 'class="table"' in html  # machine table is scrollable/responsive
+        assert 'class="table table-zebra' in html  # machine table is scrollable/responsive
 
     def test_project_subnav_is_vertical_menu_not_tabs(self):
         # Server-side page navigation is a vertical side menu of plain links

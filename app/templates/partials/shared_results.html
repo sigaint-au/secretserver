@@ -1,8 +1,8 @@
 <div id="shared-results">
 <section class="flex min-w-0 flex-col gap-4">
 {% if secrets %}
-<div class="overflow-x-auto">
-<table class="table">
+<div class="overflow-x-auto rounded-box border border-base-300">
+<table class="table table-zebra table-pin-rows">
   <thead>
     <tr>
       <th>Key</th>
@@ -16,10 +16,10 @@
   </thead>
   <tbody>
   {% for s in secrets %}
-    <tr>
+    <tr class="hover">
       <td>
         <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}"
-           class="link" title="Open secret">
+           class="link font-medium" title="Open secret">
           <code class="font-mono">{{ s.key }}</code>
         </a>
         {% if s.access_restricted %}

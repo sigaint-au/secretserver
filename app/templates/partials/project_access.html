@@ -18,11 +18,9 @@
     </div>
     <form method="get" action="{{ url_for('project_detail', project_id=project.id) }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="access">
-      <fieldset class="join w-full">
-        {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ effective_access_q or '' }}"
-               placeholder="Search access" aria-label="Search effective access" autocomplete="off" class="input join-item w-full">
-      </fieldset>
+      {% with input_value=effective_access_q, placeholder='Search access', aria_label='Search effective access' %}
+      {% include "partials/search_field.html" %}
+      {% endwith %}
       {% if effective_access_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear search</a>
       {% endif %}

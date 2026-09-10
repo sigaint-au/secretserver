@@ -19,11 +19,9 @@
         hx-trigger="submit, input delay:250ms from:input[name=q]"{% endif %}>
     <input type="hidden" name="tab" value="webhooks">
     {% if webhook_filter is defined %}<input type="hidden" name="filter" value="{{ webhook_filter }}">{% endif %}
-    <fieldset class="join">
-      {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}" id="webhooks-q"
-             placeholder="Search" autocomplete="off" aria-label="Search webhooks" class="input join-item">
-    </fieldset>
+    {% with input_value=search_q, input_id='webhooks-q', aria_label='Search webhooks' %}
+    {% include "partials/search_field.html" %}
+    {% endwith %}
     {% if search_q %}<a class="btn btn-ghost btn-sm" href="{{ list_url }}"
        {% if webhooks_hx|default(false) %}hx-get="{{ list_url }}"
        hx-target="#webhook-results"
