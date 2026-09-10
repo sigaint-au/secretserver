@@ -41,7 +41,7 @@
       <input type="checkbox" name="hide_reveals" class="checkbox" value="1" {% if hide_reveals %}checked{% endif %}>
       Hide reveals
     </label>
-    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+    <button type="submit" class="btn btn-neutral btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
     <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"

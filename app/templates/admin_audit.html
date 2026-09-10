@@ -53,7 +53,7 @@
         <option value="project" {% if access_scope == 'project' %}selected{% endif %}>Project</option>
       </select>
     </div>
-    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+    <button type="submit" class="btn btn-neutral btn-sm">Apply</button>
     {% if search_q or access_scope %}
     <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='access') }}">Clear filters</a>
@@ -147,7 +147,7 @@
       <label class="label" for="audit-roles-until"><span>To</span></label>
       <input type="date" name="until" id="audit-roles-until" value="{{ audit_until or '' }}" class="input">
     </div>
-    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+    <button type="submit" class="btn btn-neutral btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_since or audit_until %}
     <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='roles') }}">Clear filters</a>
@@ -243,7 +243,7 @@
       <input type="checkbox" id="audit-activity-hide" name="hide_reveals" class="checkbox" value="1" {% if hide_reveals %}checked{% endif %}>
       Hide reveals
     </label>
-    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+    <button type="submit" class="btn btn-neutral btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
     <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='activity') }}">Clear filters</a>
@@ -313,7 +313,7 @@
       <label class="label" for="audit-logins-until"><span>To</span></label>
       <input type="date" name="until" id="audit-logins-until" value="{{ audit_until or '' }}" class="input">
     </div>
-    <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+    <button type="submit" class="btn btn-neutral btn-sm">Apply</button>
     {% if search_q or audit_since or audit_until %}
     <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='logins') }}">Clear filters</a>

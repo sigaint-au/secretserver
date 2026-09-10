@@ -9,7 +9,7 @@
   {# Synchronous theme init: sets data-theme before first paint (no FOUC). #}
   <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
-<body class="min-h-screen">
+<body class="bg-base-200 min-h-screen">
   {% set home = url_for('projects_list') if session.get('user_id') else url_for('login') %}
   <main class="hero min-h-screen">
     <div class="hero-content text-center">
