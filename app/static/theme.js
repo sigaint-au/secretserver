@@ -1,48 +1,76 @@
-/* Explicit light/dark theme toggle. Runs synchronously in <head> so
-   data-theme is set before first paint (no FOUC).
-   Hook: input[data-theme-toggle] (checkbox = dark). Choice persists in
-   localStorage ("corvus-theme"); empty/missing falls back to
-   prefers-color-scheme. No cookies, no server involvement. */
+/* Theme controller: explicit light/dark choice, applied before first paint.
+   Runs synchronously in <head>. Hook: input[data-theme-toggle]
+   (checked = dark). Persists in localStorage under "corvus-theme";
+   falls back to prefers-color-scheme. No cookies, no server round-trip. */
 (function () {
-  var KEY = 'corvus-theme';
-  /* Read the stored choice; private-mode failures read as empty. */
-  function stored() {
-    try { return localStorage.getItem(KEY); }
-    catch (e) { return null; }
-  }
-  /* Resolve the effective theme: stored choice, else OS preference. */
-  function preferred() {
-    var s = stored();
-    if (s === 'light' || s === 'dark') return s;
+  var STORE_KEY = "corvus-theme";
+
+  function readStored() {
     try {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } catch (e) { return 'light'; }
+      return window.localStorage.getItem(STORE_KEY);
+    } catch (err) {
+      return null;
+    }
   }
-  /* Apply the theme and sync every toggle checkbox. */
-  function apply(t) {
-    document.documentElement.setAttribute('data-theme', t);
-    document.querySelectorAll('input[data-theme-toggle]').forEach(function (el) {
-      el.checked = (t === 'dark');
+
+  function systemTheme() {
+    try {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    } catch (err) {
+      return "light";
+    }
+  }
+
+  function effective() {
+    var saved = readStored();
+    return saved === "dark" || saved === "light" ? saved : systemTheme();
+  }
+
+  function paint(name) {
+    document.documentElement.setAttribute("data-theme", name);
+    Array.prototype.forEach.call(
+      document.querySelectorAll('input[data-theme-toggle]'),
+      function (box) {
+        box.checked = name === "dark";
+      }
+    );
+  }
+
+  function onToggle(box) {
+    var name = box.checked ? "dark" : "light";
+    try {
+      window.localStorage.setItem(STORE_KEY, name);
+    } catch (err) {
+      /* Private mode: apply without persisting. */
+    }
+    paint(name);
+  }
+
+  function wire(scope) {
+    Array.prototype.forEach.call(
+      (scope || document).querySelectorAll('input[data-theme-toggle]'),
+      function (box) {
+        if (box.__corvusTheme) return;
+        box.__corvusTheme = true;
+        box.checked = document.documentElement.getAttribute("data-theme") === "dark";
+        box.addEventListener("change", function () {
+          onToggle(box);
+        });
+      }
+    );
+  }
+
+  paint(effective());
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      wire(document);
     });
-  }
-  apply(preferred());
-  /* Bind each toggle once; re-scans skip already-bound nodes. */
-  function bind(root) {
-    (root || document).querySelectorAll('input[data-theme-toggle]').forEach(function (el) {
-      if (el.dataset.themeBound === '1') return;
-      el.dataset.themeBound = '1';
-      el.checked = document.documentElement.getAttribute('data-theme') === 'dark';
-      /* Persist the new choice, then apply it everywhere. */
-      el.addEventListener('change', function () {
-        var t = el.checked ? 'dark' : 'light';
-        try { localStorage.setItem(KEY, t); } catch (e) {}
-        apply(t);
-      });
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { bind(document); });
   } else {
-    bind(document);
+    wire(document);
   }
+  /* HTMX swaps can introduce new toggles (e.g. re-rendered nav). */
+  document.addEventListener("htmx:after:swap", function (evt) {
+    wire(evt.target && evt.target.querySelectorAll ? evt.target : document);
+  });
 })();

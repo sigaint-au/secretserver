@@ -2,7 +2,7 @@
 {% block title %}Login - {{ app_name }}{% endblock %}
 {% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-4xl shadow-xl{% endblock %}
 {% block body %}
-<div class="grid grid-cols-1 lg:grid-cols-2">
+<div class="grid grid-cols-1 lg:grid-cols-2" x-data="{ show: false }">
   <div class="p-6 sm:p-10">
     <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
       {% include "partials/brand_logo.html" %}
@@ -33,7 +33,13 @@
       </div>
       <div class="flex flex-col gap-1">
         <label class="label" for="login-password"><span>Password</span></label>
-        <input class="input w-full" type="password" id="login-password" name="password" required autocomplete="current-password">
+        <div class="join w-full">
+          <input class="input join-item min-w-0 flex-1" :type="show ? 'text' : 'password'"
+                 id="login-password" name="password" required autocomplete="current-password">
+          <button type="button" class="btn btn-ghost join-item" @click="show = !show"
+                  :aria-pressed="show ? 'true' : 'false'" aria-controls="login-password"
+                  x-text="show ? 'Hide' : 'Show'"></button>
+        </div>
       </div>
       <button type="submit" class="btn btn-neutral w-full" data-busy="Signing in…">Sign in</button>
     </form>
