@@ -4,7 +4,7 @@
 {% block body %}
 <div class="grid grid-cols-1 lg:grid-cols-2">
   <div class="p-6 sm:p-10">
-    <h1 class="text-2xl font-bold">Verify your email</h1>
+    <h1 class="text-3xl font-bold tracking-tight">Verify your email</h1>
     <p class="mt-2">We sent a verification link to <strong>{{ email }}</strong>.
       Open it to activate your account, then sign in.</p>
     <form method="post" action="{{ url_for('resend_verification') }}" class="mt-4">

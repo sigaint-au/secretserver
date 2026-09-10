@@ -8,7 +8,7 @@
 {% include "partials/breadcrumb.html" %}
 
 <div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-2xl font-bold">{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
+  <h1 class="text-3xl font-bold tracking-tight">{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
 </div>
 <p class="text-sm opacity-70">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
 

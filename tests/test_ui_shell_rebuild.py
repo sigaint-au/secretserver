@@ -52,6 +52,13 @@ class TestSlice1Vendor:
         assert b"htmx:after:swap" in r.data
         assert b"corvus-theme" in r.data
 
+    def test_brand_themes(self):
+        c = store.app.test_client()
+        r = c.get("/static/theme.js")
+        assert b"corvus-dark" in r.data
+        css = c.get("/static/vendor/daisyui.min.css")
+        assert b"data-theme=corvus" in css.data
+
 
 class TestSlice1AuthShell:
     def _login(self):
@@ -111,3 +118,5 @@ class TestSlice1AuthShell:
         assert b"Log out" in r.data
         assert b"alpine.min.js" in r.data
         assert b"data-theme-toggle" in r.data
+        assert b"Account menu" in r.data
+        assert b"sticky" in r.data

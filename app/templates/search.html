@@ -2,7 +2,7 @@
 {% block title %}Search - {{ app_name }}{% endblock %}
 {% block body %}
 <div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-2xl font-bold">Search{% if scope %} · {{ scope|capitalize }}{% endif %}</h1>
+  <h1 class="text-3xl font-bold tracking-tight">Search{% if scope %} · {{ scope|capitalize }}{% endif %}</h1>
 </div>
 <form method="get" action="{{ url_for('global_search') }}" class="flex flex-wrap items-end gap-4" role="search">
   {% if scope %}<input type="hidden" name="scope" value="{{ scope }}">{% endif %}

@@ -2,7 +2,7 @@
 {% block title %}Projects - {{ app_name }}{% endblock %}
 {% block body %}
 <div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-2xl font-bold">Projects</h1>
+  <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
   {% if team %}
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('projects_list') }}" class="flex flex-wrap items-center gap-2" role="search">

@@ -2,7 +2,7 @@
 {% block title %}Teams - {{ app_name }}{% endblock %}
 {% block body %}
 <div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-2xl font-bold">Teams</h1>
+  <h1 class="text-3xl font-bold tracking-tight">Teams</h1>
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('teams') }}" class="flex flex-wrap items-center gap-2" role="search">
       {% with input_value=search_q, input_id='teams-q', aria_label='Search teams' %}

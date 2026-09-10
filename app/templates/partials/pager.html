@@ -43,7 +43,7 @@
       {% endif %}
       {% set _url = url_for(pager.endpoint, page=p, **_q) %}
       <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
-         class="btn join-item{% if p == pager.page %} btn-neutral{% endif %}"
+         class="btn join-item{% if p == pager.page %} btn-primary{% endif %}"
          {% if p == pager.page %}aria-current="page"{% endif %}>{{ p }}</a>
     {% endfor %}
     {% if pager.has_next %}

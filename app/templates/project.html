@@ -7,7 +7,7 @@
   (project.name, none),
 ] %}
 {% include "partials/breadcrumb.html" %}
-<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-bold">{{ project.name }}</h1></div>
+<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-3xl font-bold tracking-tight">{{ project.name }}</h1></div>
 {% if project.description %}
 <p class="text-sm opacity-70">{{ project.description }} <span class="opacity-70">· Project ID: <code class="font-mono">{{ project.id }}</code></span></p>
 {% elif can_admin or can_settings %}
