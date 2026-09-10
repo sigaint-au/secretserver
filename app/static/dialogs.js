@@ -309,6 +309,17 @@ function restoreAccessBusy(form) {
     return true;
   };
 
+  /* Busy feedback for approve/deny submits. Hook: form[data-access-busy]
+     (HTMX forms; plain forms use data-busy via the submit guard). Marks
+     the submit button before HTMX runs; a dismissed styled confirm
+     restores it through the pending-confirm path. */
+  document.addEventListener("submit", function (evt) {
+    var form = evt.target;
+    if (!form || form.tagName !== "FORM") return;
+    var label = form.getAttribute("data-access-busy");
+    if (label) setAccessBusy(form, label);
+  });
+
   /* After an access-request POST re-renders its dialog, keep it open. */
   function keepOpen(node) {
     if (!node || !node.matches) return;

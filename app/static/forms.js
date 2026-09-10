@@ -66,8 +66,21 @@ document.addEventListener("input", function (evt) {
 
 /* Role editor Form/YAML switch (daisyUI tabs pattern).
    Hook: .role-mode-tabs [role="tab"][data-mode] toggling
-   #mode-<mode>-panel siblings, with arrow-key support. */
+   aria-controls panels, with arrow-key support. Optional
+   data-mode-input (hidden input id) tracks the mode for submit;
+   controls in hidden panels are disabled so only the visible
+   mode submits. */
 (function modeTabs() {
+  function setPanelControls(panel, on) {
+    if (!panel) return;
+    Array.prototype.forEach.call(
+      panel.querySelectorAll("input, select, textarea"),
+      function (el) {
+        el.disabled = !on;
+      }
+    );
+  }
+
   function pick(list, btn) {
     Array.prototype.forEach.call(
       list.querySelectorAll('[role="tab"][data-mode]'),
@@ -75,11 +88,26 @@ document.addEventListener("input", function (evt) {
         var on = tab === btn;
         tab.setAttribute("aria-selected", on ? "true" : "false");
         tab.tabIndex = on ? 0 : -1;
+        if (tab.classList) tab.classList.toggle("tab-active", on);
         var panelId = tab.getAttribute("aria-controls");
         var panel = panelId && document.getElementById(panelId);
-        if (panel) panel.hidden = !on;
+        if (panel) {
+          panel.hidden = !on;
+          setPanelControls(panel, on);
+        }
       }
     );
+    var inputId = list.getAttribute("data-mode-input");
+    var hidden = inputId && document.getElementById(inputId);
+    if (hidden && btn) hidden.value = btn.getAttribute("data-mode") || "";
+  }
+
+  function current(list) {
+    var tabs = list.querySelectorAll('[role="tab"][data-mode]');
+    for (var i = 0; i < tabs.length; i += 1) {
+      if (tabs[i].getAttribute("aria-selected") === "true") return tabs[i];
+    }
+    return tabs[0] || null;
   }
 
   function boot(scope) {
@@ -88,6 +116,8 @@ document.addEventListener("input", function (evt) {
       function (list) {
         if (list.__corvusModes) return;
         list.__corvusModes = true;
+        var initial = current(list);
+        if (initial) pick(list, initial);
         list.addEventListener("click", function (evt) {
           var btn =
             evt.target && evt.target.closest

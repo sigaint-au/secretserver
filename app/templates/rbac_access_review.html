@@ -6,7 +6,8 @@
 </div>
 <p class="text-sm opacity-70">Who can perform a verb on a resource at a given scope (uses <code class="font-mono">api.can</code>).</p>
 
-<form method="get" action="{{ url_for('rbac_access_review') }}" class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm" role="search">
+<form method="get" action="{{ url_for('rbac_access_review') }}" class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm" role="search"
+      x-data="{ scope: '{{ scope_kind }}' }">
   <div class="flex flex-wrap items-end gap-4">
     <div class="grid gap-1">
       <label class="label" for="rev-verb"><span>Verb</span></label>
@@ -26,33 +27,33 @@
     </div>
     <div class="grid gap-1">
       <label class="label" for="rev-scope"><span>Scope</span></label>
-      <select name="scope" id="rev-scope" class="select">
+      <select name="scope" id="rev-scope" class="select" x-model="scope">
         {% for sk in scope_kinds %}
         <option value="{{ sk }}" {% if sk == scope_kind %}selected{% endif %}>{{ sk }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="grid gap-1" id="rev-team-wrap">
+    <div class="grid gap-1" id="rev-team-wrap" {% if scope_kind != 'team' %}hidden{% endif %} x-bind:hidden="scope !== 'team'">
       <label class="label" for="rev-team"><span>Team</span></label>
-      <select name="scope_id" id="rev-team" class="select">
+      <select name="scope_id" id="rev-team" class="select" {% if scope_kind != 'team' %}disabled{% endif %} x-bind:disabled="scope !== 'team'">
         <option value="">-</option>
         {% for t in teams %}
         <option value="{{ t.id }}" {% if scope_id and scope_id|string == t.id|string and scope_kind == 'team' %}selected{% endif %}>{{ t.name }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="grid gap-1" id="rev-project-wrap">
+    <div class="grid gap-1" id="rev-project-wrap" {% if scope_kind != 'project' %}hidden{% endif %} x-bind:hidden="scope !== 'project'">
       <label class="label" for="rev-project"><span>Project</span></label>
-      <select name="scope_id" id="rev-project" class="select">
+      <select name="scope_id" id="rev-project" class="select" {% if scope_kind != 'project' %}disabled{% endif %} x-bind:disabled="scope !== 'project'">
         <option value="">-</option>
         {% for p in projects %}
         <option value="{{ p.id }}" {% if scope_id and scope_id|string == p.id|string and scope_kind == 'project' %}selected{% endif %}>{{ p.name }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="grid gap-1" id="rev-secret-wrap">
+    <div class="grid gap-1" id="rev-secret-wrap" {% if scope_kind != 'secret' %}hidden{% endif %} x-bind:hidden="scope !== 'secret'">
       <label class="label" for="rev-secret"><span>Secret</span></label>
-      <select name="scope_id" id="rev-secret" class="select">
+      <select name="scope_id" id="rev-secret" class="select" {% if scope_kind != 'secret' %}disabled{% endif %} x-bind:disabled="scope !== 'secret'">
         <option value="">-</option>
         {% for s in secrets %}
         <option value="{{ s.id }}" {% if scope_id and scope_id|string == s.id|string and scope_kind == 'secret' %}selected{% endif %}>{{ s.project_name }} / {{ s.name }}</option>
@@ -91,26 +92,4 @@
   </div>
   {% endif %}
 </section>
-<script>
-(function () {
-  var scope = document.getElementById('rev-scope');
-  var team = document.getElementById('rev-team-wrap');
-  var proj = document.getElementById('rev-project-wrap');
-  var secret = document.getElementById('rev-secret-wrap');
-  var teamSel = document.getElementById('rev-team');
-  var projSel = document.getElementById('rev-project');
-  var secretSel = document.getElementById('rev-secret');
-  function sync() {
-    var v = scope.value;
-    team.hidden = v !== 'team';
-    proj.hidden = v !== 'project';
-    secret.hidden = v !== 'secret';
-    teamSel.disabled = v !== 'team';
-    projSel.disabled = v !== 'project';
-    secretSel.disabled = v !== 'secret';
-  }
-  scope.addEventListener('change', sync);
-  sync();
-})();
-</script>
 {% endblock %}

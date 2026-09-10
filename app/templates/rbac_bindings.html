@@ -105,7 +105,7 @@
           <td class="text-right">
             {% if can_edit %}
             <form method="post" action="{{ url_for('rbac_bindings_delete', binding_id=b.id) }}" class="inline"
-                  onsubmit="return confirm('Remove this binding?');">
+                  data-confirm="Remove this binding?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="scope" value="{{ scope_kind }}">
               <input type="hidden" name="scope_id" value="{{ scope_id or '' }}">
@@ -140,23 +140,23 @@
     <input type="hidden" name="scope_kind" value="{{ scope_kind }}">
     <input type="hidden" name="scope_id" value="{{ scope_id or '' }}">
 
-    <fieldset class="fieldset">
+    <fieldset class="fieldset" x-data="{ kind: 'User' }">
       <legend class="fieldset-legend">Who</legend>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="rbac-subject-kind"><span>Subject type</span></label>
-          <select name="subject_kind" id="rbac-subject-kind" class="select">
+          <select name="subject_kind" id="rbac-subject-kind" class="select" x-model="kind">
             {% for sk in subject_kinds %}
             <option value="{{ sk }}">{{ sk }}</option>
             {% endfor %}
           </select>
         </div>
-        <div class="grid gap-1 sm:col-span-2" id="rbac-field-user">
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-user" x-bind:hidden="kind !== 'User'">
           <label class="label" for="rbac-subject-email"><span>User email</span></label>
           <input type="email" name="subject_email" id="rbac-subject-email" class="user-suggest input"
                  list="user-suggest-list" placeholder="name@example.com" autocomplete="off">
         </div>
-        <div class="grid gap-1 sm:col-span-2" id="rbac-field-group" hidden>
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-group" hidden x-bind:hidden="kind !== 'Group'">
           <label class="label" for="rbac-subject-group"><span>Group</span></label>
           <select name="subject_group" id="rbac-subject-group" class="select">
             <option value="">Choose a group…</option>
@@ -165,7 +165,7 @@
             {% endfor %}
           </select>
         </div>
-        <div class="grid gap-1 sm:col-span-2" id="rbac-field-sa" hidden>
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-sa" hidden x-bind:hidden="kind !== 'ServiceAccount'">
           <label class="label" for="rbac-subject-sa"><span>Machine account ID</span></label>
           <input type="text" name="subject_sa" id="rbac-subject-sa" placeholder="Machine account UUID" autocomplete="off" class="input">
         </div>
@@ -207,19 +207,5 @@
   </form>
 </div>
 </section>
-<script>
-(function () {
-  var sel = document.getElementById('rbac-subject-kind');
-  if (!sel) return;
-  function sync() {
-    var v = sel.value;
-    document.getElementById('rbac-field-user').hidden = v !== 'User';
-    document.getElementById('rbac-field-group').hidden = v !== 'Group';
-    document.getElementById('rbac-field-sa').hidden = v !== 'ServiceAccount';
-  }
-  sel.addEventListener('change', sync);
-  sync();
-})();
-</script>
 {% endif %}
 {% endblock %}

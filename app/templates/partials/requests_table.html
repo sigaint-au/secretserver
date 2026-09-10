@@ -47,7 +47,7 @@
                 hx-swap="outerHTML"
                 hx-confirm="Approve reveal for {{ grant_lab|default('the selected duration') }}?"
                 class="flex flex-wrap items-end justify-end gap-2"
-                onsubmit="return setAccessBusy(this, 'Approving…')">
+                data-access-busy="Approving…">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <label class="sr-only" for="grant-minutes-{{ r.id }}">Grant duration</label>
           <select name="minutes" id="grant-minutes-{{ r.id }}" class="select select-sm">
@@ -66,7 +66,7 @@
                  hx-swap="outerHTML"
                  hx-confirm="Deny this reveal request?"
                  class="inline"
-                 onsubmit="return setAccessBusy(this, 'Denying…')">
+                 data-access-busy="Denying…">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="link link-error">Deny</button>
           </form>

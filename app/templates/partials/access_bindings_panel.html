@@ -4,7 +4,8 @@
             form_id_prefix, help_html (optional), full_bindings_url (optional)
 #}
 {% set pref = form_id_prefix|default('access') %}
-<section class="access-rbac-panel rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="access-rbac-panel rounded-box border border-base-300 bg-base-100 p-4 shadow-sm"
+         x-data="{ kind: 'User' }">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-bold">{{ panel_title|default('Role bindings') }}</h2>
     {% if full_bindings_url %}
@@ -26,18 +27,18 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="grid gap-1">
             <label class="label" for="{{ pref }}-subject-kind"><span>Subject type</span></label>
-            <select name="subject_kind" id="{{ pref }}-subject-kind" class="select">
+            <select name="subject_kind" id="{{ pref }}-subject-kind" class="select" x-model="kind">
               {% for sk in subject_kinds|default(['User', 'Group', 'ServiceAccount']) %}
               <option value="{{ sk }}">{{ sk }}</option>
               {% endfor %}
             </select>
           </div>
-          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-user">
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-user" x-bind:hidden="kind !== 'User'">
             <label class="label" for="{{ pref }}-subject-email"><span>User email</span></label>
             <input type="email" name="subject_email" id="{{ pref }}-subject-email" class="user-suggest input"
                    list="user-suggest-list" placeholder="name@example.com" autocomplete="off">
           </div>
-          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-group" hidden>
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-group" hidden x-bind:hidden="kind !== 'Group'">
             <label class="label" for="{{ pref }}-subject-group"><span>Team group</span></label>
             <select name="subject_group" id="{{ pref }}-subject-group" class="select">
               <option value="">- select group -</option>
@@ -46,7 +47,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-sa" hidden>
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-sa" hidden x-bind:hidden="kind !== 'ServiceAccount'">
             <label class="label" for="{{ pref }}-subject-sa"><span>Machine account ID</span></label>
             <input type="text" name="subject_sa" id="{{ pref }}-subject-sa" placeholder="machine account UUID" autocomplete="off" class="input">
           </div>
@@ -75,24 +76,6 @@
         <button type="submit" class="btn btn-neutral">Add binding</button>
       </p>
     </form>
-  <script>
-  (function () {
-    var pref = {{ pref|tojson }};
-    var sel = document.getElementById(pref + '-subject-kind');
-    if (!sel) return;
-    function sync() {
-      var v = sel.value;
-      var u = document.getElementById(pref + '-user');
-      var g = document.getElementById(pref + '-group');
-      var s = document.getElementById(pref + '-sa');
-      if (u) u.hidden = v !== 'User';
-      if (g) g.hidden = v !== 'Group';
-      if (s) s.hidden = v !== 'ServiceAccount';
-    }
-    sel.addEventListener('change', sync);
-    sync();
-  })();
-  </script>
   {% endif %}
 
   <div class="flex flex-wrap items-center justify-between gap-2">
