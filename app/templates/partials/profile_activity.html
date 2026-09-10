@@ -1,7 +1,7 @@
-<section>
-  <h2>Pinned secrets</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Pinned secrets</h2>
   {% if pins %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Key</th>
@@ -13,38 +13,38 @@
     {% for s in pins %}
       <tr>
         <td>
-          <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}">
-            <code>{{ s.key }}</code>
+          <a class="link" href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}">
+            <code class="font-mono">{{ s.key }}</code>
           </a>
         </td>
         <td>{{ s.project_name }}</td>
-        <td class="muted">{{ s.team_name }}</td>
+        <td class="opacity-70">{{ s.team_name }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">Pin a secret from a project's secrets list.</p>
+  <p class="text-sm opacity-70">Pin a secret from a project's secrets list.</p>
   {% endif %}
 </section>
 
-<section>
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>Recently accessed</h2>
-      <p class="muted">Secrets you opened recently.</p>
+      <h2 class="text-lg font-bold">Recently accessed</h2>
+      <p class="text-sm opacity-70">Secrets you opened recently.</p>
     </div>
-    <form method="get" action="{{ url_for('profile') }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="activity">
-      <fieldset class="group search-input">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search recent activity" class="input">
+        <input type="search" name="q" value="{{ activity_q or '' }}" id="profile-activity-q" placeholder="Search activity" aria-label="Search recent activity" class="input join-item">
       </fieldset>
       {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if recent %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Key</th>
@@ -57,13 +57,13 @@
     {% for s in recent %}
       <tr>
         <td>
-          <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}">
-            <code>{{ s.key }}</code>
+          <a class="link" href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}">
+            <code class="font-mono">{{ s.key }}</code>
           </a>
         </td>
         <td>{{ s.project_name }}</td>
-        <td class="muted">{{ s.team_name }}</td>
-        <td class="muted" title="{{ s.accessed_at|time_when }}">{{ s.accessed_at|time_ago }}</td>
+        <td class="opacity-70">{{ s.team_name }}</td>
+        <td class="opacity-70" title="{{ s.accessed_at|time_when }}">{{ s.accessed_at|time_ago }}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -72,6 +72,6 @@
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">{% if activity_q %}No recent activity matches “{{ activity_q }}”.{% else %}No recent secret access yet.{% endif %}</p>
+  <p class="text-sm opacity-70">{% if activity_q %}No recent activity matches “{{ activity_q }}”.{% else %}No recent secret access yet.{% endif %}</p>
   {% endif %}
 </section>

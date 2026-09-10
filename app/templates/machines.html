@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Machine accounts - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Machine accounts</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Machine accounts</h1>
 </div>
 {% if not team %}
 {% if nav_teams %}
-<div class="empty">
-  <p>Select a team to view machine accounts.</p>
+<div class="flex flex-col gap-2">
+  <p class="text-sm opacity-70">Select a team to view machine accounts.</p>
   <form method="post" action="{{ url_for('select_team') }}" class="inline">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
@@ -21,24 +21,24 @@
   </form>
 </div>
 {% else %}
-<p class="empty">No teams yet. Ask a team administrator to invite you, or contact your administrator for access.</p>
+<p class="text-sm opacity-70">No teams yet. Ask a team administrator to invite you, or contact your administrator for access.</p>
 {% endif %}
 {% else %}
-<p class="page-desc muted">Machine accounts for team <strong>{{ team.name }}</strong>.</p>
-<form method="get" action="{{ url_for('machines_list') }}" class="toolbar" role="search"
+<p class="text-sm opacity-70">Machine accounts for team <strong>{{ team.name }}</strong>.</p>
+<form method="get" action="{{ url_for('machines_list') }}" class="flex flex-wrap items-center gap-2" role="search"
       hx-get="{{ url_for('machines_list') }}"
       hx-target="#machines-results"
       hx-swap="outerHTML"
       hx-push-url="true"
       hx-trigger="submit, input delay:250ms from:input[name=q]">
-  <fieldset class="group search-input">
+  <fieldset class="join w-full">
     {% include "partials/search_icon.html" %}
     <input type="search" name="q" value="{{ q or '' }}"
            placeholder="Search machine accounts" autocomplete="off"
-           aria-label="Search machine accounts" class="input">
+           aria-label="Search machine accounts" class="input join-item w-full">
   </fieldset>
   {% if q %}
-  <div class="audit-filter-actions">
+  <div class="flex items-center gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('machines_list') }}"
        hx-get="{{ url_for('machines_list') }}"
        hx-target="#machines-results"

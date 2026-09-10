@@ -6,163 +6,186 @@
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/daisyui.min.css') }}"
-        integrity="sha384-BPLD1Nli6kPbGXw8sy3WiWOUucCZ07H5ZQN50mp8CpYJ6KVWL2Y5txBLzxLuZF17">
+        integrity="sha384-U70I1EXUFg+ETzaS+j1xuPFu4MpJ4PJaEnSTbPuhAZmcnFQMxBzoPXlswZlpWqUi">
   {# htmx 4.0.0 (2026): https://github.com/bigskysoftware/htmx/releases/tag/v4.0.0 #}
   <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer
         integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>
   <meta name="csrf-token" content="{{ csrf_token }}">
-
-
-<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 </head>
-<body class="{% if session.get('user_id') %}app{% else %}auth{% endif %}">
-  <a class="skip-link" href="#main-content">Skip to content</a>
+<body>
+  <a class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-base-100 focus:p-2" href="#main-content">Skip to content</a>
   {% if classification and classification.enabled %}
-  <div class="class-banner"
-       style="background: {{ classification.color }}; color: {{ classification.fg }};"
-       role="status">{{ classification.text }}</div>
+  <div class="alert alert-warning rounded-none" role="status">
+    <span class="text-sm font-bold uppercase tracking-widest">{{ classification.text }}</span>
+  </div>
   {% endif %}
 
   {% if session.get('user_id') %}
-  <div class="shell">
-  <aside class="sidebar" id="app-sidebar">
-    <div class="side-head">
-      <a class="brand" href="{{ url_for('projects_list') }}">
-        {% include "partials/brand_logo.html" %}
-        <span class="brand-text">
-          {{ brand_name or 'Corvus' }}
-          {% if brand_tagline %}<span class="brand-sub">{{ brand_tagline }}</span>{% endif %}
-        </span>
-      </a>
-      <button type="button" class="side-toggle" id="side-toggle"
-              aria-controls="app-sidebar" aria-expanded="false"
-              aria-label="Open navigation menu">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16"/>
-        </svg>
-      </button>
+  <div class="drawer lg:drawer-open">
+    <input id="app-drawer" type="checkbox" class="drawer-toggle">
+    <div class="drawer-content">
+      <div class="navbar bg-base-100 lg:hidden">
+        <label for="app-drawer" id="side-toggle" class="btn btn-ghost btn-square"
+               aria-controls="app-sidebar" aria-expanded="false"
+               aria-label="Open navigation menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </label>
+        <a class="flex flex-1 items-center gap-2 text-lg font-bold" href="{{ url_for('projects_list') }}">
+          {% include "partials/brand_logo.html" %}
+          <span>{{ brand_name or 'Corvus' }}</span>
+        </a>
+      </div>
+      <main id="main-content" class="p-4 lg:p-6">
+        {% include "partials/flash_messages.html" %}
+
+        <dialog id="confirm-dlg" closedby="any" class="modal" aria-labelledby="confirm-dlg-title">
+          <div class="modal-box">
+            <h3 id="confirm-dlg-title" class="text-lg font-bold">Confirm action</h3>
+            <p id="confirm-dlg-msg" class="py-4"></p>
+            <div class="modal-action">
+              <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
+              <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+        </dialog>
+
+        {% block body %}{% endblock %}
+      </main>
     </div>
-    <form class="side-search" method="get" action="{{ url_for('global_search') }}" role="search">
-      <fieldset class="group search-input">
-        {% include "partials/search_icon.html" %}
-        <input type="search" id="side-search-q" name="q"
-               placeholder="Search" autocomplete="off" aria-label="Search"
-               value="{{ request.args.get('q','') if request.endpoint == 'global_search' else '' }}">
-      </fieldset>
-    </form>
-    <form class="side-team" method="post" action="{{ url_for('select_team') }}">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      {# Include query (e.g. ?tab=secrets) so team switch can land on the right list #}
-      <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
-      <label for="side-team-select">Team</label>
-      <span class="side-team-row">
-      <select id="side-team-select" name="team_id"
-              aria-label="Team">
-        {% if not nav_teams %}
-        <option value="">No teams</option>
-        {% else %}
-        {% for t in nav_teams %}
-        <option value="{{ t.id }}" {% if nav_team_id == t.id|string %}selected{% endif %}>{{ t.name }}</option>
-        {% endfor %}
+    <div class="drawer-side">
+      <label for="app-drawer" id="side-backdrop" class="drawer-overlay" aria-label="Close navigation menu"></label>
+      <aside id="app-sidebar" class="sidebar bg-base-200 flex min-h-full w-64 flex-col gap-2 p-4">
+        <a class="flex items-center gap-2 px-2 pt-1 text-lg font-bold" href="{{ url_for('projects_list') }}">
+          {% include "partials/brand_logo.html" %}
+          <span class="truncate">
+            {{ brand_name or 'Corvus' }}
+            {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
+          </span>
+        </a>
+        <form method="get" action="{{ url_for('global_search') }}" role="search">
+          <label for="side-search-q" class="sr-only">Search</label>
+          <div class="join w-full">
+            <input type="search" id="side-search-q" name="q" placeholder="Search"
+                   autocomplete="off" aria-label="Search" class="input input-sm join-item min-w-0 flex-1"
+                   value="{{ request.args.get('q','') if request.endpoint == 'global_search' else '' }}">
+            {% include "partials/search_icon.html" %}
+          </div>
+        </form>
+        <form method="post" action="{{ url_for('select_team') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          {# Include query (e.g. ?tab=secrets) so team switch can land on the right list #}
+          <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+          <label for="side-team-select" class="label px-2 text-xs font-semibold uppercase opacity-60">Team</label>
+          <div class="join w-full">
+            <select id="side-team-select" name="team_id" aria-label="Team"
+                    class="select select-sm join-item min-w-0 flex-1">
+              {% if not nav_teams %}
+              <option value="">No teams</option>
+              {% else %}
+              {% for t in nav_teams %}
+              <option value="{{ t.id }}" {% if nav_team_id == t.id|string %}selected{% endif %}>{{ t.name }}</option>
+              {% endfor %}
+              {% endif %}
+            </select>
+            <button type="submit" class="btn btn-ghost btn-sm join-item">Go</button>
+          </div>
+        </form>
+        <nav class="flex-1" aria-label="Workspace">
+          <ul class="menu w-full p-0">
+            {% for g in nav_groups %}
+            <li>
+              <details data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
+                <summary class="menu-title">{{ g['label'] }}</summary>
+                <ul>
+                  {% for it in g['items'] %}
+                  <li>
+                    <a class="side-nav-link{% if it['active'] %} menu-active{% endif %}"{% if it['active'] %} aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="badge badge-soft badge-sm ms-auto" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </details>
+            </li>
+            {% endfor %}
+          </ul>
+        </nav>
+        {% include "partials/side_pins.html" %}
+        {% if nav_recent %}
+        <details id="side-recent" data-side-group="recent" open>
+          <summary class="menu-title">Recent</summary>
+          <ul class="menu w-full p-0">
+            {% for s in nav_recent %}
+            <li>
+              <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}"
+                 title="{{ s.team_name }} / {{ s.project_name }}">
+                <span class="font-mono text-xs">{{ s.key }}</span>
+                <span class="truncate text-xs opacity-60">{{ s.project_name }}</span>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
         {% endif %}
-      </select>
-      <button type="submit" class="btn btn-ghost btn-sm">Go</button>
-      </span>
-    </form>
-    <nav class="side-nav" aria-label="Workspace">
-    {% for g in nav_groups %}
-    <details class="side-group" data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
-      <summary>{{ g['label'] }}</summary>
-      <div class="side-group-body">
-        {% for it in g['items'] %}
-        <a class="side-nav-link{% if it['active'] %} active{% endif %}"{% if it['active'] %} aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="tab-badge" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
-        {% endfor %}
-      </div>
-    </details>
-    {% endfor %}
-  </nav>
-    {% include "partials/side_pins.html" %}
-    {% if nav_recent %}
-    <details class="side-list side-group" id="side-recent" data-side-group="recent" open>
-      <summary class="side-list-label">Recent</summary>
-      <div class="side-group-body">
-      {% for s in nav_recent %}
-      <a class="side-list-item" href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}"
-         title="{{ s.team_name }} / {{ s.project_name }}">
-        <span class="side-list-key">{{ s.key }}</span>
-        <span class="side-list-meta">{{ s.project_name }}</span>
-      </a>
-      {% endfor %}
-      </div>
-    </details>
-    {% endif %}
-    <div class="sidebar-foot">
-      <div class="who">
-        <a class="who-email" href="{{ url_for('profile') }}" title="{{ session.email }} - My profile">{{ session.email }}</a>
-        {% if is_global_admin %}<span class="badge badge-soft">Global admin</span>{% endif %}
-      </div>
-      <form method="post" action="{{ url_for('logout') }}" class="inline">
-        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-        <button type="submit" class="logout-link">Log out</button>
-      </form>
-    </div>
-    {% include "partials/cli_login_dialog.html" %}
-  </aside>
-  <button type="button" class="side-backdrop" id="side-backdrop" aria-label="Close navigation menu"></button>
-
-  <div class="main" id="main-content">
-  {% else %}
-  <div class="auth-wrap{% if login_banner and login_banner.enabled %} auth-split{% endif %}">
-  <div class="auth-card">
-    <a class="auth-brand" href="{{ url_for('login') }}">
-      {% include "partials/brand_logo.html" %}
-      <span class="brand-text">
-        {{ brand_name or 'Corvus' }}
-        {% if brand_tagline %}<span class="brand-sub">{{ brand_tagline }}</span>{% endif %}
-      </span>
-    </a>
-  {% endif %}
-
-    {% include "partials/flash_messages.html" %}
-
-    <dialog id="confirm-dlg" closedby="any" class="modal access-dlg" aria-labelledby="confirm-dlg-title">
-      <div class="modal-box">
-        <header>
-          <h3 id="confirm-dlg-title">Confirm action</h3>
-        </header>
-        <div>
-          <p id="confirm-dlg-msg"></p>
+        <div class="border-t border-base-300 pt-2">
+          <ul class="menu w-full p-0">
+            <li>
+              <a href="{{ url_for('profile') }}" title="{{ session.email }} - My profile" class="truncate">{{ session.email }}</a>
+            </li>
+          </ul>
+          {% if is_global_admin %}<span class="badge badge-soft badge-sm m-2">Global admin</span>{% endif %}
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button type="submit" class="btn btn-ghost btn-sm w-full justify-start">Log out</button>
+          </form>
         </div>
-        <footer>
-          <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
-          <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
-        </footer>
-      </div>
-    </dialog>
-
-    {% block body %}{% endblock %}
-  </div>
-  {% if login_banner and login_banner.enabled %}
-  <aside class="login-note" role="status">
-    <p class="login-note-text">{{ login_banner.text }}</p>
-    {% if login_banner.link_url %}
-    <p class="login-note-link">
-      <a href="{{ login_banner.link_url }}" rel="noopener noreferrer">{{ login_banner.link_text }}</a>
-    </p>
-    {% endif %}
-  </aside>
-  {% endif %}
-  {% if session.get('user_id') %}
+        {% include "partials/cli_login_dialog.html" %}
+      </aside>
+    </div>
   </div>
   {% else %}
+  <div class="flex min-h-screen flex-col justify-center gap-4 p-4">
+    <div class="{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-md shadow-xl{% endblock %}">
+      <div class="card-body">
+        <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
+          {% include "partials/brand_logo.html" %}
+          <span>
+            {{ brand_name or 'Corvus' }}
+            {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
+          </span>
+        </a>
+
+        {% include "partials/flash_messages.html" %}
+
+        <dialog id="confirm-dlg" closedby="any" class="modal" aria-labelledby="confirm-dlg-title">
+          <div class="modal-box">
+            <h3 id="confirm-dlg-title" class="text-lg font-bold">Confirm action</h3>
+            <p id="confirm-dlg-msg" class="py-4"></p>
+            <div class="modal-action">
+              <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
+              <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+        </dialog>
+
+        {{ self.body() }}
+      </div>
+    </div>
+    {% if login_banner and login_banner.enabled %}
+    <aside class="login-note alert alert-info mx-auto w-full max-w-md" role="status">
+      <span>{{ login_banner.text }}</span>
+      {% if login_banner.link_url %}
+      <a class="link" href="{{ login_banner.link_url }}" rel="noopener noreferrer">{{ login_banner.link_text }}</a>
+      {% endif %}
+    </aside>
+    {% endif %}
   </div>
   {% endif %}
   {% block extra %}{% endblock %}
   <datalist id="user-suggest-list"></datalist>
-
-
-
 
 <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 <script src="{{ url_for('static', filename='sidebar.js') }}" defer></script>

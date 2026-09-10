@@ -1,7 +1,7 @@
 {# CLI login dialog. Opened from the profile security tab.
    On open it shows a "Generate command" button; submitting swaps in the
    freshly minted command + Copy button via cli_login_command. #}
-<dialog id="cli-login-dlg" closedby="any" class="modal access-dlg" aria-labelledby="cli-login-dlg-title">
+<dialog id="cli-login-dlg" closedby="any" class="modal" aria-labelledby="cli-login-dlg-title">
   <div class="modal-box">
   <form method="post"
         action="{{ url_for('cli_login_command') }}"
@@ -9,17 +9,14 @@
         hx-target="#cli-login-dlg"
         hx-swap="innerHTML"
         id="cli-login-dlg-form">
-    <header>
-      <h3 id="cli-login-dlg-title">CLI login command</h3>
-      <p>Generate a short-lived token and a ready-to-paste <code>corvus login</code> command.</p>
-    </header>
-    <div>
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    </div>
-    <footer>
+    <h3 id="cli-login-dlg-title" class="text-lg font-bold">CLI login command</h3>
+    <p class="py-4">Generate a short-lived token and a ready-to-paste <code>corvus login</code> command.</p>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="modal-action">
       <button type="button" class="btn btn-outline" data-close-dialog="cli-login-dlg">Cancel</button>
       <button type="submit" class="btn btn-neutral">Generate command</button>
-    </footer>
+    </div>
   </form>
   </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
 </dialog>

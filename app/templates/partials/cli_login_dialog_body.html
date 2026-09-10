@@ -1,19 +1,17 @@
 {# Dialog body after the token is minted (swapped into #cli-login-dlg). #}
 <div class="modal-box">
 <form method="dialog">
-  <header>
-    <h3 id="cli-login-dlg-title">Login command</h3>
-    <p>Paste this into a shell. The token expires in {{ minutes }} minutes.</p>
-  </header>
-  <div>
+  <h3 id="cli-login-dlg-title" class="text-lg font-bold">Login command</h3>
+  <p class="py-4">Paste this into a shell. The token expires in {{ minutes }} minutes.</p>
+  <div class="mockup-code overflow-x-auto">
     <pre id="cli-login-command">{{ command }}</pre>
-    <p class="acts form-actions-tight">
-      <button type="button" class="link copy-btn" data-copy-target="cli-login-command"
-              data-clear-seconds="{{ clipboard_clear_seconds|default(30) }}">Copy command</button>
-    </p>
   </div>
-  <footer>
+  <div class="py-2">
+    <button type="button" class="copy-btn btn btn-ghost btn-sm" data-copy-target="cli-login-command"
+            data-clear-seconds="{{ clipboard_clear_seconds|default(30) }}">Copy command</button>
+  </div>
+  <div class="modal-action">
     <button value="ok" class="btn btn-neutral">Done</button>
-  </footer>
+  </div>
 </form>
 </div>

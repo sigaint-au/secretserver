@@ -1,67 +1,68 @@
 {% extends "base.html" %}
 {% block title %}Auditing - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head"><h1>Auditing</h1></div>
-<p class="page-desc muted">Global admins only. Review access, secret activity, role changes, and audit records.</p>
+<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-bold">Auditing</h1></div>
+<p class="text-sm opacity-70">Global admins only. Review access, secret activity, role changes, and audit records.</p>
 
-<div class="page-side">
-<nav class="page-subnav" aria-label="Auditing sections">
+<div class="flex flex-col gap-4">
+<nav class="page-subnav tabs" aria-label="Auditing sections">
   <a href="{{ url_for('admin_audit', tab='access') }}"
-     class="page-subnav-link {% if active_tab == 'access' %}active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'access' %}active{% endif %} tab{% if active_tab == 'access' %} tab-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %}
   >Grants export</a>
   <a href="{{ url_for('admin_audit', tab='roles') }}"
-     class="page-subnav-link {% if active_tab == 'roles' %}active{% endif %}"{% if active_tab == 'roles' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'roles' %}active{% endif %} tab{% if active_tab == 'roles' %} tab-active{% endif %}"{% if active_tab == 'roles' %} aria-current="page"{% endif %}
   >Role changes</a>
   <a href="{{ url_for('admin_audit', tab='activity') }}"
-     class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %} tab{% if active_tab == 'activity' %} tab-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
   >Secret activity</a>
   <a href="{{ url_for('admin_audit', tab='logins') }}"
-     class="page-subnav-link {% if active_tab == 'logins' %}active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'logins' %}active{% endif %} tab{% if active_tab == 'logins' %} tab-active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
   >Sign-in failures</a>
   <a href="{{ url_for('admin_audit', tab='export') }}"
-     class="page-subnav-link {% if active_tab == 'export' %}active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'export' %}active{% endif %} tab{% if active_tab == 'export' %} tab-active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
   >Export &amp; retention</a>
 </nav>
-<div class="page-panel">
+<div class="flex min-w-0 flex-col gap-4">
 
 {% if active_tab == 'access' %}
-<section>
-  <div class="section-head">
-    <h2>Access review</h2>
-    <div class="section-tools">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Access review</h2>
+    <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='csv', q=search_q or None, scope=access_scope or None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='json', q=search_q or None, scope=access_scope or None) }}">Export JSON</a>
     </div>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Who has access to what: global admins, team memberships, and project-level roles.
     Use for periodic reviews and SOC2 evidence.
   </p>
-  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+  <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="access">
-    <fieldset class="group search-input">
+    <fieldset class="join">
       {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search access grants" class="input">
+      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-access-q"
+             placeholder="Search" autocomplete="off" aria-label="Search access grants" class="input join-item">
     </fieldset>
-    <label>Scope
-      <select name="scope" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="audit-access-scope"><span>Scope</span></label>
+      <select name="scope" id="audit-access-scope" class="select">
         <option value="">All scopes</option>
         <option value="global" {% if access_scope == 'global' %}selected{% endif %}>Global</option>
         <option value="team" {% if access_scope == 'team' %}selected{% endif %}>Team</option>
         <option value="project" {% if access_scope == 'project' %}selected{% endif %}>Project</option>
       </select>
-    </label>
+    </div>
     <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or access_scope %}
-    <div class="audit-filter-actions">
+    <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='access') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if access_rows %}
-  <p class="muted">{{ access_pager.total }} access grants.</p>
-  <div class="table"><table class="table">
+  <p class="text-sm opacity-70">{{ access_pager.total }} access grants.</p>
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>User</th>
@@ -78,16 +79,16 @@
       <tr>
         <td>
           {{ r.name or r.email }}
-          <span class="muted">{{ r.email }}</span>
-          {% if r.is_global_admin %}<span class="badge badge-soft" >global admin</span>{% endif %}
-          {% if r.disabled %}<span class="badge badge-soft badge-error" >disabled</span>{% endif %}
+          <span class="opacity-70">{{ r.email }}</span>
+          {% if r.is_global_admin %}<span class="badge badge-soft">global admin</span>{% endif %}
+          {% if r.disabled %}<span class="badge badge-soft badge-error">disabled</span>{% endif %}
         </td>
-        <td><span class="badge badge-soft" >{{ r.scope }}</span></td>
+        <td><span class="badge badge-soft">{{ r.scope }}</span></td>
         <td>{{ r.team or '-' }}</td>
-        <td>{% if r.team_role %}<span class="badge badge-soft" >{{ r.team_role }}</span>{% else %}-{% endif %}</td>
+        <td>{% if r.team_role %}<span class="badge badge-soft">{{ r.team_role }}</span>{% else %}-{% endif %}</td>
         <td>{{ r.project or '-' }}</td>
-        <td>{% if r.project_role %}<span class="badge badge-soft" >{{ r.project_role }}</span>{% else %}-{% endif %}</td>
-        <td class="muted"><code class="k">{{ r.access_via }}</code></td>
+        <td>{% if r.project_role %}<span class="badge badge-soft">{{ r.project_role }}</span>{% else %}-{% endif %}</td>
+        <td class="opacity-70"><code class="font-mono">{{ r.access_via }}</code></td>
       </tr>
     {% endfor %}
     </tbody>
@@ -96,7 +97,7 @@
   {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if search_q or access_scope %}
     No access grants match these filters.
     {% else %}
@@ -107,52 +108,56 @@
 </section>
 
 {% elif active_tab == 'roles' %}
-<section>
-  <div class="section-head">
-    <h2>Role-change audit</h2>
-    <div class="section-tools">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Role-change audit</h2>
+    <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export JSON</a>
     </div>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Membership, role, and encryption-key changes from org audit (team/project roles, ownership, invites, LDAP maps, BYOK keys).
     Choose All org events to also include user lifecycle, credentials and tokens,
     sessions, team settings, and join requests.
   </p>
-  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+  <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="roles">
-    <label>Show
-      <select name="role_actions" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="audit-roles-show"><span>Show</span></label>
+      <select name="role_actions" id="audit-roles-show" class="select">
         <option value="roles" {% if role_actions == 'roles' %}selected{% endif %}>Role changes</option>
         <option value="encryption" {% if role_actions == 'encryption' %}selected{% endif %}>Encryption keys</option>
         <option value="all" {% if role_actions == 'all' %}selected{% endif %}>All org events</option>
       </select>
-    </label>
-    <fieldset class="group search-input">
+    </div>
+    <fieldset class="join">
       {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search role-change audit" class="input">
+      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-roles-q"
+             placeholder="Search" autocomplete="off" aria-label="Search role-change audit" class="input join-item">
     </fieldset>
-    <label>Actor email
-      <input type="search" name="actor" value="{{ audit_actor or '' }}"
+    <div class="grid gap-1">
+      <label class="label" for="audit-roles-actor"><span>Actor email</span></label>
+      <input type="search" name="actor" id="audit-roles-actor" value="{{ audit_actor or '' }}"
              placeholder="e.g. alice@example.com" autocomplete="off" class="input">
-    </label>
-    <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
-    </label>
-    <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
-    </label>
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-roles-since"><span>From</span></label>
+      <input type="date" name="since" id="audit-roles-since" value="{{ audit_since or '' }}" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-roles-until"><span>To</span></label>
+      <input type="date" name="until" id="audit-roles-until" value="{{ audit_until or '' }}" class="input">
+    </div>
     <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_since or audit_until %}
-    <div class="audit-filter-actions">
+    <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='roles') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if role_rows %}
-  <div class="table"><table class="audit-table table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>When</th>
@@ -167,11 +172,11 @@
     <tbody>
     {% for e in role_rows %}
       <tr>
-        <td class="muted" title="{{ e.created_at }}">{{ e.when_display }}</td>
-        <td><span class="audit-action audit-{{ e.action }}">{{ e.action }}</span></td>
+        <td class="opacity-70" title="{{ e.created_at }}">{{ e.when_display }}</td>
+        <td><span class="badge badge-soft">{{ e.action }}</span></td>
         <td>{{ e.detail or '-' }}</td>
-        <td class="muted">{{ e.actor_email or '-' }}</td>
-        <td class="muted" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
+        <td class="opacity-70">{{ e.actor_email or '-' }}</td>
+        <td class="opacity-70" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
       <td>{{ e.team_name or '-' }}</td>
       <td>{{ e.project_name or '-' }}</td>
     </tr>
@@ -182,7 +187,7 @@
   {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if search_q or audit_actor or audit_since or audit_until %}
     No role-change events match these filters.
     {% else %}
@@ -193,59 +198,64 @@
 </section>
 
 {% elif active_tab == 'activity' %}
-<section>
-  <div class="section-head">
-    <h2>Secret activity</h2>
-    <div class="section-tools">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Secret activity</h2>
+    <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export JSON</a>
     </div>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Who did what to secrets across all projects, and when.
   </p>
-  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+  <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="activity">
-    <fieldset class="group search-input">
+    <fieldset class="join">
       {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search secret activity" class="input">
+      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-activity-q"
+             placeholder="Search" autocomplete="off" aria-label="Search secret activity" class="input join-item">
     </fieldset>
-    <label>Actor email
-      <input type="search" name="actor" value="{{ audit_actor or '' }}"
+    <div class="grid gap-1">
+      <label class="label" for="audit-activity-actor"><span>Actor email</span></label>
+      <input type="search" name="actor" id="audit-activity-actor" value="{{ audit_actor or '' }}"
              placeholder="e.g. alice@example.com" autocomplete="off" class="input">
-    </label>
-    <label>IP address
-      <input type="search" name="ip" value="{{ audit_ip or '' }}"
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-activity-ip"><span>IP address</span></label>
+      <input type="search" name="ip" id="audit-activity-ip" value="{{ audit_ip or '' }}"
              placeholder="e.g. 203.0.113.7" autocomplete="off" class="input">
-    </label>
-    <label>Action
-      <select name="action" class="select">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-activity-action"><span>Action</span></label>
+      <select name="action" id="audit-activity-action" class="select">
         <option value="">All actions</option>
         {% for a in secret_actions %}
         <option value="{{ a }}" {% if audit_action == a %}selected{% endif %}>{{ a }}</option>
         {% endfor %}
       </select>
-    </label>
-    <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
-    </label>
-    <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
-    </label>
-    <label class="check-row">
-      <input type="checkbox" name="hide_reveals" value="1" {% if hide_reveals %}checked{% endif %}>
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-activity-since"><span>From</span></label>
+      <input type="date" name="since" id="audit-activity-since" value="{{ audit_since or '' }}" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-activity-until"><span>To</span></label>
+      <input type="date" name="until" id="audit-activity-until" value="{{ audit_until or '' }}" class="input">
+    </div>
+    <label class="flex items-center gap-2" for="audit-activity-hide">
+      <input type="checkbox" id="audit-activity-hide" name="hide_reveals" class="checkbox" value="1" {% if hide_reveals %}checked{% endif %}>
       Hide reveals
     </label>
     <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
-    <div class="audit-filter-actions">
+    <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='activity') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if secret_rows %}
-  <div class="table"><table class="audit-table table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>When</th>
@@ -259,13 +269,13 @@
     <tbody>
     {% for e in secret_rows %}
       <tr>
-        <td class="muted" title="{{ e.created_at }}">{{ e.when_display }}</td>
+        <td class="opacity-70" title="{{ e.created_at }}">{{ e.when_display }}</td>
         <td>
-          <span class="audit-summary">{{ e.summary }}</span>
-          <span class="audit-action audit-{{ e.action }}">{{ e.action }}</span>
+          <span>{{ e.summary }}</span>
+          <span class="badge badge-soft">{{ e.action }}</span>
         </td>
-        <td class="muted">{{ e.actor_email or '-' }}</td>
-        <td class="muted" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
+        <td class="opacity-70">{{ e.actor_email or '-' }}</td>
+        <td class="opacity-70" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
         <td>{{ e.team_name or '-' }}</td>
         <td>{{ e.project_name or '-' }}</td>
       </tr>
@@ -276,7 +286,7 @@
   {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
     No secret activity matches these filters.
     {% else %}
@@ -287,35 +297,37 @@
 </section>
 
 {% elif active_tab == 'logins' %}
-<section>
-  <div class="section-head">
-    <h2>Sign-in failures</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Sign-in failures</h2>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Failed sign-in attempts by email and IP. Use to spot brute-force patterns against accounts.
   </p>
-  <form method="get" action="{{ url_for('admin_audit') }}" class="audit-filters" role="search">
+  <form method="get" action="{{ url_for('admin_audit') }}" class="flex flex-wrap items-end gap-4" role="search">
     <input type="hidden" name="tab" value="logins">
-    <fieldset class="group search-input">
+    <fieldset class="join">
       {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures" class="input">
+      <input type="search" name="q" value="{{ search_q or '' }}" id="audit-logins-q"
+             placeholder="Search" autocomplete="off" aria-label="Search sign-in failures" class="input join-item">
     </fieldset>
-    <label>From
-      <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
-    </label>
-    <label>To
-      <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
-    </label>
+    <div class="grid gap-1">
+      <label class="label" for="audit-logins-since"><span>From</span></label>
+      <input type="date" name="since" id="audit-logins-since" value="{{ audit_since or '' }}" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-logins-until"><span>To</span></label>
+      <input type="date" name="until" id="audit-logins-until" value="{{ audit_until or '' }}" class="input">
+    </div>
     <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_since or audit_until %}
-    <div class="audit-filter-actions">
+    <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_audit', tab='logins') }}">Clear filters</a>
     </div>
     {% endif %}
   </form>
   {% if login_rows %}
-  <div class="table"><table class="audit-table table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>When</th>
@@ -326,9 +338,9 @@
     <tbody>
     {% for e in login_rows %}
       <tr>
-        <td class="muted" title="{{ e.created_at }}">{{ e.when_display }}</td>
+        <td class="opacity-70" title="{{ e.created_at }}">{{ e.when_display }}</td>
         <td>{{ e.email }}</td>
-        <td class="muted">{{ e.ip_address or '-' }}</td>
+        <td class="opacity-70">{{ e.ip_address or '-' }}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -337,7 +349,7 @@
   {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if search_q or audit_since or audit_until %}
     No sign-in failures match these filters.
     {% else %}
@@ -348,74 +360,79 @@
 </section>
 
 {% elif active_tab == 'export' %}
-<section>
-  <div class="section-head">
-    <h2>Audit export</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Audit export</h2>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Export secret activity and org (membership) audit logs as CSV or JSON for evidence packs.
   </p>
-  <div class="profile-stats">
-    <div class="profile-stat">
-      <span class="profile-stat-n">{{ counts.secret_audit }}</span>
-      <span class="profile-stat-l">Secret audit</span>
+  <div class="stats stats-vertical sm:stats-horizontal border border-base-300">
+    <div class="stat">
+      <span class="stat-value">{{ counts.secret_audit }}</span>
+      <span class="stat-title">Secret audit</span>
     </div>
-    <div class="profile-stat">
-      <span class="profile-stat-n">{{ counts.org_audit }}</span>
-      <span class="profile-stat-l">Org audit</span>
+    <div class="stat">
+      <span class="stat-value">{{ counts.org_audit }}</span>
+      <span class="stat-title">Org audit</span>
     </div>
-    <div class="profile-stat">
-      <span class="profile-stat-n">{{ counts.login_failures }}</span>
-      <span class="profile-stat-l">Sign-in failures</span>
+    <div class="stat">
+      <span class="stat-value">{{ counts.login_failures }}</span>
+      <span class="stat-title">Sign-in failures</span>
     </div>
   </div>
   {% if counts.oldest %}
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Oldest event: <span title="{{ counts.oldest|time_when }}">{{ counts.oldest|time_ago }}</span>
     · Newest: <span title="{{ counts.newest|time_when }}">{{ counts.newest|time_ago }}</span>
   </p>
   {% endif %}
-  <form method="get" action="{{ url_for('admin_audit_export') }}" class="row row-end">
-    <label>Source
-      <select name="source" class="select">
+  <form method="get" action="{{ url_for('admin_audit_export') }}" class="flex flex-wrap items-end gap-4">
+    <div class="grid gap-1">
+      <label class="label" for="audit-export-source"><span>Source</span></label>
+      <select name="source" id="audit-export-source" class="select">
         <option value="both">Secret + org</option>
         <option value="secret">Secret audit only</option>
         <option value="org">Org audit only</option>
       </select>
-    </label>
-    <label>Format
-      <select name="format" class="select">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-export-format"><span>Format</span></label>
+      <select name="format" id="audit-export-format" class="select">
         <option value="csv">CSV</option>
         <option value="json">JSON</option>
       </select>
-    </label>
-    <label>From
-      <input type="date" name="since" class="input">
-    </label>
-    <label>To
-      <input type="date" name="until" class="input">
-    </label>
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-export-since"><span>From</span></label>
+      <input type="date" name="since" id="audit-export-since" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="audit-export-until"><span>To</span></label>
+      <input type="date" name="until" id="audit-export-until" class="input">
+    </div>
     <button type="submit" class="btn btn-neutral">Download export</button>
   </form>
 </section>
 
-<section>
-  <h2>Retention</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Retention</h2>
+  <p class="text-sm opacity-70">
     Configure how long audit rows are kept. Set to <strong>0</strong> to keep forever.
     Purge permanently deletes rows older than the retention window (cannot be undone).
   </p>
-  <form method="post" class="row row-end">
+  <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="tab" value="export">
     <input type="hidden" name="action" value="retention">
-    <label>Retention (days)
-      <input type="number" name="audit_retention_days" min="0" max="36500"
+    <div class="grid gap-1">
+      <label class="label" for="audit-retention-days"><span>Retention (days)</span></label>
+      <input type="number" name="audit_retention_days" id="audit-retention-days" min="0" max="36500"
              value="{{ retention_days }}" required class="input">
-    </label>
+    </div>
     <button type="submit" class="btn btn-neutral">Save retention</button>
   </form>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     {% if retention_days|int(365) > 0 %}
     Purging now would delete {{ purge_counts.secret_audit }} secret audit,
     {{ purge_counts.org_audit }} org audit, and
@@ -425,7 +442,7 @@
     Retention is set to forever: purging is disabled until you set a positive day count.
     {% endif %}
   </p>
-  <form method="post" class="form-actions"
+  <form method="post" class="flex flex-wrap items-center gap-2 pt-2"
         onsubmit="return confirm('Permanently delete audit rows older than the configured retention? This cannot be undone.')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="tab" value="export">

@@ -1,85 +1,93 @@
-<section class="list-panel">
-  <h2>Email (SMTP)</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Email (SMTP)</h2>
+  <p class="text-sm opacity-70">
     Outbound mail for password reset links and optional login alerts.
     When SMTP is disabled or incomplete, password resets still create a token
     (logged server-side); login alerts are skipped.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="smtp">
-    <label class="check-row">
-      <input type="checkbox" name="smtp_enabled" value="1"
+    <label class="flex items-center gap-2" for="smtp-enabled">
+      <input type="checkbox" id="smtp-enabled" name="smtp_enabled" class="checkbox" value="1"
              {% if settings.smtp_enabled in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Enable outbound email
     </label>
-    <label>SMTP host
-      <input type="text" name="smtp_host" value="{{ settings.smtp_host }}"
+    <div class="grid gap-1">
+      <label class="label" for="smtp-host"><span>SMTP host</span></label>
+      <input type="text" name="smtp_host" id="smtp-host" value="{{ settings.smtp_host }}"
              placeholder="smtp.example.com" autocomplete="off" class="input">
-    </label>
-    <div class="field-grid">
-      <label>Port
-        <input type="number" name="smtp_port" min="1" max="65535"
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-1">
+        <label class="label" for="smtp-port"><span>Port</span></label>
+        <input type="number" name="smtp_port" id="smtp-port" min="1" max="65535"
                value="{{ settings.smtp_port or '587' }}" required class="input">
-      </label>
-      <label>Encryption
-        <select name="smtp_encryption" class="select">
+      </div>
+      <div class="grid gap-1">
+        <label class="label" for="smtp-encryption"><span>Encryption</span></label>
+        <select name="smtp_encryption" id="smtp-encryption" class="select">
           {% set enc = (settings.smtp_encryption or 'starttls')|lower %}
           <option value="starttls" {% if enc == 'starttls' %}selected{% endif %}>STARTTLS (typical 587)</option>
           <option value="ssl" {% if enc == 'ssl' %}selected{% endif %}>SSL/TLS (typical 465)</option>
           <option value="none" {% if enc == 'none' %}selected{% endif %}>None</option>
         </select>
-      </label>
+      </div>
     </div>
-    <label>Username
-      <input type="text" name="smtp_username" value="{{ settings.smtp_username }}"
+    <div class="grid gap-1">
+      <label class="label" for="smtp-username"><span>Username</span></label>
+      <input type="text" name="smtp_username" id="smtp-username" value="{{ settings.smtp_username }}"
              autocomplete="off" class="input">
-      <span class="field-hint">Optional if the server allows relay</span>
-    </label>
-    <label>Password
-      <input type="password" name="smtp_password" value="" autocomplete="new-password"
+      <span class="text-xs opacity-70">Optional if the server allows relay</span>
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="smtp-password"><span>Password</span></label>
+      <input type="password" name="smtp_password" id="smtp-password" value="" autocomplete="new-password"
              placeholder="{% if settings.smtp_password_set %}•••••••• (leave blank to keep){% else %}optional{% endif %}" class="input">
-    </label>
-    <div class="field-grid">
-      <label>From email
-        <input type="email" name="smtp_from_email" value="{{ settings.smtp_from_email }}"
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-1">
+        <label class="label" for="smtp-from-email"><span>From email</span></label>
+        <input type="email" name="smtp_from_email" id="smtp-from-email" value="{{ settings.smtp_from_email }}"
                placeholder="e.g. noreply@example.com" class="input">
-      </label>
-      <label>From name
-        <input type="text" name="smtp_from_name"
+      </div>
+      <div class="grid gap-1">
+        <label class="label" for="smtp-from-name"><span>From name</span></label>
+        <input type="text" name="smtp_from_name" id="smtp-from-name"
                value="{{ settings.smtp_from_name or app_name }}"
                placeholder="{{ app_name }}" class="input">
-      </label>
+      </div>
     </div>
-    <label class="check-row">
-      <input type="checkbox" name="smtp_login_alerts" value="1"
+    <label class="flex items-center gap-2" for="smtp-login-alerts">
+      <input type="checkbox" id="smtp-login-alerts" name="smtp_login_alerts" class="checkbox" value="1"
              {% if settings.smtp_login_alerts in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Send login alert emails on successful sign-in
     </label>
-    <label class="check-row">
-      <input type="checkbox" name="smtp_login_alerts_force" value="1"
+    <label class="flex items-center gap-2" for="smtp-login-alerts-force">
+      <input type="checkbox" id="smtp-login-alerts-force" name="smtp_login_alerts_force" class="checkbox" value="1"
              {% if settings.smtp_login_alerts_force in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Require login alerts for every user (override profile preference)
     </label>
-    <p class="muted field-spacer">
+    <p class="text-sm opacity-70">
       Password reset emails are sent when SMTP is enabled; login alerts require the checkbox above.
       Users can turn alerts off on their profile unless the override is on.
     </p>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save email settings</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save email settings</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Send test email</h2>
-  <p class="muted">Uses the saved SMTP settings. Save before testing if you changed them.</p>
-  <form method="post" class="row">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Send test email</h2>
+  <p class="text-sm opacity-70">Uses the saved SMTP settings. Save before testing if you changed them.</p>
+  <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="smtp_test">
-    <label class="flex-2">Recipient email
-      <input type="email" name="test_email"
+    <div class="grid gap-1 flex-1">
+      <label class="label" for="smtp-test-email"><span>Recipient email</span></label>
+      <input type="email" name="test_email" id="smtp-test-email"
              value="{{ session.email or '' }}"
              placeholder="e.g. you@example.com" required class="input">
-    </label>
+    </div>
     <button type="submit" class="btn btn-neutral">Send test</button>
   </form>
 </section>

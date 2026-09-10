@@ -59,7 +59,7 @@ document.addEventListener('input', function (ev) {
 
 /* Role editor Form/YAML switch (daisyUI tabs pattern).
    Hook: .role-mode-tabs [role="tab"][data-mode] with #mode-<mode>-panel
-   siblings. Replaces the former oat.ink ot-tabs behavior. */
+   siblings. Replaces the former legacy tab behavior. */
 (function () {
   function selectTab(list, btn) {
     const tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"][data-mode]'));

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Projects - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Projects</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Projects</h1>
   {% if team %}
-  <div class="section-tools">
-    <form method="get" action="{{ url_for('projects_list') }}" class="toolbar" role="search">
-      <fieldset class="group search-input">
+  <div class="flex flex-wrap items-center gap-2">
+    <form method="get" action="{{ url_for('projects_list') }}" class="flex flex-wrap items-center gap-2" role="search">
+      <fieldset class="join w-full">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input">
+               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item w-full">
       </fieldset>
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('projects_list') }}">Clear search</a>
@@ -27,7 +27,7 @@
 {% set title = 'Select a team' %}
 {% set text = 'Choose a team to see its projects.' %}
 {% include "partials/empty_state.html" %}
-<div class="empty-state-action">
+<div class="flex flex-wrap items-center gap-2">
   <form method="post" action="{{ url_for('select_team') }}" class="inline">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
@@ -47,12 +47,12 @@
 {% include "partials/empty_state.html" %}
 {% endif %}
 {% else %}
-<p class="page-desc muted">Team: <strong>{{ team.name }}</strong>
-  · <a href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Manage access</a>
+<p class="text-sm opacity-70">Team: <strong>{{ team.name }}</strong>
+  · <a class="link" href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Manage access</a>
 </p>
-<section class="list-panel">
+<section class="flex min-w-0 flex-col gap-4">
   {% if projects %}
-  <div class="table"><table class="table-spaced table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Name</th>
@@ -65,15 +65,15 @@
     <tbody>
     {% for p in projects %}
       <tr>
-        <td><a href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
-        <td class="muted col-note">{{ p.description or '-' }}</td>
-        <td class="muted">
+        <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+        <td class="opacity-70">{{ p.description or '-' }}</td>
+        <td class="opacity-70">
           {% if p.key_provider == 'hsm' %}HSM
           {% elif p.key_provider == 'local' %}Local
           {% else %}Server key{% endif %}
         </td>
-        <td class="muted">{{ p.secret_count if p.secret_count is defined else '-' }}</td>
-        <td class="muted"><code class="k">{{ p.id }}</code></td>
+        <td class="opacity-70">{{ p.secret_count if p.secret_count is defined else '-' }}</td>
+        <td class="opacity-70"><code class="font-mono">{{ p.id }}</code></td>
       </tr>
     {% endfor %}
     </tbody>

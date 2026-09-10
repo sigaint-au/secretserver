@@ -1,29 +1,29 @@
 <section>
-  <div class="section-head">
-    <h2>Activity</h2>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Activity</h2>
   </div>
-  <p class="muted">Who did what to secrets in this project, and when.</p>
-  <form method="get" action="{{ url_for('project_detail', project_id=project.id) }}" class="audit-filters" role="search"
+  <p class="text-sm opacity-70">Who did what to secrets in this project, and when.</p>
+  <form method="get" action="{{ url_for('project_detail', project_id=project.id) }}" class="flex flex-wrap items-end gap-4" role="search"
         hx-get="{{ url_for('project_detail', project_id=project.id) }}"
         hx-target="#project-panel"
         hx-swap="innerHTML"
         hx-push-url="true"
         hx-trigger="submit, input delay:400ms from:input[type=search], change">
     <input type="hidden" name="tab" value="audit">
-    <fieldset class="group search-input">
+    <fieldset class="join w-full">
       {% include "partials/search_icon.html" %}
       <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search audit log" class="input">
+             placeholder="Search" autocomplete="off" aria-label="Search audit log" class="input join-item w-full">
     </fieldset>
-    <label>Actor email
+    <label class="grid gap-1">Actor email
       <input type="search" name="actor" value="{{ audit_actor or '' }}"
              placeholder="e.g. alice@example.com" autocomplete="off" class="input">
     </label>
-    <label>IP address
+    <label class="grid gap-1">IP address
       <input type="search" name="ip" value="{{ audit_ip or '' }}"
              placeholder="e.g. 203.0.113.7" autocomplete="off" class="input">
     </label>
-    <label>Action
+    <label class="grid gap-1">Action
       <select name="action" class="select">
         <option value="">All actions</option>
         {% for a in audit_actions %}
@@ -31,19 +31,19 @@
         {% endfor %}
       </select>
     </label>
-    <label>From
+    <label class="grid gap-1">From
       <input type="date" name="since" value="{{ audit_since or '' }}" class="input">
     </label>
-    <label>To
+    <label class="grid gap-1">To
       <input type="date" name="until" value="{{ audit_until or '' }}" class="input">
     </label>
-    <label class="check-row">
-      <input type="checkbox" name="hide_reveals" value="1" {% if hide_reveals %}checked{% endif %}>
+    <label class="flex items-center gap-2">
+      <input type="checkbox" name="hide_reveals" class="checkbox" value="1" {% if hide_reveals %}checked{% endif %}>
       Hide reveals
     </label>
     <button type="submit" class="btn btn-outline btn-sm">Apply</button>
     {% if search_q or audit_actor or audit_ip or audit_action or audit_since or audit_until or hide_reveals %}
-    <div class="audit-filter-actions">
+    <div class="flex items-center gap-2">
       <a class="btn btn-ghost btn-sm" href="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"
          hx-get="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"
          hx-target="#project-panel"
@@ -53,7 +53,7 @@
     {% endif %}
   </form>
   {% if audit_log %}
-  <div class="table"><table class="audit-table table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>What happened</th>
@@ -64,11 +64,11 @@
     {% for e in audit_log %}
       <tr>
         <td>
-          <span class="audit-summary">{{ e.summary }}</span>
-          <span class="audit-action audit-{{ e.action }}">{{ e.action }}</span>
-          {% if e.ip_address %}<span class="muted" title="{{ e.user_agent or '' }}">{{ e.ip_address }}</span>{% endif %}
+          <span class="font-medium">{{ e.summary }}</span>
+          <span class="badge badge-soft badge-sm">{{ e.action }}</span>
+          {% if e.ip_address %}<span class="opacity-70" title="{{ e.user_agent or '' }}">{{ e.ip_address }}</span>{% endif %}
         </td>
-        <td class="muted" title="{{ e.created_at }}">{{ e.when_display }}</td>
+        <td class="opacity-70" title="{{ e.created_at }}">{{ e.when_display }}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -77,7 +77,7 @@
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if search_q or audit_actor or audit_action or audit_since or audit_until %}
     No audit events match these filters.
     {% else %}

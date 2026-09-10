@@ -7,28 +7,28 @@
 </div>
 {% endif %}
 
-<section class="crypto-panel">
-  <div class="section-head">
-    <h2>Server-wide key</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Server-wide key</h2>
   </div>
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <tbody>
         <tr>
           <th scope="row">Status</th>
           <td>
             {% if encryption.master_key_is_default %}
-            <span class="badge badge-soft badge-error" >Default</span>
+            <span class="badge badge-soft badge-error">Default</span>
             {% else %}
-            <span class="badge badge-soft badge-success" >Custom</span>
+            <span class="badge badge-soft badge-success">Custom</span>
             {% endif %}
           </td>
         </tr>
         <tr>
           <th scope="row">Rotate</th>
-          <td class="muted">
-            <code class="k">flask --app app rekey-project-keys --old-master-key &lt;old&gt;</code>
-            <span class="muted">(local keys only)</span>
+          <td class="opacity-70">
+            <code class="font-mono">flask --app app rekey-project-keys --old-master-key &lt;old&gt;</code>
+            <span class="opacity-70">(local keys only)</span>
           </td>
         </tr>
       </tbody>
@@ -36,41 +36,41 @@
   </div>
 </section>
 
-<section class="crypto-panel">
-  <div class="section-head">
-    <h2>HSM slots</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">HSM slots</h2>
     <a class="btn btn-outline btn-sm" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
   </div>
   {% if encryption.hsm_slots %}
-  <div class="table table-unclipped"><table class="table">
-    <thead><tr><th>Name</th><th>PKCS#11 URL</th><th>Status</th><th class="acts-menu"></th></tr></thead>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>Name</th><th>PKCS#11 URL</th><th>Status</th><th class="text-right" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for slot in encryption.hsm_slots %}
       <tr>
         <td>
            {{ slot.name }}
            {% if slot.is_default %}<span class="badge badge-neutral">default</span>{% endif %}
-           {% if slot.project_count %}<span class="muted">({{ slot.project_count }} project keys)</span>{% endif %}
+           {% if slot.project_count %}<span class="opacity-70">({{ slot.project_count }} project keys)</span>{% endif %}
         </td>
-        <td class="muted col-note"><code class="k">{{ slot.pkcs11_url|redact_pin }}</code></td>
+        <td class="opacity-70"><code class="font-mono">{{ slot.pkcs11_url|redact_pin }}</code></td>
         <td>
           {% if slot.available %}
-          <span class="badge badge-soft badge-success" >Connected</span>
+          <span class="badge badge-soft badge-success">Connected</span>
           {% else %}
-          <span class="badge badge-soft badge-error" >Offline</span>
+          <span class="badge badge-soft badge-error">Offline</span>
           {% endif %}
         </td>
-        <td class="acts-menu">
+        <td class="text-right">
           {% set _menu = 'slot-menu-' ~ slot.id %}
-          <div class="drop-pop">
-            <button type="button" class="btn btn-ghost btn-square btn-sm" style="anchor-name:--{{ _menu }}" popovertarget="{{ _menu }}" title="Actions for {{ slot.name }}" aria-label="Actions for {{ slot.name }}">
+          <div class="dropdown dropdown-end">
+            <button type="button" class="btn btn-ghost btn-square btn-sm" popovertarget="{{ _menu }}" title="Actions for {{ slot.name }}" aria-label="Actions for {{ slot.name }}">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
                 <circle cx="8" cy="3" r="1.5"/>
                 <circle cx="8" cy="8" r="1.5"/>
                 <circle cx="8" cy="13" r="1.5"/>
               </svg>
             </button>
-            <menu popover id="{{ _menu }}" class="menu dropdown-content" style="position-anchor:--{{ _menu }}">
+            <menu popover id="{{ _menu }}" class="dropdown dropdown-end menu dropdown-content bg-base-100 rounded-box w-56 p-2 shadow-sm">
               <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       data-nav="{{ url_for('hsm_slot_new_wizard', slot_id=slot.id) }}"
                       popovertarget="{{ _menu }}" popovertargetaction="hide">Edit</button></li>
@@ -109,19 +109,20 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="muted">No named slots configured.</p>
+  <p class="text-sm opacity-70">No named slots configured.</p>
   {% endif %}
   {% if encryption.hsm_slots and c.local > 0 %}
-  <form method="post" class="row mt-1">
+  <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="hsm_migrate_all">
-    <label class="flex-2">Migrate all local project keys to HSM slot
-      <select name="target_slot" required class="select">
+    <div class="grid gap-1 flex-1">
+      <label class="label" for="hsm-migrate-target"><span>Migrate all local project keys to HSM slot</span></label>
+      <select name="target_slot" id="hsm-migrate-target" required class="select">
         {% for slot in encryption.hsm_slots %}
         <option value="{{ slot.id }}">{{ slot.name }}</option>
         {% endfor %}
       </select>
-    </label>
+    </div>
     <button type="submit"
             onclick="return confirm('Migrate all {{ c.local }} local project key(s) to the selected HSM slot? All secrets will be re-encrypted.')" class="btn btn-neutral">
       Migrate all local to HSM
@@ -130,15 +131,15 @@
   {% endif %}
 </section>
 
-<section class="crypto-panel">
-  <div class="section-head">
-    <h2>Project posture</h2>
-    <form method="get" action="{{ url_for('server_settings') }}" class="toolbar" role="search">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Project posture</h2>
+    <form method="get" action="{{ url_for('server_settings') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="encryption">
-      <fieldset class="group search-input">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ encryption_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input">
+        <input type="search" name="q" value="{{ encryption_q or '' }}" id="encryption-q"
+               placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item">
       </fieldset>
       {% if encryption_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('server_settings', tab='encryption') }}">Clear search</a>
@@ -148,7 +149,7 @@
 
   {% set projects = encryption.summary.projects %}
   {% if projects %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -158,49 +159,49 @@
         <th>Key created</th>
         <th>Key ID</th>
         <th>Sync</th>
-        <th class="acts-menu"></th>
+        <th class="text-right" aria-label="Actions"></th>
       </tr>
     </thead>
     <tbody>
     {% for p in projects %}
       <tr>
-        <td class="muted">{{ p.team_name }}</td>
+        <td class="opacity-70">{{ p.team_name }}</td>
         <td>
-          <a href="{{ url_for('project_detail', project_id=p.project_id, tab='settings') }}">{{ p.project_name }}</a>
+          <a class="link" href="{{ url_for('project_detail', project_id=p.project_id, tab='settings') }}">{{ p.project_name }}</a>
         </td>
-        <td class="muted">
+        <td class="opacity-70">
           {% if p.provider == 'hsm' %}HSM
           {% elif p.provider == 'local' %}Local
           {% else %}Server key{% endif %}
         </td>
-        <td class="muted">
+        <td class="opacity-70">
           {% if p.provider == 'hsm' %}
             {% if p.hsm_slot_name %}{{ p.hsm_slot_name }}{% else %}<span class="badge badge-soft badge-error" title="No HSM slot assigned">⚠ No slot</span>{% endif %}
           {% else %}-{% endif %}
         </td>
-        <td class="muted">
+        <td class="opacity-70">
           {% if p.key_created_at %}{{ p.key_created_at.strftime('%Y-%m-%d') }}{% else %}-{% endif %}
         </td>
-        <td class="muted">
-          {% if p.key_id %}<code class="k">{{ p.key_id[:8] }}</code>{% else %}-{% endif %}
+        <td class="opacity-70">
+          {% if p.key_id %}<code class="font-mono">{{ p.key_id[:8] }}</code>{% else %}-{% endif %}
         </td>
-        <td class="muted">
+        <td class="opacity-70">
           {% if p.provider == 'managed' %}-
           {% elif p.pending %}{{ p.pending }} pending
           {% else %}In sync{% endif %}
         </td>
-        <td class="acts-menu">
+        <td class="text-right">
           {% if p.provider == 'local' or (p.provider == 'hsm' and p.pending) %}
           {% set _menu = 'pp-menu-' ~ p.project_id %}
-          <div class="drop-pop">
-            <button type="button" class="btn btn-ghost btn-square btn-sm" style="anchor-name:--{{ _menu }}" popovertarget="{{ _menu }}" title="Actions for {{ p.project_name }}" aria-label="Actions for {{ p.project_name }}">
+          <div class="dropdown dropdown-end">
+            <button type="button" class="btn btn-ghost btn-square btn-sm" popovertarget="{{ _menu }}" title="Actions for {{ p.project_name }}" aria-label="Actions for {{ p.project_name }}">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
                 <circle cx="8" cy="3" r="1.5"/>
                 <circle cx="8" cy="8" r="1.5"/>
                 <circle cx="8" cy="13" r="1.5"/>
               </svg>
             </button>
-            <menu popover id="{{ _menu }}" class="menu dropdown-content" style="position-anchor:--{{ _menu }}">
+            <menu popover id="{{ _menu }}" class="dropdown dropdown-end menu dropdown-content bg-base-100 rounded-box w-56 p-2 shadow-sm">
               <li><button type="button" role="menuitem" class="btn btn-ghost btn-sm"
                       data-nav="{{ url_for('project_detail', project_id=p.project_id, tab='settings') }}"
                       popovertarget="{{ _menu }}" popovertargetaction="hide">
@@ -218,7 +219,7 @@
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if encryption_q %}No projects match “{{ encryption_q }}”.{% else %}No projects yet.{% endif %}
   </p>
   {% endif %}
@@ -232,7 +233,7 @@
       if (on) input.removeAttribute('readonly');
       else input.setAttribute('readonly', '');
       input.toggleAttribute('aria-readonly', !on);
-      input.classList.toggle('lifetime-dim', !on);
+      input.classList.toggle('opacity-60', !on);
     }
     var pairs = [
       ['require-pat-expiry', 'max-pat-lifetime'],

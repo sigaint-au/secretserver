@@ -1,31 +1,31 @@
 {% if can_admin %}
 <section>
-  <div class="section-head">
-    <h2>General</h2>
-  <p class="muted section-head-desc">Applied to new secrets created in this project.</p>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">General</h2>
+  <p class="text-sm opacity-70">Applied to new secrets created in this project.</p>
   </div>
-  <form method="post" action="{{ url_for('update_project_settings', project_id=project.id) }}" class="settings-form" data-dirty-guard>
+  <form method="post" action="{{ url_for('update_project_settings', project_id=project.id) }}" data-dirty-guard>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <fieldset class="field-group">
+    <fieldset class="rounded-box border border-base-300 p-4">
       <legend>Project</legend>
-      <div class="field-grid">
-        <label class="span-2">Description
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="grid gap-1 sm:col-span-2">Description
           <input type="text" name="description" maxlength="500"
                  value="{{ project.description or '' }}"
                  placeholder="Short purpose for this project" class="input">
-          <span class="field-hint">Shown at the top of this project alongside its name.</span>
+          <span class="text-xs opacity-70">Shown at the top of this project alongside its name.</span>
         </label>
       </div>
     </fieldset>
-    <fieldset class="field-group">
+    <fieldset class="rounded-box border border-base-300 p-4">
       <legend>Reveal access</legend>
-      <div class="field-grid">
-        <label class="check-row span-2">
-          <input type="checkbox" name="require_reveal_approval" value="1"
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="flex items-center gap-2 sm:col-span-2">
+          <input type="checkbox" name="require_reveal_approval" class="checkbox" value="1"
                  {% if require_reveal_approval %}checked{% endif %}>
           Require approval to reveal secrets
         </label>
-        <label>Default access for new secrets
+        <label class="grid gap-1">Default access for new secrets
           <select name="default_access_mode" class="select">
             <option value="inherit" {% if (project.default_access_mode or 'inherit') == 'inherit' %}selected{% endif %}>
               Inherit team / project roles
@@ -35,32 +35,32 @@
             </option>
           </select>
         </label>
-        <span class="field-hint span-2">
+        <span class="text-xs opacity-70 sm:col-span-2">
           The project default is a baseline: individual secrets can override it (require or exempt)
           on their Access tab, and existing secrets keep their current mode.
         </span>
-        <span class="field-hint span-2">
+        <span class="text-xs opacity-70 sm:col-span-2">
           <strong>Inherit</strong> means new secrets follow team/project roles;
           <strong>Restricted</strong> starts them locked to role bindings only.
         </span>
       </div>
     </fieldset>
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Save changes</button>
     </p>
   </form>
 </section>
 {% endif %}
 {% if can_settings %}
-<section class="crypto-panel">
-  <div class="section-head">
-    <h2>Encryption</h2>
-    <p class="muted section-head-desc">Which key protects this project's secrets at rest.</p>
+<section>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Encryption</h2>
+    <p class="text-sm opacity-70">Which key protects this project's secrets at rest.</p>
   </div>
 
-  <div class="crypto-overview">
-    <div class="crypto-summary">
-      <div class="crypto-summary-body">
+  <div class="flex flex-wrap items-center gap-4">
+    <div>
+      <div>
         <strong>
           {% if project_crypto %}
             {% if project_crypto.key_provider == 'hsm' %}
@@ -72,11 +72,11 @@
             Server-wide key
           {% endif %}
         </strong>
-        <span class="muted">
+        <span class="text-sm opacity-70">
           {% if project_crypto %}
             {% if project_crypto.hsm_slot_id is none and project_crypto.key_provider == 'hsm' %}no slot assigned · {% endif %}
             {% if project_crypto.kms_key_ref %}{{ project_crypto.kms_key_ref }} · {% endif %}
-            {% if project_crypto.key_id %}key id <code class="k">{{ project_crypto.key_id|string|truncate(8, True, '') }}</code> · {% endif %}
+            {% if project_crypto.key_id %}key id <code class="font-mono">{{ project_crypto.key_id|string|truncate(8, True, '') }}</code> · {% endif %}
             {% if project_crypto.created_at %}adopted {{ project_crypto.created_at.strftime('%Y-%m-%d') }}{% endif %}
           {% else %}
             New secrets use the server-wide key until you adopt a project key
@@ -84,7 +84,7 @@
         </span>
       </div>
     </div>
-    <div class="crypto-sync">
+    <div class="flex flex-wrap items-center gap-2">
       <span class="badge {% if project_crypto and not project_master_rows %}badge-soft badge-success{% elif project_master_rows %}badge-soft badge-warning{% else %}badge-soft{% endif %}">
         {% if project_crypto and not project_master_rows %}In sync{% elif project_master_rows %}{{ project_master_rows }} pending{% else %}Server key{% endif %}
       </span>
@@ -105,21 +105,20 @@
   </div>
 
   {% if hsm_available and project_crypto and project_crypto.key_provider == 'local' and can_manage_keys %}
-  <div class="crypto-migrate-card">
-    <div class="crypto-migrate-header">
+  <div class="rounded-box border border-base-300 p-4">
+    <div>
       <strong>Upgrade to hardware security (HSM)</strong>
-      <p class="muted">Re-wraps this project's key with an external PKCS#11 HSM token. The server re-encrypts every secret under the new HSM KEK.</p>
+      <p class="text-sm opacity-70">Re-wraps this project's key with an external PKCS#11 HSM token. The server re-encrypts every secret under the new HSM KEK.</p>
     </div>
     <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
-          class="crypto-migrate-form"
           data-dirty-guard
           onsubmit="return confirm('Migrate this project to an HSM-wrapped key? All secrets will be re-encrypted. The HSM must remain available for all future access.');">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="action" value="migrate">
       <input type="hidden" name="provider" value="hsm">
       {% if hsm_slots %}
-      <label class="crypto-migrate-select">
-        <span class="field-label">Target slot</span>
+      <label class="grid gap-1">
+        <span class="text-sm opacity-70">Target slot</span>
         <select name="target_slot" class="select">
           {% for s in hsm_slots %}
           <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
@@ -139,27 +138,27 @@
         onsubmit="var p=this.querySelector('input[name=provider]:checked');var h=p&&p.value==='hsm';return confirm(h?'Create an HSM-wrapped project key and re-encrypt secrets onto it?':'Create a project key and re-encrypt secrets onto it?');">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="adopt">
-    <fieldset class="crypto-choice">
+    <fieldset>
       <legend>Key provider</legend>
-      <label class="radio-card">
-        <input type="radio" name="provider" value="local" checked>
-        <span class="radio-card-body">
+      <label class="flex items-center gap-2">
+        <input type="radio" name="provider" class="radio" value="local" checked>
+        <span>
           <strong>Local</strong>
-          <span class="muted">Wrapped by the server; portable across instances</span>
+          <span class="text-sm opacity-70">Wrapped by the server; portable across instances</span>
         </span>
       </label>
       {% if hsm_available %}
-      <label class="radio-card">
-        <input type="radio" name="provider" value="hsm">
-        <span class="radio-card-body">
+      <label class="flex items-center gap-2">
+        <input type="radio" name="provider" class="radio" value="hsm">
+        <span>
           <strong>HSM</strong>
-          <span class="muted">Wrapped by hardware; stronger separation of keys</span>
+          <span class="text-sm opacity-70">Wrapped by hardware; stronger separation of keys</span>
         </span>
       </label>
       {% endif %}
     </fieldset>
     {% if hsm_slots %}
-    <label class="crypto-hsm-slot" data-hsm-slot hidden>HSM slot
+    <label data-hsm-slot hidden>HSM slot
       <select name="hsm_slot" class="select">
         {% for s in hsm_slots %}
         <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
@@ -167,7 +166,7 @@
       </select>
     </label>
     {% endif %}
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Adopt project key</button>
     </p>
   </form>
@@ -190,10 +189,10 @@
 {% endif %}
 {% if can_delete %}
 <section>
-  <div class="section-head">
-    <h2>Danger zone</h2>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Danger zone</h2>
   </div>
-  <p class="muted">Delete this project and all secrets, audit history, and machine tokens. Irreversible.</p>
+  <p class="text-sm opacity-70">Delete this project and all secrets, audit history, and machine tokens. Irreversible.</p>
   <form method="post" action="{{ url_for('delete_project', project_id=project.id) }}"
         onsubmit="return confirm('Delete project “{{ project.name }}” and all its data? This cannot be undone.')">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">

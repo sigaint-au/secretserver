@@ -1,12 +1,12 @@
-<section class="machine-accounts">
-  <div class="section-head">
-    <div class="section-head-main">
-      <h2>Machine accounts</h2>
+<section>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <h2 class="text-lg font-bold">Machine accounts</h2>
     </div>
   </div>
-  <p class="page-desc muted">
+  <p class="text-sm opacity-70">
     Project-scoped tokens for ESO and CI. Name the keys they may use.
-    Restricted secrets are never covered by globs or <code class="k">*</code>.
+    Restricted secrets are never covered by globs or <code class="font-mono">*</code>.
   </p>
 
   {% if can_admin %}
@@ -16,20 +16,20 @@
   {% endif %}
 
   {% if new_token %}
-  <div class="token-once" role="status">
-    <div class="section-head tight">
+  <div class="token-once alert" role="status">
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <strong>Machine token (copy now, shown once)</strong>
       <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
     </div>
-    <p class="muted">Copy it now. This is the only time it is displayed. The clipboard clears automatically after 60 seconds.</p>
-    <pre id="new-token-pre">{{ new_token }}</pre>
+    <p class="text-sm opacity-70">Copy it now. This is the only time it is displayed. The clipboard clears automatically after 60 seconds.</p>
+    <pre id="new-token-pre" class="font-mono text-sm">{{ new_token }}</pre>
   </div>
   {% endif %}
 
-  <section class="token-list-section list-panel">
-    <h3 class="token-list-title">Active tokens</h3>
+  <section class="flex min-w-0 flex-col gap-4">
+    <h3 class="text-base font-bold">Active tokens</h3>
     {% if tokens %}
-    <div class="table">
+    <div class="overflow-x-auto">
     <table class="table">
       <thead>
         <tr>
@@ -42,46 +42,46 @@
           <th>Last used</th>
           <th>Created</th>
           <th>Expires</th>
-          <th class="acts-col" aria-label="Actions"></th>
+          <th class="text-right" aria-label="Actions"></th>
         </tr>
       </thead>
       <tbody>
       {% for t in tokens %}
         <tr>
            <td>{{ t.name }}</td>
-           <td class="muted">{% if t.description %}{{ t.description }}{% endif %}</td>
-           <td><code class="k">{{ t.id }}</code></td>
-           <td><code class="k">{{ t.token_prefix }}…</code></td>
-          <td><span class="badge badge-soft" >{{ t.role or 'service-read' }}</span></td>
-          <td class="col-note">
+           <td class="opacity-70">{% if t.description %}{{ t.description }}{% endif %}</td>
+           <td><code class="font-mono">{{ t.id }}</code></td>
+           <td><code class="font-mono">{{ t.token_prefix }}…</code></td>
+          <td><span class="badge badge-soft">{{ t.role or 'service-read' }}</span></td>
+          <td>
             {% if t.scopes %}
-            <div class="token-scope-badges"
+            <div class="flex flex-wrap gap-1"
                  title="{% for sc in t.scopes %}{{ sc.secret_key or sc.key_pattern }}{% if not loop.last %}, {% endif %}{% endfor %}">
               {% for sc in t.scopes[:8] %}
-              <span class="badge badge-outline{% if sc.key_pattern %} token-scope-glob{% endif %}"
+              <span class="badge badge-outline"
                     title="{% if sc.key_pattern %}Glob pattern{% else %}Exact key{% endif %}">
                 {% if sc.secret_key %}{{ sc.secret_key }}{% else %}{{ sc.key_pattern }}{% endif %}
               </span>
               {% endfor %}
               {% if t.scopes|length > 8 %}
-              <span class="muted">+{{ t.scopes|length - 8 }} more</span>
+              <span class="opacity-70">+{{ t.scopes|length - 8 }} more</span>
               {% endif %}
               {% if t.scopes|length == 1 and (t.scopes[0].key_pattern|default('')) == '*' %}
-              <span class="muted">all non-restricted keys</span>
+              <span class="opacity-70">all non-restricted keys</span>
               {% endif %}
             </div>
             {% else %}
-            <span class="badge badge-soft badge-warning" >no keys</span>
+            <span class="badge badge-soft badge-warning">no keys</span>
             {% endif %}
           </td>
-          <td class="muted" title="{% if t.last_used_at %}{{ t.last_used_at|time_when }}{% endif %}">{% if t.last_used_at %}{{ t.last_used_at|time_ago }}{% else %}never{% endif %}</td>
-          <td class="muted" title="{{ t.created_at|time_when }}">{{ t.created_at|time_ago }}</td>
-          <td class="muted"{% if t.expires_at %} title="{{ t.expires_at|time_when }}"{% endif %}>
+          <td class="opacity-70" title="{% if t.last_used_at %}{{ t.last_used_at|time_when }}{% endif %}">{% if t.last_used_at %}{{ t.last_used_at|time_ago }}{% else %}never{% endif %}</td>
+          <td class="opacity-70" title="{{ t.created_at|time_when }}">{{ t.created_at|time_ago }}</td>
+          <td class="opacity-70"{% if t.expires_at %} title="{{ t.expires_at|time_when }}"{% endif %}>
             {% if t.expires_at %}{{ t.expires_at|expires }}{% else %}never{% endif %}
-            {% if t.due == 'overdue' %}<span class="badge badge-soft badge-error" >expired</span>
-            {% elif t.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
+            {% if t.due == 'overdue' %}<span class="badge badge-soft badge-error">expired</span>
+            {% elif t.due == 'soon' %}<span class="badge badge-soft badge-warning">expiring soon</span>{% endif %}
           </td>
-          <td class="acts">
+          <td class="text-right">
             {% if can_admin %}
             <form method="post" action="{{ url_for('delete_token', project_id=project.id, token_id=t.id) }}" class="inline"
                   hx-post="{{ url_for('delete_token', project_id=project.id, token_id=t.id) }}"
@@ -98,7 +98,7 @@
     </table>
     </div>
     {% else %}
-    <p class="empty">No machine accounts yet.</p>
+    <p class="text-sm opacity-70">No machine accounts yet.</p>
     {% endif %}
   </section>
 </section>

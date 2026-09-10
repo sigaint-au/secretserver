@@ -1,36 +1,36 @@
 {% extends "base.html" %}
 {% block title %}My profile - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>My profile</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">My profile</h1>
 </div>
-<p class="page-desc muted">Manage your account and access.</p>
+<p class="text-sm opacity-70">Manage your account and access.</p>
 
-<div class="page-side">
-<nav class="page-subnav" aria-label="Profile sections">
-  <span class="page-subnav-header">Account</span>
+<div class="flex flex-col gap-4">
+<nav class="page-subnav tabs" aria-label="Profile sections">
+  <span class="page-subnav-header menu-title">Account</span>
   <a hx-get="{{ url_for('profile', tab='account') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='account') }}"
-     class="page-subnav-link {% if active_tab == 'account' %}active{% endif %}"{% if active_tab == 'account' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'account' %}active{% endif %} tab{% if active_tab == 'account' %} tab-active{% endif %}"{% if active_tab == 'account' %} aria-current="page"{% endif %}
   >Account</a>
   <a hx-get="{{ url_for('profile', tab='security') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='security') }}"
-     class="page-subnav-link {% if active_tab == 'security' %}active{% endif %}"{% if active_tab == 'security' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'security' %}active{% endif %} tab{% if active_tab == 'security' %} tab-active{% endif %}"{% if active_tab == 'security' %} aria-current="page"{% endif %}
   >Security</a>
-  <span class="page-subnav-header">Membership</span>
+  <span class="page-subnav-header menu-title">Membership</span>
   <a hx-get="{{ url_for('profile', tab='myaccess') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='myaccess') }}"
-     class="page-subnav-link {% if active_tab == 'myaccess' %}active{% endif %}"{% if active_tab == 'myaccess' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'myaccess' %}active{% endif %} tab{% if active_tab == 'myaccess' %} tab-active{% endif %}"{% if active_tab == 'myaccess' %} aria-current="page"{% endif %}
   >My access</a>
   <a hx-get="{{ url_for('profile', tab='teams') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='teams') }}"
-     class="page-subnav-link {% if active_tab == 'teams' %}active{% endif %}"{% if active_tab == 'teams' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'teams' %}active{% endif %} tab{% if active_tab == 'teams' %} tab-active{% endif %}"{% if active_tab == 'teams' %} aria-current="page"{% endif %}
   >Teams</a>
   <a hx-get="{{ url_for('profile', tab='projects') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='projects') }}"
-     class="page-subnav-link {% if active_tab == 'projects' %}active{% endif %}"{% if active_tab == 'projects' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'projects' %}active{% endif %} tab{% if active_tab == 'projects' %} tab-active{% endif %}"{% if active_tab == 'projects' %} aria-current="page"{% endif %}
   >Projects</a>
-  <span class="page-subnav-header">Activity</span>
+  <span class="page-subnav-header menu-title">Activity</span>
   <a hx-get="{{ url_for('profile', tab='activity') }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab='activity') }}"
-     class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'activity' %}active{% endif %} tab{% if active_tab == 'activity' %} tab-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
   >Activity</a>
 </nav>
-<div class="page-panel" id="profile-panel" tabindex="-1">
+<div class="flex min-w-0 flex-col gap-4" id="profile-panel" tabindex="-1">
 {% include "partials/profile_panel.html" %}
 </div>
 </div>

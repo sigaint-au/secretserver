@@ -1,7 +1,7 @@
 <div id="shared-results">
-<section class="list-panel">
+<section class="flex min-w-0 flex-col gap-4">
 {% if secrets %}
-<div class="table">
+<div class="overflow-x-auto">
 <table class="table">
   <thead>
     <tr>
@@ -17,27 +17,27 @@
   <tbody>
   {% for s in secrets %}
     <tr>
-      <td class="col-key">
+      <td>
         <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}"
-           class="secret-key-link" title="Open secret">
-          <code class="k">{{ s.key }}</code>
+           class="link" title="Open secret">
+          <code class="font-mono">{{ s.key }}</code>
         </a>
         {% if s.access_restricted %}
         <span class="badge badge-soft badge-warning" title="Restricted access">restricted</span>
         {% endif %}
-        {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error" >overdue</span>
-        {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
+        {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error">overdue</span>
+        {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning">expiring soon</span>{% endif %}
       </td>
-      <td><span class="badge badge-soft" >{{ s.kind or 'plain' }}</span></td>
-      <td class="muted">{{ s.team_name or '-' }}</td>
-      <td class="muted">{{ s.project_name or '-' }}</td>
-      <td><span class="badge badge-soft" >{{ s.role_name or '-' }}</span></td>
-      <td class="muted"{% if s.rotation_next_at %} title="{% if s.rotation_owner %}Owner: {{ s.rotation_owner }}{% endif %}{% if s.rotated_at %} Last: {{ s.rotated_at|time_when }}{% endif %}"{% endif %}>
+      <td><span class="badge badge-soft">{{ s.kind or 'plain' }}</span></td>
+      <td class="opacity-70">{{ s.team_name or '-' }}</td>
+      <td class="opacity-70">{{ s.project_name or '-' }}</td>
+      <td><span class="badge badge-soft">{{ s.role_name or '-' }}</span></td>
+      <td class="opacity-70"{% if s.rotation_next_at %} title="{% if s.rotation_owner %}Owner: {{ s.rotation_owner }}{% endif %}{% if s.rotated_at %} Last: {{ s.rotated_at|time_when }}{% endif %}"{% endif %}>
         {% if s.rotation_next_at %}{{ s.rotation_next_at|expires }}{% else %}-{% endif %}
-        {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error" >rotation overdue</span>
-        {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning" >rotation soon</span>{% endif %}
+        {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error">rotation overdue</span>
+        {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning">rotation soon</span>{% endif %}
       </td>
-      <td class="muted" title="{{ s.updated_at|time_when }}">{{ s.updated_at|time_ago }}</td>
+      <td class="opacity-70" title="{{ s.updated_at|time_when }}">{{ s.updated_at|time_ago }}</td>
     </tr>
   {% endfor %}
   </tbody>

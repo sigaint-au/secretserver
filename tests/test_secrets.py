@@ -323,7 +323,7 @@ class TestSecrets:
         # the kebab popover after clicking, styled like the other menu items.
         assert b'role="menuitem"' in r.data
         assert b'popovertarget="secret-menu-' + str(sid).encode() + b'"' in r.data
-        assert b'class="reveal-toggle ghost"' in r.data
+        assert b'class="reveal-toggle"' in r.data
         assert b'name="expires_at"' not in r.data
 
     def test_reveal_secret_owner_without_reveal_acl(self):

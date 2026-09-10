@@ -19,12 +19,12 @@ class TestUIShell:
         conn, _ = _conn(fetchall=[])
         with patch.object(db, "connect_admin", return_value=conn):
             r = store.app.test_client().get("/login")
-        assert b'class="auth"' in r.data
-        assert b"auth-card" in r.data
+        assert b"app-drawer" not in r.data
+        assert b"card-body" in r.data
         assert b'class="sidebar"' not in r.data
         assert b"Corvus" in r.data
-        assert b"brand-logo" in r.data
-        assert b"static/app.css" in r.data
+        assert b"logo.svg" in r.data
+        assert b"vendor/daisyui.min.css" in r.data
         # A missing '>' on <script integrity="..."> swallows the rest of the
         # page (the browser treats body markup as the script element).
         assert not re.search(rb'integrity="[^"]*"</script>', r.data)
@@ -62,9 +62,9 @@ class TestUIShell:
             patch.object(authz, "is_global_admin", return_value=False),
         ):
             r = c.get("/teams")
-        assert b'class="app"' in r.data
+        assert b"app-drawer" in r.data
         assert b"sidebar" in r.data
-        assert b"brand-logo" in r.data
+        assert b"logo.svg" in r.data
         assert b"x@y.z" in r.data
         assert b"Log out" in r.data
         assert b"Projects" in r.data
@@ -411,13 +411,12 @@ class TestUIShell:
         ):
             r = c.get("/teams")
         # Accessibility: a keyboard-first skip link must render on app pages.
-        assert b'class="skip-link"' in r.data
+        assert b'href="#main-content"' in r.data
         assert b"Skip to content" in r.data
-        # Responsive tables: app.css defines the oat .table scroll container.
-        css = store.app.test_client().get("/static/app.css")
+        # Responsive tables: the daisyUI bundle provides the .table component.
+        css = store.app.test_client().get("/static/vendor/daisyui.min.css")
         assert css.status_code == 200
-        assert b".table {" in css.data
-        assert b"overflow-x: auto" in css.data
+        assert b".table" in css.data
 
     def test_machines_template_shows_last_used(self):
         from flask import render_template
@@ -440,7 +439,7 @@ class TestUIShell:
     def test_project_tabs_use_nav_links_not_tablist_role(self):
         # Server-side page navigation is plain links (no fake tablist), so
         # screen readers announce them as links, not broken tabs. Scope the
-        # check to the actual <nav class="page-subnav"> markup (not the
+        # check to the actual <nav class="page-subnav ..."> markup (not the
         # shared <style> block, whose `.role-mode-tabs [role=tablist]` selector
         # legitimately contains `role=` text).
         from flask import render_template
@@ -454,7 +453,7 @@ class TestUIShell:
         }
         with store.app.test_request_context("/projects/p?tab=secrets"):
             html = render_template("project.html", project=project, active_tab="secrets")
-        i = html.find('<nav class="page-subnav"')
+        i = html.find('<nav class="page-subnav')
         j = html.find("</nav>", i)
         tabs = html[i:j] if i != -1 and j != -1 else ""
         assert 'role="tablist"' not in tabs

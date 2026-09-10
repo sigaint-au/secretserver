@@ -4,69 +4,74 @@
             form_id_prefix, help_html (optional), full_bindings_url (optional)
 #}
 {% set pref = form_id_prefix|default('access') %}
-<section class="access-rbac-panel">
-  <div class="section-head">
-    <h2>{{ panel_title|default('Role bindings') }}</h2>
+<section class="access-rbac-panel rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">{{ panel_title|default('Role bindings') }}</h2>
     {% if full_bindings_url %}
     <a class="btn btn-ghost btn-sm" href="{{ full_bindings_url }}">All scopes</a>
     {% endif %}
   </div>
   {% if help_html %}
-  <p class="muted">{{ help_html|safe }}</p>
+  <p class="text-sm opacity-70">{{ help_html|safe }}</p>
   {% endif %}
 
   {% if can_edit_access %}
-  <h3>Add binding</h3>
-  <form method="post" action="{{ create_url }}" class="settings-form" id="{{ pref }}-bind-form"
+  <h3 class="font-bold">Add binding</h3>
+  <form method="post" action="{{ create_url }}" class="flex flex-col gap-4" id="{{ pref }}-bind-form"
         hx-post="{{ create_url }}" hx-target="{{ hx_target }}" hx-swap="innerHTML">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-      <fieldset class="field-group">
-        <legend>Who</legend>
-        <div class="field-grid">
-          <label>Subject type
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Who</legend>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-1">
+            <label class="label" for="{{ pref }}-subject-kind"><span>Subject type</span></label>
             <select name="subject_kind" id="{{ pref }}-subject-kind" class="select">
               {% for sk in subject_kinds|default(['User', 'Group', 'ServiceAccount']) %}
               <option value="{{ sk }}">{{ sk }}</option>
               {% endfor %}
             </select>
-          </label>
-          <label id="{{ pref }}-user" class="span-2">User email
-            <input type="email" name="subject_email" class="user-suggest input"
+          </div>
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-user">
+            <label class="label" for="{{ pref }}-subject-email"><span>User email</span></label>
+            <input type="email" name="subject_email" id="{{ pref }}-subject-email" class="user-suggest input"
                    list="user-suggest-list" placeholder="name@example.com" autocomplete="off">
-          </label>
-          <label id="{{ pref }}-group" class="span-2" hidden>Team group
-            <select name="subject_group" class="select">
+          </div>
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-group" hidden>
+            <label class="label" for="{{ pref }}-subject-group"><span>Team group</span></label>
+            <select name="subject_group" id="{{ pref }}-subject-group" class="select">
               <option value="">- select group -</option>
               {% for g in access_groups|default([]) %}
               <option value="{{ g.id }}">{{ g.name }}</option>
               {% endfor %}
             </select>
-          </label>
-          <label id="{{ pref }}-sa" class="span-2" hidden>Machine account ID
-            <input type="text" name="subject_sa" placeholder="machine account UUID" autocomplete="off" class="input">
-          </label>
+          </div>
+          <div class="grid gap-1 sm:col-span-2" id="{{ pref }}-sa" hidden>
+            <label class="label" for="{{ pref }}-subject-sa"><span>Machine account ID</span></label>
+            <input type="text" name="subject_sa" id="{{ pref }}-subject-sa" placeholder="machine account UUID" autocomplete="off" class="input">
+          </div>
         </div>
       </fieldset>
 
-      <fieldset class="field-group">
-        <legend>Role</legend>
-        <div class="field-grid">
-          <label class="span-2">Grant
-            <select name="role_name" required class="select">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Role</legend>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-1 sm:col-span-2">
+            <label class="label" for="{{ pref }}-role-name"><span>Grant</span></label>
+            <select name="role_name" id="{{ pref }}-role-name" required class="select">
               {% for name, label in role_dropdown|default([]) %}
               <option value="{{ name }}"
                       {% if role_descriptions is defined and role_descriptions.get(name) %} title="{{ role_descriptions.get(name) }}"{% endif %}>{{ label }} - <code>{{ name }}</code></option>
               {% endfor %}
             </select>
-          </label>
+          </div>
         </div>
-        <p class="field-hint muted">
+        <p class="pt-2 text-xs opacity-70">
           Role descriptions shown in the dropdown titles and on the binding badges.
         </p>
       </fieldset>
 
-      <p class="form-actions">
+      <p class="flex flex-wrap items-center gap-2 pt-2">
         <button type="submit" class="btn btn-neutral">Add binding</button>
       </p>
     </form>
@@ -90,19 +95,19 @@
   </script>
   {% endif %}
 
-  <div class="section-head tight">
-    <h3>Role bindings</h3>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h3 class="font-bold">Role bindings</h3>
   </div>
-  <p class="muted">Direct role assignments for users, groups, and machine accounts at this scope.</p>
+  <p class="text-sm opacity-70">Direct role assignments for users, groups, and machine accounts at this scope.</p>
   {% if access_bindings %}
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <thead>
         <tr>
           <th>Subject</th>
           <th>Role</th>
           <th>Created</th>
-          <th></th>
+          <th class="text-right" aria-label="Actions"></th>
         </tr>
       </thead>
       <tbody>
@@ -112,15 +117,15 @@
             {% if b.subject_email %}{{ b.subject_email }}
             {% elif b.subject_name %}{{ b.subject_name }}
             {% elif b.group_name %}{{ b.group_name }}
-            {% else %}<code>{{ b.subject_id }}</code>{% endif %}
-            <span class="muted">· {{ b.subject_kind }}</span>
+            {% else %}<code class="font-mono">{{ b.subject_id }}</code>{% endif %}
+            <span class="opacity-70">· {{ b.subject_kind }}</span>
           </td>
           <td>
-            <span class="badge badge-soft" 
+            <span class="badge badge-soft"
          title="{{ b.role_name }}">{{ b.role_short if b.role_short and b.role_short != b.role_name else b.role_name }}</span>
           </td>
-          <td class="muted">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
-          <td class="acts">
+          <td class="opacity-70">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
+          <td class="text-right">
             {% if can_edit_access and delete_endpoint %}
             {% if delete_team_id is defined and delete_team_id %}
             {% set del_url = url_for(delete_endpoint, team_id=delete_team_id, binding_id=b.id) %}
@@ -147,6 +152,6 @@
     </table>
   </div>
   {% else %}
-  <p class="empty">{{ empty_message|default('No bindings at this scope yet.') }}</p>
+  <p class="text-sm opacity-70">{{ empty_message|default('No bindings at this scope yet.') }}</p>
   {% endif %}
 </section>

@@ -1,13 +1,13 @@
-<section>
-  <div class="section-head">
-    <h2>Projects</h2>
-    <div class="section-tools">
-      <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="toolbar" role="search">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Projects</h2>
+    <div class="flex flex-wrap items-center gap-2">
+      <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="flex flex-wrap items-center gap-2" role="search">
         <input type="hidden" name="tab" value="projects">
-        <fieldset class="group search-input">
+        <fieldset class="join">
           {% include "partials/search_icon.html" %}
-          <input type="search" name="q" value="{{ search_q or '' }}"
-                 placeholder="Search" autocomplete="off" aria-label="Search projects" class="input">
+          <input type="search" name="q" value="{{ search_q or '' }}" id="team-projects-q"
+                 placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item">
         </fieldset>
         {% if search_q %}
         <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear search</a>
@@ -19,21 +19,21 @@
     </div>
   </div>
   {% if projects %}
-  <div class="table"><table class="table">
-    <thead><tr><th>Name</th><th>Description</th><th>Encryption</th><th>ID</th>{% if can_manage_team %}<th class="acts-col" aria-label="Actions"></th>{% endif %}</tr></thead>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>Name</th><th>Description</th><th>Encryption</th><th>ID</th>{% if can_manage_team %}<th class="text-right" aria-label="Actions"></th>{% endif %}</tr></thead>
     <tbody>
     {% for p in projects %}
       <tr>
-        <td><a href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
-        <td class="muted col-note">{{ p.description or '-' }}</td>
-        <td class="muted">
+        <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+        <td class="opacity-70">{{ p.description or '-' }}</td>
+        <td class="opacity-70">
           {% if p.key_provider == 'hsm' %}HSM
           {% elif p.key_provider == 'local' %}Local
           {% else %}Server key{% endif %}
         </td>
-        <td class="muted"><code class="k">{{ p.id }}</code></td>
+        <td class="opacity-70"><code class="font-mono">{{ p.id }}</code></td>
         {% if can_manage_team %}
-        <td class="acts">
+        <td class="text-right">
           <form method="post"
                 action="{{ url_for('delete_project_from_team', team_id=team.id, project_id=p.id) }}"
                 class="inline"
@@ -48,6 +48,6 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">{% if search_q %}No projects match “{{ search_q }}”.{% else %}No projects yet.{% endif %}</p>
+  <p class="text-sm opacity-70">{% if search_q %}No projects match “{{ search_q }}”.{% else %}No projects yet.{% endif %}</p>
   {% endif %}
 </section>

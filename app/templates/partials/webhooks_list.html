@@ -1,16 +1,16 @@
 {# Shared webhook list: expects webhooks, add_url, back (path), search action path #}
 {% if webhook_filter is defined %}
-<nav class="tabs" aria-label="Webhook scope">
+<nav class="tabs tabs-box" aria-label="Webhook scope">
   <a href="{{ url_for('server_settings', tab='webhooks', filter='cluster') }}"
-     class="tab{% if webhook_filter == 'cluster' %} active{% endif %}"{% if webhook_filter == 'cluster' %} aria-current="page"{% endif %}
+     class="tab{% if webhook_filter == 'cluster' %} tab-active active{% endif %}"{% if webhook_filter == 'cluster' %} aria-current="page"{% endif %}
   >Cluster wide</a>
   <a href="{{ url_for('server_settings', tab='webhooks', filter='all') }}"
-     class="tab{% if webhook_filter == 'all' %} active{% endif %}"{% if webhook_filter == 'all' %} aria-current="page"{% endif %}
+     class="tab{% if webhook_filter == 'all' %} tab-active active{% endif %}"{% if webhook_filter == 'all' %} aria-current="page"{% endif %}
   >All webhooks</a>
 </nav>
 {% endif %}
-<div class="section-tools">
-  <form method="get" action="{{ search_action }}" class="toolbar" role="search"
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <form method="get" action="{{ search_action }}" class="flex flex-wrap items-center gap-2" role="search"
         {% if webhooks_hx|default(false) %}hx-get="{{ search_action }}"
         hx-target="#webhook-results"
         hx-swap="outerHTML"
@@ -19,10 +19,10 @@
         hx-trigger="submit, input delay:250ms from:input[name=q]"{% endif %}>
     <input type="hidden" name="tab" value="webhooks">
     {% if webhook_filter is defined %}<input type="hidden" name="filter" value="{{ webhook_filter }}">{% endif %}
-    <fieldset class="group search-input">
+    <fieldset class="join">
       {% include "partials/search_icon.html" %}
-      <input type="search" name="q" value="{{ search_q or '' }}"
-             placeholder="Search" autocomplete="off" aria-label="Search webhooks" class="input">
+      <input type="search" name="q" value="{{ search_q or '' }}" id="webhooks-q"
+             placeholder="Search" autocomplete="off" aria-label="Search webhooks" class="input join-item">
     </fieldset>
     {% if search_q %}<a class="btn btn-ghost btn-sm" href="{{ list_url }}"
        {% if webhooks_hx|default(false) %}hx-get="{{ list_url }}"
@@ -36,9 +36,9 @@
   {% endif %}
 </div>
 <div id="webhook-results">
-<section class="list-panel">
+<section class="flex min-w-0 flex-col gap-4">
 {% if webhooks %}
-<div class="table"><table class="table-spaced table">
+<div class="overflow-x-auto"><table class="table">
   <thead>
     <tr>
       <th>Name</th><th>Endpoint</th><th>Events</th>{% if show_scope %}<th>Scope</th>{% endif %}<th>Status</th><th>Last delivery</th>
@@ -47,17 +47,17 @@
   <tbody>
     {% for w in webhooks %}
     <tr>
-      <td><a href="{{ url_for('webhook_view', webhook_id=w.id, back=list_url) }}"><strong>{{ w.name }}</strong></a></td>
-      <td class="mono muted col-url">{{ w.url }}</td>
-      <td class="muted">{{ w.events | length }} event{{ 's' if w.events | length != 1 }}</td>
-      {% if show_scope %}<td class="muted">{{ w.scope_label or w.scope_kind }} <span class="badge badge-soft" >{{ w.scope_kind }}</span></td>{% endif %}
+      <td><a class="link" href="{{ url_for('webhook_view', webhook_id=w.id, back=list_url) }}"><strong>{{ w.name }}</strong></a></td>
+      <td class="font-mono opacity-70">{{ w.url }}</td>
+      <td class="opacity-70">{{ w.events | length }} event{{ 's' if w.events | length != 1 }}</td>
+      {% if show_scope %}<td class="opacity-70">{{ w.scope_label or w.scope_kind }} <span class="badge badge-soft">{{ w.scope_kind }}</span></td>{% endif %}
       <td><span class="badge {% if w.active %}badge-soft badge-success{% else %}badge-soft{% endif %}">{{ 'Active' if w.active else 'Paused' }}</span></td>
-      <td class="muted">
+      <td class="opacity-70">
         {% set d = w.deliveries[0] if w.deliveries else None %}
         {% if d %}
           {{ d.created_at.strftime('%Y-%m-%d %H:%M') if d.created_at }} —
-          {% if d.ok %}<span class="badge badge-soft badge-success" >{{ d.status_code }}</span>
-          {% else %}<span class="badge badge-soft badge-error" >{{ d.status_code or 'ERR' }}</span>{% endif %}
+          {% if d.ok %}<span class="badge badge-soft badge-success">{{ d.status_code }}</span>
+          {% else %}<span class="badge badge-soft badge-error">{{ d.status_code or 'ERR' }}</span>{% endif %}
         {% else %}never{% endif %}
       </td>
     </tr>
@@ -65,7 +65,7 @@
   </tbody>
 </table></div>
 {% elif search_q %}
-<p class="empty">No webhooks match “{{ search_q }}”.</p>
+<p class="text-sm opacity-70">No webhooks match “{{ search_q }}”.</p>
 {% else %}
 {% set icon = 'settings' %}{% set title = 'No webhooks yet' %}{% set text = 'Add a webhook to push events to an external endpoint.' %}
 {% include "partials/empty_state.html" %}

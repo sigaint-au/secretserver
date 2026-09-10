@@ -1,20 +1,20 @@
-<section class="list-panel">
-  <h2>Global admins</h2>
-  <p class="muted">Global admins can access every team, every project, and all server settings.</p>
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Global admins</h2>
+  <p class="text-sm opacity-70">Global admins can access every team, every project, and all server settings.</p>
   {% set admin_users = users|selectattr('is_global_admin')|list %}
   {% if admin_users %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
-      <tr><th>User</th><th>Role</th><th class="acts-col" aria-label="Actions"></th></tr>
+      <tr><th>User</th><th>Role</th><th class="text-right" aria-label="Actions"></th></tr>
     </thead>
     <tbody>
       {% for u in admin_users %}
       <tr>
-        <td>{{ u.name or u.email }} <span class="muted">{{ u.email }}</span>
-          {% if u.auth_source %}<span class="muted">({{ u.auth_source }})</span>{% endif %}
+        <td>{{ u.name or u.email }} <span class="opacity-70">{{ u.email }}</span>
+          {% if u.auth_source %}<span class="opacity-70">({{ u.auth_source }})</span>{% endif %}
         </td>
         <td>Global admin</td>
-        <td class="acts">
+        <td class="text-right">
           {% if u.id|string != session.user_id %}
           <form method="post" class="inline" onsubmit="return confirm('Remove global admin?');">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -23,7 +23,7 @@
             <button type="submit" class="link link-error">Remove</button>
           </form>
           {% else %}
-          <span class="muted">you</span>
+          <span class="opacity-70">you</span>
           {% endif %}
         </td>
       </tr>
@@ -31,16 +31,16 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">No global admins found.</p>
+  <p class="text-sm opacity-70">No global admins found.</p>
   {% endif %}
-  <form method="post" class="row mt-1">
+  <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="promote">
-    <label class="flex-2">User email
-      <input type="email" name="email" required class="user-suggest input"
+    <div class="grid gap-1 flex-1">
+      <label class="label" for="promote-email"><span>User email</span></label>
+      <input type="email" name="email" id="promote-email" required class="user-suggest input"
              list="user-suggest-list" placeholder="e.g. alice@example.com" autocomplete="off">
-    </label>
+    </div>
     <button type="submit" class="btn btn-neutral">Make global admin</button>
   </form>
 </section>
-

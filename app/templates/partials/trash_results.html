@@ -1,39 +1,39 @@
 <div id="trash-results">
 {% if not team %}
-<p class="empty">Select a team in the sidebar.</p>
+<p class="text-sm opacity-70">Select a team in the sidebar.</p>
 {% elif items %}
 <form id="bulk-trash" method="post" action="{{ url_for('bulk_trash') }}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" name="bulk_action" id="bulk-action-field" value="">
   {% if search_q %}<input type="hidden" name="q" value="{{ search_q }}">{% endif %}
 </form>
-<section class="list-panel">
-<div class="table pin-table">
+<section class="flex min-w-0 flex-col gap-4">
+<div class="overflow-x-auto">
 <table class="table">
   <thead>
     <tr>
-      <th class="pin-col" aria-label="Select"></th>
+      <th class="w-8" aria-label="Select"></th>
       <th>Key</th>
       <th>Project</th>
       <th>Note</th>
       <th>Deleted</th>
-      <th class="acts-col" aria-label="Actions"></th>
+      <th class="text-right" aria-label="Actions"></th>
     </tr>
   </thead>
   <tbody>
   {% for item in items %}
     <tr id="trash-row-{{ item.id }}">
-      <td class="pin-col">
+      <td class="w-8">
         {% if item.can_write %}
-        <input form="bulk-trash" type="checkbox" class="bulk-secret-cb" name="secret_ids"
+        <input form="bulk-trash" type="checkbox" class="checkbox bulk-secret-cb" name="secret_ids"
                value="{{ item.id }}" aria-label="Select {{ item.key }}">
         {% endif %}
       </td>
-      <td class="col-key"><code class="k">{{ item.key }}</code></td>
-      <td><a href="{{ url_for('project_detail', project_id=item.project_id) }}">{{ item.project_name }}</a></td>
-      <td class="col-note muted">{{ item.note }}</td>
-       <td class="muted" title="{{ item.deleted_at|time_when }}">{{ item.deleted_at|time_ago }}</td>
-      <td class="acts">
+      <td><code class="font-mono">{{ item.key }}</code></td>
+      <td><a class="link" href="{{ url_for('project_detail', project_id=item.project_id) }}">{{ item.project_name }}</a></td>
+      <td class="opacity-70">{{ item.note }}</td>
+       <td class="opacity-70" title="{{ item.deleted_at|time_when }}">{{ item.deleted_at|time_ago }}</td>
+      <td class="text-right">
         {% if item.can_write %}
         <form method="post" action="{{ url_for('restore_secret', secret_id=item.id, q=search_q or none) }}"
               class="inline"
@@ -54,7 +54,7 @@
           <button type="submit" class="link link-error">Delete permanently</button>
         </form>
         {% else %}
-        <span class="muted">Read only</span>
+        <span class="opacity-70">Read only</span>
         {% endif %}
       </td>
     </tr>
@@ -64,9 +64,9 @@
 </div>
 </section>
 {% else %}
-<section class="list-panel">
+<section class="flex min-w-0 flex-col gap-4">
 {% if search_q %}
-<p class="empty">No trash items match “{{ search_q }}”.</p>
+<p class="text-sm opacity-70">No trash items match “{{ search_q }}”.</p>
 {% else %}
 {% set icon = 'inbox' %}
 {% set title = 'Trash is empty' %}

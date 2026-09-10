@@ -3,28 +3,24 @@
 #}
 {% set dlg_id = 'access-dlg-' ~ secret_id %}
 {% set state = state|default('need_request') %}
-<dialog id="{{ dlg_id }}" closedby="any" class="modal access-dlg" aria-labelledby="{{ dlg_id }}-title">
+<dialog id="{{ dlg_id }}" closedby="any" class="modal" aria-labelledby="{{ dlg_id }}-title">
   <div class="modal-box">
   {% if state == 'pending' %}
   <form method="dialog">
-    <header>
-      <h3 id="{{ dlg_id }}-title">Request submitted</h3>
-      <p>Waiting for approval to reveal <code>{{ secret_key }}</code>.</p>
-    </header>
-    <footer>
+    <h3 id="{{ dlg_id }}-title" class="text-lg font-bold">Request submitted</h3>
+    <p class="py-4">Waiting for approval to reveal <code>{{ secret_key }}</code>.</p>
+    <div class="modal-action">
       <button value="ok" class="btn btn-neutral">Done</button>
-    </footer>
+    </div>
   </form>
   {% elif state == 'denied' %}
   <form method="dialog">
-    <header>
-      <h3 id="{{ dlg_id }}-title">Reveal requests disabled</h3>
-      <p>A team owner has turned off reveal requests. Ask them to grant
-      <code class="k">secret-reveal</code> or enable requests in team settings.</p>
-    </header>
-    <footer>
+    <h3 id="{{ dlg_id }}-title" class="text-lg font-bold">Reveal requests disabled</h3>
+    <p class="py-4">A team owner has turned off reveal requests. Ask them to grant
+    <code>secret-reveal</code> or enable requests in team settings.</p>
+    <div class="modal-action">
       <button value="ok" class="btn btn-neutral">Done</button>
-    </footer>
+    </div>
   </form>
   {% else %}
   <form method="post"
@@ -33,26 +29,21 @@
         hx-target="#{{ dlg_id }}"
         hx-swap="innerHTML"
         id="{{ dlg_id }}-form">
-    <header>
-      <h3 id="{{ dlg_id }}-title">Approval required</h3>
-      <p>Request a time-limited reveal of <code>{{ secret_key }}</code>. A team owner or project admin must approve.</p>
-    </header>
-    <div>
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      {% if cell %}<input type="hidden" name="cell" value="{{ cell }}">{% endif %}
-      <input type="hidden" name="dialog" value="1">
-      <label>
-        Why do you need access?
-        <input type="text" name="reason" maxlength="500"
-               placeholder="e.g. debugging prod auth, ticket #1234 (optional)"
-               autocomplete="off" class="input">
-      </label>
-    </div>
-    <footer>
+    <h3 id="{{ dlg_id }}-title" class="text-lg font-bold">Approval required</h3>
+    <p class="py-4">Request a time-limited reveal of <code>{{ secret_key }}</code>. A team owner or project admin must approve.</p>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% if cell %}<input type="hidden" name="cell" value="{{ cell }}">{% endif %}
+    <input type="hidden" name="dialog" value="1">
+    <label for="{{ dlg_id }}-reason" class="label">Why do you need access?</label>
+    <input type="text" id="{{ dlg_id }}-reason" name="reason" maxlength="500"
+           placeholder="e.g. debugging prod auth, ticket #1234 (optional)"
+           autocomplete="off" class="input w-full">
+    <div class="modal-action">
       <button type="button" class="btn btn-outline" data-close-dialog="{{ dlg_id }}">Cancel</button>
       <button type="submit" class="btn btn-neutral">Request access</button>
-    </footer>
+    </div>
   </form>
   {% endif %}
   </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
 </dialog>

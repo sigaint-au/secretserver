@@ -1,29 +1,29 @@
-<section>
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>Activity</h2>
-      <p class="muted">Membership, invites, LDAP maps, and team settings changes.</p>
+      <h2 class="text-lg font-bold">Activity</h2>
+      <p class="text-sm opacity-70">Membership, invites, LDAP maps, and team settings changes.</p>
     </div>
-    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="activity">
-      <fieldset class="group search-input">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ activity_q or '' }}" placeholder="Search activity" aria-label="Search activity" class="input">
+        <input type="search" name="q" value="{{ activity_q or '' }}" id="team-activity-q" placeholder="Search activity" aria-label="Search activity" class="input join-item">
       </fieldset>
       {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
   {% if org_events %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
     <tbody>
     {% for e in org_events %}
       <tr>
-        <td class="muted" title="{{ e.created_at|time_when }}">{{ e.created_at|time_ago }}</td>
+        <td class="opacity-70" title="{{ e.created_at|time_when }}">{{ e.created_at|time_ago }}</td>
         <td>{{ e.actor_email or 'unknown' }}</td>
-        <td><span class="audit-action audit-{{ e.action }}">{{ e.action }}</span></td>
-        <td class="muted">{{ e.detail }}</td>
-        <td class="muted" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
+        <td><span class="badge badge-soft">{{ e.action }}</span></td>
+        <td class="opacity-70">{{ e.detail }}</td>
+        <td class="opacity-70" title="{{ e.user_agent or '' }}">{{ e.ip_address or '-' }}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -32,6 +32,6 @@
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">{% if activity_q %}No activity matches “{{ activity_q }}”.{% else %}No activity yet.{% endif %}</p>
+  <p class="text-sm opacity-70">{% if activity_q %}No activity matches “{{ activity_q }}”.{% else %}No activity yet.{% endif %}</p>
   {% endif %}
 </section>

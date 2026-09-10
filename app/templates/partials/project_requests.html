@@ -5,13 +5,13 @@
 {% if grant_minutes is defined %}{% if grant_minutes < 60 %}{% set grant_lab = grant_minutes ~ ' minutes' %}{% elif grant_minutes == 60 %}{% set grant_lab = '1 hour' %}{% elif grant_minutes == 1440 %}{% set grant_lab = '1 day' %}{% else %}{% set grant_lab = (grant_minutes // 60) ~ ' hours' %}{% endif %}{% endif %}
 <div id="project-requests">
 <section>
-  <div class="section-head">
-    <h2>Reveal requests</h2>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Reveal requests</h2>
   </div>
-  <p class="muted">Pending and recent reveal-approval requests for this project.</p>
+  <p class="text-sm opacity-70">Pending and recent reveal-approval requests for this project.</p>
   {% if access_requests %}
-  <div class="table">
-  <table class="access-requests-table table">
+  <div class="overflow-x-auto">
+  <table class="table">
     <thead>
       <tr>
         <th>Secret</th>
@@ -27,42 +27,41 @@
       <tr>
         <td>
           {% if r.secret_id and r.secret_key %}
-          <a href="{{ url_for('secret_view', project_id=project.id, secret_id=r.secret_id) }}">
-            <code class="k">{{ r.secret_key }}</code>
+          <a class="link" href="{{ url_for('secret_view', project_id=project.id, secret_id=r.secret_id) }}">
+            <code class="font-mono">{{ r.secret_key }}</code>
           </a>
           {% else %}
-          <span class="muted">-</span>
+          <span class="opacity-70">-</span>
           {% endif %}
         </td>
         <td>
           {{ r.name or r.email }}
-          {% if r.name %}<span class="muted">{{ r.email }}</span>{% endif %}
+          {% if r.name %}<span class="opacity-70">{{ r.email }}</span>{% endif %}
         </td>
         <td>
           <span class="badge {% if r.status == 'approved' %}badge-soft badge-success{% elif r.status == 'denied' %}badge-soft badge-error{% elif r.status == 'pending' %}badge-soft badge-warning{% else %}badge-soft{% endif %}">{{ r.status }}</span>
           {% if r.status == 'approved' and r.approved_until %}
-          <span class="muted" title="{{ r.approved_until|time_when }}">{{ r.approved_until|expires }}</span>
+          <span class="opacity-70" title="{{ r.approved_until|time_when }}">{{ r.approved_until|expires }}</span>
           {% elif r.status == 'denied' and r.resolver_email %}
-          <span class="muted">by {{ r.resolver_email }}</span>
+          <span class="opacity-70">by {{ r.resolver_email }}</span>
           {% endif %}
         </td>
-        <td class="muted col-note">{{ r.reason or '-' }}</td>
-        <td class="muted">{{ r.created_at }}</td>
+        <td class="opacity-70">{{ r.reason or '-' }}</td>
+        <td class="opacity-70">{{ r.created_at }}</td>
         {% if can_admin %}
-        <td class="acts access-acts">
+        <td class="text-right">
           {% if r.status == 'pending' %}
-          <div class="access-acts-stack">
+          <div class="flex flex-col gap-2">
             <form method="post"
                   action="{{ url_for('approve_secret_access', project_id=project.id, req_id=r.id) }}"
                   hx-post="{{ url_for('approve_secret_access', project_id=project.id, req_id=r.id)}}?from=project"
                   hx-target="#project-requests"
                   hx-swap="outerHTML"
                   hx-confirm="Approve reveal for {{ grant_lab|default('the selected duration') }}?"
-                  class="access-approve-form"
                   onsubmit="return setAccessBusy(this,'Approving…');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <label class="visually-hidden" for="grant-minutes-{{ r.id }}">Grant duration</label>
-              <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action select">
+              <label class="sr-only" for="grant-minutes-{{ r.id }}">Grant duration</label>
+              <select name="minutes" id="grant-minutes-{{ r.id }}" class="select">
                 {% for m in grant_choices %}
                 <option value="{{ m }}" {% if m == grant_minutes %}selected{% endif %}>
                   {% if m < 60 %}{{ m }} min{% elif m == 60 %}1 hour{% elif m == 1440 %}1 day{% else %}{{ m // 60 }} hours{% endif %}
@@ -92,7 +91,7 @@
   </table>
   </div>
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     No access requests yet.
   </p>
   {% endif %}

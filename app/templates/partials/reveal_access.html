@@ -2,36 +2,36 @@
 <div class="reveal-access"
      data-secret-id="{{ secret_id }}">
    {% if state == 'denied' %}
-   <p class="reveal-access-msg">
+   <p>
      <strong>Reveal access required</strong>
    </p>
-   <p class="muted reveal-access-hint">Ask a project admin to grant you
-     <code class="k">secret-reveal</code> access.</p>
+   <p class="text-sm opacity-70">Ask a project admin to grant you
+     <code class="font-mono">secret-reveal</code> access.</p>
    {% elif state == 'pending' %}
-   <p class="reveal-access-msg">
+   <p>
     <strong>Access requested</strong> - waiting for a project admin or team owner to approve
-    reveal of <code class="k">{{ secret_key }}</code>.
+    reveal of <code class="font-mono">{{ secret_key }}</code>.
   </p>
-  <p class="muted reveal-access-hint">
+  <p class="text-sm opacity-70">
     Track status on the
-    <a href="{{ url_for('project_detail', project_id=project_id, tab='requests') }}">Requests</a>
+    <a class="link" href="{{ url_for('project_detail', project_id=project_id, tab='requests') }}">Requests</a>
     tab.
   </p>
   {% else %}
-  <p class="reveal-access-msg">
+  <p>
     <strong>Approval required</strong> to reveal
-    <code class="k">{{ secret_key }}</code>.
+    <code class="font-mono">{{ secret_key }}</code>.
   </p>
   <form method="post"
         action="{{ url_for('request_secret_access', project_id=project_id, secret_id=secret_id) }}"
-        class="reveal-access-form"
+        class="flex flex-wrap items-center gap-2"
         hx-post="{{ url_for('request_secret_access', project_id=project_id, secret_id=secret_id) }}"
         hx-target="closest .reveal-access"
         hx-swap="outerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     {% if cell %}<input type="hidden" name="cell" value="{{ cell }}">{% endif %}
-    <label class="reveal-access-reason">
-      <span class="visually-hidden">Reason (optional)</span>
+    <label>
+      <span class="sr-only">Reason (optional)</span>
       <input type="text" name="reason" maxlength="500"
              placeholder="Reason (optional)" autocomplete="off" class="input">
     </label>

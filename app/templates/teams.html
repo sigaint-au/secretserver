@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Teams - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Teams</h1>
-  <div class="section-tools">
-    <form method="get" action="{{ url_for('teams') }}" class="toolbar" role="search">
-      <fieldset class="group search-input">
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Teams</h1>
+  <div class="flex flex-wrap items-center gap-2">
+    <form method="get" action="{{ url_for('teams') }}" class="flex flex-wrap items-center gap-2" role="search">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search teams" class="input">
+        <input type="search" name="q" value="{{ search_q or '' }}" id="teams-q"
+               placeholder="Search" autocomplete="off" aria-label="Search teams" class="input join-item">
       </fieldset>
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('teams') }}">Clear search</a>
@@ -20,17 +20,17 @@
     {% endif %}
   </div>
 </div>
-<p class="page-desc muted">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Only global admins can create teams.{% endif %}</p>
+<p class="text-sm opacity-70">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Only global admins can create teams.{% endif %}</p>
 
-<section class="list-panel">
+<section class="flex min-w-0 flex-col gap-4">
 {% if teams %}
-<div class="table"><table class="table">
+<div class="overflow-x-auto"><table class="table">
   <thead><tr><th>Name</th><th>Role</th><th>Projects</th></tr></thead>
   <tbody>
   {% for t in teams %}
     <tr>
-      <td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
-      <td class="muted">{{ t.role }}</td>
+      <td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
+      <td class="opacity-70">{{ t.role }}</td>
       <td>{{ t.project_count }}</td>
     </tr>
   {% endfor %}
@@ -46,42 +46,43 @@
 {% include "partials/empty_state.html" %}
 {% else %}
 {% if can_create_team %}
-<div class="setup-guide">
-  <div class="setup-guide-art" aria-hidden="true">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="3"/>
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13A4 4 0 0 1 16 11"/>
-    </svg>
+<div class="hero py-12">
+  <div class="hero-content text-center">
+    <div class="max-w-md">
+      <div class="bg-base-200 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full" aria-hidden="true">
+        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="3"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13A4 4 0 0 1 16 11"/>
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold">Welcome to {{ app_name }}</h2>
+      <p class="py-2 opacity-70">Corvus keeps your team's secrets encrypted and access controlled. Get started in three steps.</p>
+      <ul class="steps steps-vertical">
+        <li class="step step-neutral">
+          <span class="text-left">
+            <span class="block font-bold">Create a team</span>
+            <span class="block text-sm opacity-70">Teams own projects and define access boundaries.</span>
+          </span>
+        </li>
+        <li class="step">
+          <span class="text-left">
+            <span class="block font-bold">Create a project</span>
+            <span class="block text-sm opacity-70">A project holds secrets and its own encryption key.</span>
+          </span>
+        </li>
+        <li class="step">
+          <span class="text-left">
+            <span class="block font-bold">Add a secret</span>
+            <span class="block text-sm opacity-70">Store a credential, then reveal it to confirm everything works.</span>
+          </span>
+        </li>
+      </ul>
+      <p class="py-2">
+        <button type="button" class="btn btn-neutral" data-open-dialog="create-team-dlg">Create your first team</button>
+      </p>
+    </div>
   </div>
-  <h2 class="setup-guide-title">Welcome to {{ app_name }}</h2>
-  <p class="setup-guide-text">Corvus keeps your team's secrets encrypted and access controlled. Get started in three steps.</p>
-  <ol class="setup-guide-steps">
-    <li class="setup-guide-step is-active">
-      <span class="setup-guide-n" aria-hidden="true">1</span>
-      <span class="setup-guide-body">
-        <span class="setup-guide-label">Create a team</span>
-        <span class="setup-guide-hint muted">Teams own projects and define access boundaries.</span>
-      </span>
-    </li>
-    <li class="setup-guide-step">
-      <span class="setup-guide-n" aria-hidden="true">2</span>
-      <span class="setup-guide-body">
-        <span class="setup-guide-label">Create a project</span>
-        <span class="setup-guide-hint muted">A project holds secrets and its own encryption key.</span>
-      </span>
-    </li>
-    <li class="setup-guide-step">
-      <span class="setup-guide-n" aria-hidden="true">3</span>
-      <span class="setup-guide-body">
-        <span class="setup-guide-label">Add a secret</span>
-        <span class="setup-guide-hint muted">Store a credential, then reveal it to confirm everything works.</span>
-      </span>
-    </li>
-  </ol>
-  <p class="setup-guide-action">
-    <button type="button" class="btn" data-open-dialog="create-team-dlg">Create your first team</button>
-  </p>
 </div>
 {% else %}
 {% set icon = 'teams' %}
@@ -94,26 +95,24 @@
 </section>
 
 {% if can_create_team %}
-<dialog id="create-team-dlg" closedby="any" class="modal access-dlg">
+<dialog id="create-team-dlg" closedby="any" class="modal" aria-labelledby="create-team-dlg-title">
   <div class="modal-box">
   <form method="post" action="{{ url_for('create_team') }}">
-    <header>
-      <h3>Add team</h3>
-      <p>Teams own projects and define access boundaries.</p>
-    </header>
-    <div>
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <label>Name
-        <input type="text" name="name" required placeholder="e.g. Platform"
-               autocomplete="off" maxlength="200" class="input">
-      </label>
+    <h3 id="create-team-dlg-title" class="text-lg font-bold">Add team</h3>
+    <p class="py-4 text-sm opacity-70">Teams own projects and define access boundaries.</p>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="grid gap-1">
+      <label class="label" for="create-team-name"><span>Name</span></label>
+      <input type="text" id="create-team-name" name="name" required placeholder="e.g. Platform"
+             autocomplete="off" maxlength="200" class="input w-full">
     </div>
-    <footer>
-      <button type="button" class="btn btn-outline" data-close-dialog="create-team-dlg">Cancel</button>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" data-close-dialog="create-team-dlg">Cancel</button>
       <button type="submit" class="btn btn-neutral">Create team</button>
-    </footer>
+    </div>
   </form>
   </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
 </dialog>
 {% endif %}
 {% endblock %}

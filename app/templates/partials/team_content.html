@@ -9,31 +9,37 @@
 {% elif active_tab == 'activity' %}{% include "partials/team_activity.html" %}
 {% elif active_tab == 'settings' and is_admin %}{% include "partials/team_settings.html" %}
 {% elif active_tab == 'meta' %}
-<section>
-  <h2>Team metadata</h2>
-  <p class="muted">Metadata here appears on every project and secret in the team.</p>
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Team metadata</h2>
+  <p class="text-sm opacity-70">Metadata here appears on every project and secret in the team.</p>
   {% if is_admin %}
-  <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="row"
+  <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="flex flex-wrap items-end gap-4"
         hx-post="{{ url_for('upsert_team_meta', team_id=team.id) }}"
         hx-target="#team-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. cost-center" class="input"></label>
-    <label>Value <input name="value" maxlength="2000" class="input"></label>
+    <div class="grid gap-1">
+      <label class="label" for="team-meta-key"><span>Key</span></label>
+      <input name="key" id="team-meta-key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. cost-center" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="team-meta-value"><span>Value</span></label>
+      <input name="value" id="team-meta-value" maxlength="2000" class="input">
+    </div>
     <button type="submit" class="btn btn-neutral">Save</button>
   </form>
   {% endif %}
   {% if team_meta %}
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
-      <thead><tr><th>Key</th><th>Value</th><th>Updated</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+      <thead><tr><th>Key</th><th>Value</th><th>Updated</th>{% if is_admin %}<th class="text-right" aria-label="Actions"></th>{% endif %}</tr></thead>
       <tbody>
         {% for m in team_meta %}
         <tr>
-          <td><code class="k">{{ m.key }}</code></td>
+          <td><code class="font-mono">{{ m.key }}</code></td>
           <td>{{ m.value }}</td>
           <td>{{ m.updated_at.strftime('%Y-%m-%d %H:%M') if m.updated_at else '' }}</td>
           {% if is_admin %}
-          <td class="acts">
+          <td class="text-right">
             <form method="post" action="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}" class="inline"
                   hx-post="{{ url_for('delete_team_meta', team_id=team.id, meta_key=m.key) }}"
                   hx-target="#team-panel" hx-swap="innerHTML"

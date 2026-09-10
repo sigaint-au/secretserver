@@ -11,17 +11,17 @@
 {% set help_html = 'Bind users, groups, or machine accounts to a <strong>project</strong> role (<code>' ~ help_roles ~ '</code>). Prefer team membership for broad access. Secret-level grants: secret Access tab. Reveal approval requests live under <a href="' ~ url_for('project_detail', project_id=project.id, tab='requests') ~ '">Requests</a>.' %}
 {% include "partials/access_bindings_panel.html" %}
 <section>
-  <div class="section-head">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>Effective access</h2>
-      <p class="muted">Who can access this project and why.</p>
+      <h2 class="text-lg font-bold">Effective access</h2>
+      <p class="text-sm opacity-70">Who can access this project and why.</p>
     </div>
-    <form method="get" action="{{ url_for('project_detail', project_id=project.id) }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('project_detail', project_id=project.id) }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="access">
-      <fieldset class="group search-input">
+      <fieldset class="join w-full">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ effective_access_q or '' }}"
-               placeholder="Search access" aria-label="Search effective access" autocomplete="off" class="input">
+               placeholder="Search access" aria-label="Search effective access" autocomplete="off" class="input join-item w-full">
       </fieldset>
       {% if effective_access_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}">Clear search</a>
@@ -29,7 +29,7 @@
     </form>
   </div>
   {% if effective_access %}
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <thead>
         <tr>
@@ -46,14 +46,14 @@
           <td>
             {{ a.subject_email or a.subject_name or '-' }}
             {% if a.subject_name and a.subject_email %}
-            <span class="muted">{{ a.subject_email }}</span>
+            <span class="opacity-70">{{ a.subject_email }}</span>
             {% endif %}
-            {% if a.is_global_admin %}<span class="badge badge-soft badge-warning" >global admin</span>{% endif %}
+            {% if a.is_global_admin %}<span class="badge badge-soft badge-warning">global admin</span>{% endif %}
           </td>
-          <td><span class="badge badge-soft" >{{ a.subject_kind }}</span></td>
-          <td><span class="badge badge-soft" >{{ a.role_name }}</span></td>
-          <td class="muted">{{ a.scope_label or a.scope_kind }}</td>
-          <td class="muted">{{ a.grant_kind }}{% if a.grant_subject and a.grant_subject != a.subject_email %} · {{ a.grant_subject }}{% endif %}</td>
+          <td><span class="badge badge-soft">{{ a.subject_kind }}</span></td>
+          <td><span class="badge badge-soft">{{ a.role_name }}</span></td>
+          <td class="opacity-70">{{ a.scope_label or a.scope_kind }}</td>
+          <td class="opacity-70">{{ a.grant_kind }}{% if a.grant_subject and a.grant_subject != a.subject_email %} · {{ a.grant_subject }}{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -63,6 +63,6 @@
     {% include "partials/pager.html" %}
   {% endwith %}
   {% else %}
-  <p class="empty">{% if effective_access_q %}No access grants match “{{ effective_access_q }}”.{% else %}No access grants found for this project.{% endif %}</p>
+  <p class="text-sm opacity-70">{% if effective_access_q %}No access grants match “{{ effective_access_q }}”.{% else %}No access grants found for this project.{% endif %}</p>
   {% endif %}
 </section>

@@ -1,10 +1,10 @@
-<section>
-  <div class="section-head">
-    <h2>Teams</h2>
-    <a href="{{ url_for('teams') }}" class="muted">All teams →</a>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Teams</h2>
+    <a href="{{ url_for('teams') }}" class="link text-sm opacity-70">All teams →</a>
   </div>
   {% if teams %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -16,30 +16,30 @@
     <tbody>
     {% for t in teams %}
       <tr>
-        <td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
+        <td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td>
         <td>
         {% if t.role %}
         <span class="badge badge-soft" title="{{ role_descriptions.get(t.role, '') }}">{{ t.role }}</span>
         {% else %}
-        <span class="muted">-</span>
+        <span class="opacity-70">-</span>
         {% endif %}
       </td>
-      <td class="muted">{{ t.source or 'manual' }}</td>
+      <td class="opacity-70">{{ t.source or 'manual' }}</td>
         <td>{{ t.project_count }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">You are not a member of any teams yet.</p>
+  <p class="text-sm opacity-70">You are not a member of any teams yet.</p>
   {% endif %}
 </section>
 
 {% if pending_joins %}
-<section>
-  <h2>Pending join requests</h2>
-  <p class="muted">Waiting for a team owner or admin to approve.</p>
-  <div class="table"><table class="table">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Pending join requests</h2>
+  <p class="text-sm opacity-70">Waiting for a team owner or admin to approve.</p>
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>Team</th>
@@ -51,8 +51,8 @@
     {% for r in pending_joins %}
       <tr>
         <td>{{ r.team_name }}</td>
-        <td><span class="badge badge-soft" >{{ r.role }}</span></td>
-        <td class="muted">{{ r.created_at }}</td>
+        <td><span class="badge badge-soft">{{ r.role }}</span></td>
+        <td class="opacity-70">{{ r.created_at }}</td>
       </tr>
     {% endfor %}
     </tbody>

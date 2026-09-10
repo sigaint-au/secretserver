@@ -5,8 +5,8 @@
 {% if grant_minutes is defined %}{% if grant_minutes < 60 %}{% set grant_lab = grant_minutes ~ ' minutes' %}{% elif grant_minutes == 60 %}{% set grant_lab = '1 hour' %}{% elif grant_minutes == 1440 %}{% set grant_lab = '1 day' %}{% else %}{% set grant_lab = (grant_minutes // 60) ~ ' hours' %}{% endif %}{% endif %}
 <div id="requests-results">
 {% if requests %}
-<div class="table">
-<table class="access-requests-table table">
+<div class="overflow-x-auto">
+<table class="table">
   <thead>
     <tr>
       <th>Project</th>
@@ -14,43 +14,43 @@
       <th>Requester</th>
       <th>Reason</th>
       <th>Requested</th>
-      <th class="acts-col" aria-label="Actions"></th>
+      <th class="text-right" aria-label="Actions"></th>
     </tr>
   </thead>
   <tbody>
   {% for r in requests %}
     <tr>
       <td>
-        <a href="{{ url_for('project_detail', project_id=r.project_id, tab='requests') }}">
+        <a class="link" href="{{ url_for('project_detail', project_id=r.project_id, tab='requests') }}">
           {{ r.project_name }}
         </a>
       </td>
       <td>
         {% if r.secret_key %}
-        <code class="k">{{ r.secret_key }}</code>
+        <code class="font-mono">{{ r.secret_key }}</code>
         {% else %}
-        <span class="muted">-</span>
+        <span class="opacity-70">-</span>
         {% endif %}
       </td>
       <td>
         {{ r.name or r.email }}
-        {% if r.name %}<span class="muted">{{ r.email }}</span>{% endif %}
+        {% if r.name %}<span class="opacity-70">{{ r.email }}</span>{% endif %}
       </td>
-      <td class="muted col-note">{{ r.reason or '-' }}</td>
-      <td class="muted" title="{{ r.created_at|time_when }}">{{ r.created_at|time_ago }}</td>
-      <td class="acts access-acts">
-        <div class="access-acts-stack">
+      <td class="opacity-70">{{ r.reason or '-' }}</td>
+      <td class="opacity-70" title="{{ r.created_at|time_when }}">{{ r.created_at|time_ago }}</td>
+      <td class="text-right">
+        <div class="flex flex-col items-end gap-2">
           <form method="post"
                 action="{{ url_for('approve_secret_access', project_id=r.project_id, req_id=r.id) }}"
                 hx-post="{{ url_for('approve_secret_access', project_id=r.project_id, req_id=r.id)}}?from=inbox"
                 hx-target="#requests-results"
                 hx-swap="outerHTML"
                 hx-confirm="Approve reveal for {{ grant_lab|default('the selected duration') }}?"
-                class="access-approve-form"
+                class="flex flex-wrap items-end justify-end gap-2"
                 onsubmit="return setAccessBusy(this, 'Approving…')">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <label class="visually-hidden" for="grant-minutes-{{ r.id }}">Grant duration</label>
-          <select name="minutes" id="grant-minutes-{{ r.id }}" class="bulk-action select">
+          <label class="sr-only" for="grant-minutes-{{ r.id }}">Grant duration</label>
+          <select name="minutes" id="grant-minutes-{{ r.id }}" class="select select-sm">
             {% for m in grant_choices %}
             <option value="{{ m }}" {% if m == grant_minutes %}selected{% endif %}>
               {% if m < 60 %}{{ m }} min{% elif m == 60 %}1 hour{% elif m == 1440 %}1 day{% else %}{{ m // 60 }} hours{% endif %}

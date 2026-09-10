@@ -15,13 +15,14 @@
 {% include "partials/breadcrumb.html" %}
 {% endif %}
 
-<div class="page-head">
-  <h1>Role bindings</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Role bindings</h1>
 </div>
 
-<form method="get" action="{{ url_for('rbac_bindings') }}" class="list-panel review-form">
-  <div class="review-form-row">
-    <label>Scope
+<form method="get" action="{{ url_for('rbac_bindings') }}" class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="grid gap-1">
+      <label class="label" for="bind-scope"><span>Scope</span></label>
       <select name="scope" id="bind-scope" class="select">
         {% for sk in scope_kinds %}
         {% if sk != 'cluster' or session.get('is_global_admin') %}
@@ -29,28 +30,31 @@
         {% endif %}
         {% endfor %}
       </select>
-    </label>
+    </div>
     {% if scope_kind == 'team' %}
-    <label>Team
-      <select name="scope_id" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="bind-team"><span>Team</span></label>
+      <select name="scope_id" id="bind-team" class="select">
         <option value="">Choose a team…</option>
         {% for t in teams %}
         <option value="{{ t.id }}" {% if scope_id and scope_id|string == t.id|string %}selected{% endif %}>{{ t.name }}</option>
         {% endfor %}
       </select>
-    </label>
+    </div>
     {% elif scope_kind == 'project' %}
-    <label>Project
-      <select name="scope_id" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="bind-project"><span>Project</span></label>
+      <select name="scope_id" id="bind-project" class="select">
         <option value="">Choose a project…</option>
         {% for p in projects %}
         <option value="{{ p.id }}" {% if scope_id and scope_id|string == p.id|string %}selected{% endif %}>{{ p.name }}</option>
         {% endfor %}
       </select>
-    </label>
+    </div>
     {% elif scope_kind == 'secret' %}
-    <label>Secret
-      <select name="scope_id" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="bind-secret"><span>Secret</span></label>
+      <select name="scope_id" id="bind-secret" class="select">
         <option value="">Choose a secret…</option>
         {% for s in secrets %}
         <option value="{{ s.id }}" {% if scope_id and scope_id|string == s.id|string %}selected{% endif %}>
@@ -58,33 +62,33 @@
         </option>
         {% endfor %}
       </select>
-    </label>
+    </div>
     {% endif %}
     <button type="submit" class="btn btn-sm">Apply</button>
   </div>
-  <p class="muted review-form-hint">
+  <p class="pt-2 text-sm opacity-70">
     Bind a user, group, or machine account to a role at this scope.
   </p>
 </form>
 
-<section>
-  <div class="section-head">
-    <h2>Bindings{% if scope_label %} <span class="muted">· {{ scope_label }}{% if bindings %} ({{ bindings|length }}){% endif %}</span>{% endif %}</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Bindings{% if scope_label %} <span class="opacity-70">· {{ scope_label }}{% if bindings %} ({{ bindings|length }}){% endif %}</span>{% endif %}</h2>
     {% if can_edit and (scope_id or scope_kind == 'cluster') %}
     <a class="btn btn-outline btn-sm" href="#add-binding">+ Add binding</a>
     {% endif %}
   </div>
   {% if not scope_id and scope_kind != 'cluster' %}
-  <p class="empty">Select a scope above to view its role bindings.</p>
+  <p class="text-sm opacity-70">Select a scope above to view its role bindings.</p>
   {% elif bindings %}
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <thead>
         <tr>
           <th>Subject</th>
           <th>Role</th>
           <th>Created</th>
-          <th class="acts-col" aria-label="Actions"></th>
+          <th class="text-right" aria-label="Actions"></th>
         </tr>
       </thead>
       <tbody>
@@ -93,12 +97,12 @@
           <td>
             {% if b.subject_email %}{{ b.subject_email }}
             {% elif b.group_name %}{{ b.group_name }}
-            {% else %}<code>{{ b.subject_id }}</code>{% endif %}
-            <span class="muted">· {{ b.subject_kind }}</span>
+            {% else %}<code class="font-mono">{{ b.subject_id }}</code>{% endif %}
+            <span class="opacity-70">· {{ b.subject_kind }}</span>
           </td>
-          <td><span class="badge badge-soft" >{{ b.role_name }}</span></td>
-          <td class="muted">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
-          <td class="acts">
+          <td><span class="badge badge-soft">{{ b.role_name }}</span></td>
+          <td class="opacity-70">{{ b.created_at|time_ago if b.created_at else '-' }}</td>
+          <td class="text-right">
             {% if can_edit %}
             <form method="post" action="{{ url_for('rbac_bindings_delete', binding_id=b.id) }}" class="inline"
                   onsubmit="return confirm('Remove this binding?');">
@@ -115,59 +119,65 @@
     </table>
   </div>
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     No {{ scope_kind }} bindings at this scope yet.
     {% if can_edit and (scope_id or scope_kind == 'cluster') %}
-    <a href="#add-binding">Add the first binding</a>.
+    <a class="link" href="#add-binding">Add the first binding</a>.
     {% endif %}
   </p>
   {% endif %}
   {% if not can_edit and (scope_id or scope_kind == 'cluster') %}
-  <p class="muted mt-1">View only. Team or project admins can add or remove bindings here.</p>
+  <p class="pt-2 text-sm opacity-70">View only. Team or project admins can add or remove bindings here.</p>
   {% endif %}
 </section>
 
 {% if can_edit and (scope_id or scope_kind == 'cluster') %}
 <section id="add-binding">
-  <h2>Add binding</h2>
-  <form method="post" action="{{ url_for('rbac_bindings_create') }}" class="settings-form">
+<div class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Add binding</h2>
+  <form method="post" action="{{ url_for('rbac_bindings_create') }}" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="scope_kind" value="{{ scope_kind }}">
     <input type="hidden" name="scope_id" value="{{ scope_id or '' }}">
 
-    <fieldset class="field-group">
-      <legend>Who</legend>
-      <div class="field-grid">
-        <label class="span-2">Subject type
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Who</legend>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid gap-1 sm:col-span-2">
+          <label class="label" for="rbac-subject-kind"><span>Subject type</span></label>
           <select name="subject_kind" id="rbac-subject-kind" class="select">
             {% for sk in subject_kinds %}
             <option value="{{ sk }}">{{ sk }}</option>
             {% endfor %}
           </select>
-        </label>
-        <label id="rbac-field-user" class="span-2">User email
-          <input type="email" name="subject_email" class="user-suggest input"
+        </div>
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-user">
+          <label class="label" for="rbac-subject-email"><span>User email</span></label>
+          <input type="email" name="subject_email" id="rbac-subject-email" class="user-suggest input"
                  list="user-suggest-list" placeholder="name@example.com" autocomplete="off">
-        </label>
-        <label id="rbac-field-group" class="span-2" hidden>Group
-          <select name="subject_group" class="select">
+        </div>
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-group" hidden>
+          <label class="label" for="rbac-subject-group"><span>Group</span></label>
+          <select name="subject_group" id="rbac-subject-group" class="select">
             <option value="">Choose a group…</option>
             {% for g in groups %}
             <option value="{{ g.id }}">{{ g.name }}</option>
             {% endfor %}
           </select>
-        </label>
-        <label id="rbac-field-sa" class="span-2" hidden>Machine account ID
-          <input type="text" name="subject_sa" placeholder="Machine account UUID" autocomplete="off" class="input">
-        </label>
+        </div>
+        <div class="grid gap-1 sm:col-span-2" id="rbac-field-sa" hidden>
+          <label class="label" for="rbac-subject-sa"><span>Machine account ID</span></label>
+          <input type="text" name="subject_sa" id="rbac-subject-sa" placeholder="Machine account UUID" autocomplete="off" class="input">
+        </div>
       </div>
     </fieldset>
 
-    <fieldset class="field-group">
-      <legend>Role</legend>
-      <div class="field-grid">
-        <label class="span-2">Grant
-          <select name="role_name" required class="select">
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Role</legend>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid gap-1 sm:col-span-2">
+          <label class="label" for="rbac-role-name"><span>Grant</span></label>
+          <select name="role_name" id="rbac-role-name" required class="select">
             {% if dropdown %}
               {% set dropdown_names = dropdown|map(attribute=0)|list %}
               {% for name, label in dropdown %}
@@ -187,14 +197,15 @@
               {% endfor %}
             {% endif %}
           </select>
-        </label>
+        </div>
       </div>
     </fieldset>
 
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Create binding</button>
     </p>
   </form>
+</div>
 </section>
 <script>
 (function () {

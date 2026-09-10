@@ -6,26 +6,33 @@
   <title>{{ code }} · {{ app_name }}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/daisyui.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 </head>
-<body class="err-page">
+<body class="min-h-screen">
   {% set home = url_for('projects_list') if session.get('user_id') else url_for('login') %}
-  <main class="error-standalone">
-    <a class="auth-brand" href="{{ home }}">
-      {% include "partials/brand_logo.html" %}
-      <span class="brand-text">{{ brand_name or 'Corvus' }}</span>
-    </a>
-    <p class="error-code" role="status">{{ code }}</p>
-    <h1 class="error-title">{{ title }}</h1>
-    {% if message %}<p class="error-text">{{ message }}</p>{% endif %}
-    {% if code >= 500 %}
-    <p class="error-text muted">If the problem persists, contact your administrator{% if now %} and mention {{ now }} (UTC){% endif %}.</p>
-    {% endif %}
-    <p class="error-action">
-      <a class="btn btn-neutral" href="{{ home }}">
-        {% if session.get('user_id') %}Back to projects{% else %}Back to sign in{% endif %}
-      </a>
-    </p>
+  <main class="hero min-h-screen">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <a class="flex items-center justify-center gap-2 text-lg font-bold" href="{{ home }}">
+          {% include "partials/brand_logo.html" %}
+          <span>{{ brand_name or 'Corvus' }}</span>
+        </a>
+        <div class="py-6 text-7xl font-extrabold opacity-20">
+          <p class="error-code" role="status">{{ code }}</p>
+        </div>
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+        {% if message %}<p class="py-2 opacity-70">{{ message }}</p>{% endif %}
+        {% if code >= 500 %}
+        <p class="py-2 text-sm opacity-70">If the problem persists, contact your administrator{% if now %} and mention {{ now }} (UTC){% endif %}.</p>
+        {% endif %}
+        <div class="py-4">
+          <p class="error-action">
+            <a class="btn btn-neutral" href="{{ home }}">
+              {% if session.get('user_id') %}Back to projects{% else %}Back to sign in{% endif %}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
   </main>
 </body>
 </html>

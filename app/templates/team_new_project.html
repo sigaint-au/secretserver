@@ -8,76 +8,81 @@
 ] %}
 {% include "partials/breadcrumb.html" %}
 
-<div class="page-head">
-  <h1>New project</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">New project</h1>
 </div>
-<p class="page-desc muted">{{ team.name }}</p>
+<p class="text-sm opacity-70">{{ team.name }}</p>
 
-<form method="post" action="{{ url_for('create_project', team_id=team.id) }}" class="settings-form"
+<form method="post" action="{{ url_for('create_project', team_id=team.id) }}" class="flex flex-col gap-4"
       onsubmit="var h=this.querySelector('input[name=encryption]:checked');return h&&h.value==='hsm'?confirm('Create with an HSM-wrapped key? The HSM must stay available for future access.'):true;">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  <section>
-    <div class="section-head"><h2>Basics</h2></div>
-    <div class="field-grid">
-      <label class="span-2">Name
-        <input type="text" name="name" required placeholder="e.g. production-api"
+  <section class="rounded-box border border-base-300 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Basics</h2></div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-1 sm:col-span-2">
+        <label class="label" for="new-project-name"><span>Name</span></label>
+        <input type="text" id="new-project-name" name="name" required placeholder="e.g. production-api"
                autocomplete="off" maxlength="200" class="input">
-      </label>
-      <label class="span-2">Description
-        <input type="text" name="description" maxlength="500"
+      </div>
+      <div class="grid gap-1 sm:col-span-2">
+        <label class="label" for="new-project-desc"><span>Description</span></label>
+        <input type="text" id="new-project-desc" name="description" maxlength="500"
                placeholder="optional" autocomplete="off" class="input">
-      </label>
+      </div>
     </div>
   </section>
 
-  <section>
-    <div class="section-head"><h2>Encryption</h2></div>
-    <fieldset class="crypto-choice">
-      <legend class="visually-hidden">Encryption</legend>
-      <label class="radio-card">
-        <input type="radio" name="encryption" value="managed" {% if encryption == 'managed' %}checked{% endif %}>
-        <span class="radio-card-body">
-          <strong>Server key</strong>
-          <span class="muted">Server-wide key</span>
-          <span class="radio-card-help">Encrypted with the master key. Simplest setup, no extra configuration.</span>
-        </span>
-      </label>
-      <label class="radio-card">
-        <input type="radio" name="encryption" value="byok"
-               {% if encryption == 'byok' %}checked{% endif %}
-               {% if not can_manage_team %}disabled{% endif %}>
-        <span class="radio-card-body">
-          <strong>Local</strong>
-          <span class="muted">Project key{% if not can_manage_team %} · owners/admins only{% endif %}</span>
-          <span class="radio-card-help">A dedicated key for this project, wrapped by the server master key. Keys are isolated per project.</span>
-        </span>
-      </label>
-      {% if hsm_available %}
-      <label class="radio-card">
-        <input type="radio" name="encryption" value="hsm"
-               {% if encryption == 'hsm' %}checked{% endif %}
-               {% if not can_manage_team %}disabled{% endif %}>
-        <span class="radio-card-body">
-          <strong>HSM</strong>
-          <span class="muted">Project key in HSM{% if not can_manage_team %} · owners/admins only{% endif %}</span>
-          <span class="radio-card-help">Key material lives in a hardware security module. The HSM must remain available for all future access.</span>
-        </span>
-      </label>
-      {% if hsm_slots %}
-      <label>HSM slot
-        <select name="hsm_slot" class="select">
-          {% for s in hsm_slots %}
-          <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      {% endif %}
-      {% endif %}
+  <section class="rounded-box border border-base-300 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Encryption</h2></div>
+    <fieldset>
+      <legend class="sr-only">Encryption</legend>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <label class="rounded-box border border-base-300 flex cursor-pointer items-start gap-2 p-4" for="enc-managed">
+          <input type="radio" id="enc-managed" name="encryption" class="radio" value="managed" {% if encryption == 'managed' %}checked{% endif %}>
+          <span>
+            <strong class="block">Server key</strong>
+            <span class="block text-sm opacity-70">Server-wide key</span>
+            <span class="block text-xs opacity-70">Encrypted with the master key. Simplest setup, no extra configuration.</span>
+          </span>
+        </label>
+        <label class="rounded-box border border-base-300 flex cursor-pointer items-start gap-2 p-4" for="enc-byok">
+          <input type="radio" id="enc-byok" name="encryption" class="radio" value="byok"
+                 {% if encryption == 'byok' %}checked{% endif %}
+                 {% if not can_manage_team %}disabled{% endif %}>
+          <span>
+            <strong class="block">Local</strong>
+            <span class="block text-sm opacity-70">Project key{% if not can_manage_team %} · owners/admins only{% endif %}</span>
+            <span class="block text-xs opacity-70">A dedicated key for this project, wrapped by the server master key. Keys are isolated per project.</span>
+          </span>
+        </label>
+        {% if hsm_available %}
+        <label class="rounded-box border border-base-300 flex cursor-pointer items-start gap-2 p-4" for="enc-hsm">
+          <input type="radio" id="enc-hsm" name="encryption" class="radio" value="hsm"
+                 {% if encryption == 'hsm' %}checked{% endif %}
+                 {% if not can_manage_team %}disabled{% endif %}>
+          <span>
+            <strong class="block">HSM</strong>
+            <span class="block text-sm opacity-70">Project key in HSM{% if not can_manage_team %} · owners/admins only{% endif %}</span>
+            <span class="block text-xs opacity-70">Key material lives in a hardware security module. The HSM must remain available for all future access.</span>
+          </span>
+        </label>
+        {% if hsm_slots %}
+        <div class="grid gap-1">
+          <label class="label" for="new-project-hsm-slot"><span>HSM slot</span></label>
+          <select name="hsm_slot" id="new-project-hsm-slot" class="select">
+            {% for s in hsm_slots %}
+            <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
     </fieldset>
   </section>
 
-  <p class="create-actions">
+  <p class="flex flex-wrap items-center gap-2 pt-2">
     <a class="btn btn-ghost" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Cancel</a>
     <button type="submit" class="btn btn-neutral">Create project</button>
   </p>

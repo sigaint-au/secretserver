@@ -21,8 +21,8 @@
   'hide_reveals': pager.hide_reveals if pager else none,
 } %}
 {% if pager and pager.total > 0 %}
-<nav class="pager" aria-label="Pagination">
-  <span class="muted pager-summary">
+<nav class="flex flex-wrap items-center gap-4" aria-label="Pagination">
+  <span class="text-sm opacity-70">
     Showing {{ pager.start }}–{{ pager.end }} of {{ pager.total }}{% if not (pager.total > pager.per_page) and (pager.q or pager.project or pager.kind or pager.due or pager.access_mode or pager.folder or pager.actor or pager.action or pager.since or pager.until) %} matching filters{% endif %}
   </span>
   {% if pager.total > pager.per_page %}
@@ -31,27 +31,27 @@
     {% if pager.has_prev %}
     {% set _url = url_for(pager.endpoint, page=pager.prev_page, **_q) %}
     <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
-       class="btn btn-outline btn-sm join-item">&larr; Prev</a>
+       class="btn join-item">&larr; Prev</a>
     {% else %}
-    <button type="button" class="btn btn-sm join-item" disabled aria-disabled="true" aria-label="Previous page (unavailable)">
+    <button type="button" class="btn join-item" disabled aria-disabled="true" aria-label="Previous page (unavailable)">
       &larr; Prev
     </button>
     {% endif %}
     {% for p in pager.page_numbers %}
       {% if not loop.first and p > pager.page_numbers[loop.index0 - 1] + 1 %}
-      <button type="button" class="btn btn-sm join-item" disabled aria-disabled="true" aria-hidden="true" tabindex="-1">…</button>
+      <button type="button" class="btn join-item" disabled aria-disabled="true" aria-hidden="true" tabindex="-1">…</button>
       {% endif %}
       {% set _url = url_for(pager.endpoint, page=p, **_q) %}
       <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
-         class="btn btn-sm join-item{% if p == pager.page %} btn-neutral{% else %} btn-outline{% endif %}"
+         class="btn join-item{% if p == pager.page %} btn-neutral{% endif %}"
          {% if p == pager.page %}aria-current="page"{% endif %}>{{ p }}</a>
     {% endfor %}
     {% if pager.has_next %}
     {% set _url = url_for(pager.endpoint, page=pager.next_page, **_q) %}
     <a href="{{ _url }}"{% if _hx %} hx-get="{{ _url }}" hx-target="#{{ hx_target }}" hx-swap="outerHTML"{% if _hs %} hx-select="#{{ hx_select }}"{% endif %} hx-push-url="true"{% endif %}
-       class="btn btn-outline btn-sm join-item">Next &rarr;</a>
+       class="btn join-item">Next &rarr;</a>
     {% else %}
-    <button type="button" class="btn btn-sm join-item" disabled aria-disabled="true" aria-label="Next page (unavailable)">
+    <button type="button" class="btn join-item" disabled aria-disabled="true" aria-label="Next page (unavailable)">
       Next &rarr;
     </button>
     {% endif %}

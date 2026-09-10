@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Trash - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Trash</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Trash</h1>
   {% if team %}
-  <div class="section-tools">
+  <div class="flex flex-wrap items-center gap-2">
     {% if items %}
-    <div class="bulk-toolbar" id="bulk-toolbar" hidden>
-      <label class="bulk-select" title="Select all on this page">
-        <input type="checkbox" id="bulk-select-all" aria-label="Select all trash items">
-        <span id="bulk-count" class="bulk-count">0</span>
+    <div id="bulk-toolbar" hidden>
+      <label class="flex items-center gap-2" title="Select all on this page">
+        <input type="checkbox" id="bulk-select-all" class="checkbox" aria-label="Select all trash items">
+        <span id="bulk-count" class="badge badge-soft badge-sm">0</span>
       </label>
-      <label class="visually-hidden" for="bulk-action">Bulk action</label>
-      <select id="bulk-action" class="bulk-action select" aria-label="Bulk action">
+      <label class="sr-only" for="bulk-action">Bulk action</label>
+      <select id="bulk-action" class="select" aria-label="Bulk action">
         <option value="">Action…</option>
         <option value="restore"
                 data-url="{{ url_for('bulk_trash') }}"
@@ -21,19 +21,19 @@
                 data-url="{{ url_for('bulk_trash') }}"
                 data-confirm="Permanently delete {n} selected secret(s)? This cannot be undone.">Delete permanently</option>
       </select>
-      <button type="button" id="bulk-apply" class="bulk-apply" disabled>Apply</button>
+      <button type="button" id="bulk-apply" class="btn btn-sm" disabled>Apply</button>
     </div>
     {% endif %}
-    <form method="get" action="{{ url_for('trash') }}" class="toolbar" role="search"
+    <form method="get" action="{{ url_for('trash') }}" class="flex flex-wrap items-center gap-2" role="search"
           hx-get="{{ url_for('trash') }}"
           hx-target="#trash-results"
           hx-swap="outerHTML"
           hx-push-url="true"
           hx-trigger="submit, input delay:250ms from:input[name=q]">
-      <fieldset class="group search-input">
+      <fieldset class="join w-full">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search trash" class="input">
+               placeholder="Search" autocomplete="off" aria-label="Search trash" class="input join-item w-full">
       </fieldset>
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('trash') }}"
@@ -48,7 +48,7 @@
 </div>
 
 {% if team %}
-<p class="page-desc muted">Deleted secrets for <strong>{{ team.name }}</strong>. Restore them to their project, or delete them permanently.</p>
+<p class="text-sm opacity-70">Deleted secrets for <strong>{{ team.name }}</strong>. Restore them to their project, or delete them permanently.</p>
 {% endif %}
 {% include "partials/trash_results.html" %}
 {% endblock %}

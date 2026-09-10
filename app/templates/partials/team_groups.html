@@ -1,7 +1,7 @@
-<section>
-  <div class="section-head">
-    <h2>Groups</h2>
-    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="toolbar" role="search"
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Groups</h2>
+    <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="flex flex-wrap items-center gap-2" role="search"
           hx-get="{{ url_for('team_detail', team_id=team.id) }}"
           hx-target="#team-groups-results"
           hx-swap="outerHTML"
@@ -9,10 +9,10 @@
           hx-push-url="true"
           hx-trigger="submit, input delay:250ms from:input[name=q]">
       <input type="hidden" name="tab" value="groups">
-      <fieldset class="group search-input">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ search_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search groups" class="input">
+        <input type="search" name="q" value="{{ search_q or '' }}" id="team-groups-q"
+               placeholder="Search" autocomplete="off" aria-label="Search groups" class="input join-item">
       </fieldset>
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
@@ -24,45 +24,50 @@
       {% endif %}
     </form>
   </div>
-  <p class="muted">
+  <p class="text-sm opacity-70">
     Groups are named collections of users (RBAC <strong>Group</strong> subjects).
     Manage who is in the group here; grant team access on
-    <a href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Access</a>
+    <a class="link" href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Access</a>
     (add binding → subject kind Group), or project Access / secret Permissions.
     Map LDAP/OIDC via an external key (sync on login).
   </p>
   {% if is_admin %}
-  <form method="post" action="{{ url_for('create_team_group', team_id=team.id) }}" class="row"
+  <form method="post" action="{{ url_for('create_team_group', team_id=team.id) }}" class="flex flex-wrap items-end gap-4"
         hx-post="{{ url_for('create_team_group', team_id=team.id) }}"
         hx-target="#team-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Group name <input type="text" name="name" required placeholder="e.g. platform-ops" class="input"></label>
-    <label>Source
-      <select name="source" class="select">
+    <div class="grid gap-1">
+      <label class="label" for="team-group-name"><span>Group name</span></label>
+      <input type="text" name="name" id="team-group-name" required placeholder="e.g. platform-ops" class="input">
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="team-group-source"><span>Source</span></label>
+      <select name="source" id="team-group-source" class="select">
         <option value="manual">manual</option>
         <option value="ldap">ldap</option>
         <option value="oidc">oidc</option>
       </select>
-    </label>
-    <label>Directory group key
-      <input type="text" name="external_key"
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="team-group-extkey"><span>Directory group key</span></label>
+      <input type="text" name="external_key" id="team-group-extkey"
              placeholder="e.g. cn=ops,ou=groups,dc=example,dc=com  or  platform-ops" class="input">
-    </label>
+    </div>
     <button type="submit" class="btn btn-neutral">Create group</button>
   </form>
   {% endif %}
   <div id="team-groups-results">
   {% if groups %}
-  <div class="table"><table class="table">
-    <thead><tr><th>Name</th><th>Source</th><th>External</th><th>Members</th><th class="acts-col" aria-label="Actions"></th></tr></thead>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>Name</th><th>Source</th><th>External</th><th>Members</th><th class="text-right" aria-label="Actions"></th></tr></thead>
     <tbody>
     {% for g in groups %}
       <tr>
-        <td><a href="{{ url_for('team_group_detail', team_id=team.id, group_id=g.id) }}">{{ g.name }}</a></td>
-        <td><span class="badge badge-soft" >{{ g.source }}</span></td>
-        <td class="muted"><code class="k">{{ g.external_key or '-' }}</code></td>
+        <td><a class="link" href="{{ url_for('team_group_detail', team_id=team.id, group_id=g.id) }}">{{ g.name }}</a></td>
+        <td><span class="badge badge-soft">{{ g.source }}</span></td>
+        <td class="opacity-70"><code class="font-mono">{{ g.external_key or '-' }}</code></td>
         <td>{{ g.member_count }}</td>
-        <td class="acts">
+        <td class="text-right">
           {% if is_admin %}
           <form method="post" action="{{ url_for('delete_team_group', team_id=team.id, group_id=g.id) }}"
                 hx-post="{{ url_for('delete_team_group', team_id=team.id, group_id=g.id) }}"
@@ -79,7 +84,7 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">{% if search_q %}No groups match “{{ search_q }}”.{% else %}No groups yet.{% endif %}</p>
+  <p class="text-sm opacity-70">{% if search_q %}No groups match “{{ search_q }}”.{% else %}No groups yet.{% endif %}</p>
   {% endif %}
   </div>
 </section>

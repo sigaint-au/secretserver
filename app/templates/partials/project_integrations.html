@@ -1,9 +1,9 @@
-<div class="stack eso-integration" id="eso-integration"
+<div class="flex flex-col gap-4" id="eso-integration"
          data-project-id="{{ project.id }}"
          data-project-name="{{ project.name }}"
          data-base-url="{{ public_base_url or '' }}">
-  <div class="section-head">
-    <h2>External Secrets Operator</h2>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">External Secrets Operator</h2>
   </div>
 
   {% if can_admin %}
@@ -11,35 +11,35 @@
       {% include "partials/token_create_form.html" %}
     {% endwith %}
   {% else %}
-  <p class="muted">A project admin or team admin has to create the machine account. You can still paste an existing token below to generate manifests.</p>
+  <p class="text-sm opacity-70">A project admin or team admin has to create the machine account. You can still paste an existing token below to generate manifests.</p>
   {% endif %}
 
-  <section class="eso-yaml-config">
-    <h3>Manifest options</h3>
-    <div class="row">
-      <label>App base URL
+  <section>
+    <h3 class="text-base font-bold">Manifest options</h3>
+    <div class="flex flex-wrap items-end gap-4">
+      <label class="grid gap-1">App base URL
         <input type="url" id="eso-base-url" value="{{ public_base_url or '' }}"
                placeholder="https://secretstore.example.com" required class="input">
       </label>
-      <label>Kubernetes namespace
+      <label class="grid gap-1">Kubernetes namespace
         <input type="text" id="eso-namespace" value="default" placeholder="default"
                pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?" class="input">
       </label>
-      <label>Resource name prefix
+      <label class="grid gap-1">Resource name prefix
         <input type="text" id="eso-name-prefix" value="{{ project.name|lower|replace(' ', '-')|replace('_', '-') }}"
                placeholder="my-app" pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?" class="input">
       </label>
     </div>
-    <div class="row">
-      <label>Machine token
-        <span class="input-with-btn">
+    <div class="flex flex-wrap items-end gap-4">
+      <label class="grid gap-1">Machine token
+        <span class="flex items-center gap-2">
           <input type="password" id="eso-token" value="{{ new_token or '' }}"
                  placeholder="ss_… paste or create above" autocomplete="off" class="input">
-          <button type="button" class="icon-btn text-btn" id="eso-token-toggle" title="Show/hide token"
+          <button type="button" class="btn btn-ghost btn-sm" id="eso-token-toggle" title="Show/hide token"
                   aria-label="Show or hide token">Show</button>
         </span>
       </label>
-      <label>Store kind
+      <label class="grid gap-1">Store kind
         <select id="eso-store-kind" class="select">
           <option value="SecretStore" selected>SecretStore (namespaced)</option>
           <option value="ClusterSecretStore">ClusterSecretStore</option>
@@ -48,17 +48,17 @@
     </div>
   </section>
 
-  <section class="eso-yaml-out" id="eso-yaml-panel" {% if not new_token %}hidden{% endif %}>
-    <div class="section-head">
-      <h3>Generated YAML</h3>
+  <section id="eso-yaml-panel" {% if not new_token %}hidden{% endif %}>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h3 class="text-base font-bold">Generated YAML</h3>
       <button type="button" class="link copy-btn" id="eso-copy"
               data-copy-target="eso-yaml"
               data-clear-seconds="0">Copy YAML</button>
     </div>
-    <textarea id="eso-yaml" class="mono-area eso-yaml textarea" rows="18" readonly
+    <textarea id="eso-yaml" class="textarea w-full font-mono" rows="18" readonly
               spellcheck="false" aria-label="Generated ESO YAML"></textarea>
   </section>
-  <p class="muted" id="eso-yaml-hint" {% if new_token %}hidden{% endif %}>
+  <p class="text-sm opacity-70" id="eso-yaml-hint" {% if new_token %}hidden{% endif %}>
     Create a machine account above (or paste a token) to generate the Secret and SecretStore YAML.
   </p>
 </div>

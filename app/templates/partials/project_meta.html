@@ -1,30 +1,30 @@
 <section>
-  <h2>Project metadata</h2>
-  <p class="muted">Metadata here appears on every secret in the project. Keys defined on the team are inherited and cannot be changed here.</p>
+  <h2 class="text-lg font-bold">Project metadata</h2>
+  <p class="text-sm opacity-70">Metadata here appears on every secret in the project. Keys defined on the team are inherited and cannot be changed here.</p>
   {% if can_admin %}
-  <form method="post" action="{{ url_for('upsert_project_meta', project_id=project_id) }}" class="row"
+  <form method="post" action="{{ url_for('upsert_project_meta', project_id=project_id) }}" class="flex flex-wrap items-end gap-4"
         hx-post="{{ url_for('upsert_project_meta', project_id=project_id) }}"
         hx-target="#project-panel" hx-swap="innerHTML">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. env" class="input"></label>
-    <label>Value <input name="value" maxlength="2000" class="input"></label>
+    <label class="grid gap-1">Key <input name="key" required pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" maxlength="64" placeholder="e.g. env" class="input"></label>
+    <label class="grid gap-1">Value <input name="value" maxlength="2000" class="input"></label>
     <button type="submit" class="btn btn-neutral">Save</button>
   </form>
   {% endif %}
   {% if project_meta %}
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <thead><tr><th>Key</th><th>Value</th><th>Updated</th>{% if can_admin %}<th></th>{% endif %}</tr></thead>
       <tbody>
         {% for m in project_meta %}
         <tr>
-          <td><code class="k">{{ m.key }}</code></td>
+          <td><code class="font-mono">{{ m.key }}</code></td>
           <td>{{ m.value }}</td>
           <td>{{ m.updated_at.strftime('%Y-%m-%d %H:%M') if m.updated_at else '' }}</td>
           {% if m.source and m.source != 'project' %}
-          <td><span class="muted">inherited · {{ m.source }}</span></td>
+          <td><span class="opacity-70">inherited · {{ m.source }}</span></td>
           {% elif can_admin %}
-          <td class="acts">
+          <td class="text-right">
             <form method="post" action="{{ url_for('delete_project_meta', project_id=project_id, meta_key=m.key) }}" class="inline"
                   hx-post="{{ url_for('delete_project_meta', project_id=project_id, meta_key=m.key) }}"
                   hx-target="#project-panel" hx-swap="innerHTML"

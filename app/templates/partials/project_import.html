@@ -1,10 +1,10 @@
 <section>
-  <h2>Import / Export</h2>
+  <h2 class="text-lg font-bold">Import / Export</h2>
 
-  <h3>Export</h3>
-  <p class="muted">Prefer encrypted JSON for backups; plaintext formats ask for confirmation first.</p>
-  <form class="export-form row" id="export-form" action="#" method="get">
-    <label class="export-format">Format
+  <h3 class="text-base font-bold">Export</h3>
+  <p class="text-sm opacity-70">Prefer encrypted JSON for backups; plaintext formats ask for confirmation first.</p>
+  <form id="export-form" action="#" method="get" class="flex flex-wrap items-end gap-4">
+    <label>Format
       <select id="export-format" name="format" aria-label="Export format" class="select">
         <option value="{{ url_for('export_secrets', project_id=project.id, format='json', mode='enc') }}"
                 data-plain="0" selected>Encrypted JSON</option>
@@ -16,7 +16,7 @@
                 data-plain="1">CSV (plaintext)</option>
       </select>
     </label>
-    <p class="form-actions export-go">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Download</button>
     </p>
   </form>
@@ -37,20 +37,20 @@
   })();
   </script>
 
-  <h3>Import</h3>
+  <h3 class="text-base font-bold">Import</h3>
   {% if can_write %}
-  <p class="muted">Import from a <code>.env</code>, CSV (<code>key,value</code>), or JSON file/paste.
+  <p class="text-sm opacity-70">Import from a <code class="font-mono">.env</code>, CSV (<code class="font-mono">key,value</code>), or JSON file/paste.
     You will preview creates vs updates before anything is written.</p>
   <form method="post" action="{{ url_for('import_preview', project_id=project.id) }}"
-        enctype="multipart/form-data" class="import-box">
+        enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label>File <input type="file" name="file" accept=".env,.txt,.csv,.json,text/*" class="file-input"></label>
-    <label>Or paste
-      <textarea name="payload" rows="12" placeholder="KEY=value&#10;OTHER=secret" class="textarea"></textarea>
+    <label class="grid gap-1">File <input type="file" name="file" accept=".env,.txt,.csv,.json,text/*" class="file-input w-full"></label>
+    <label class="grid gap-1">Or paste
+      <textarea name="payload" rows="12" placeholder="KEY=value&#10;OTHER=secret" class="textarea w-full"></textarea>
     </label>
     <button type="submit" class="btn btn-neutral">Preview import</button>
   </form>
   {% else %}
-  <p class="muted">You need write access to import secrets.</p>
+  <p class="text-sm opacity-70">You need write access to import secrets.</p>
   {% endif %}
 </section>

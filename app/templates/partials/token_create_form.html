@@ -4,59 +4,58 @@
 {% set default_name = default_name|default('machine') %}
 {% set return_tab = return_tab|default(none) %}
 {% set compact = compact|default(false) %}
-<section class="token-create-card" id="{{ form_id }}-card">
+<section id="{{ form_id }}-card">
   {% if compact %}
-  <div class="section-head"><h3>Machine account for ESO</h3></div>
-  <p class="muted">Create a reveal token and name the keys the cluster will pull.</p>
+  <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="text-base font-bold">Machine account for ESO</h3></div>
+  <p class="text-sm opacity-70">Create a reveal token and name the keys the cluster will pull.</p>
   {% endif %}
   <form method="post"
         action="{{ url_for('create_token', project_id=project.id) }}"
         {% if token_form_hx|default(false) %}hx-post="{{ url_for('create_token', project_id=project.id) }}"
         hx-target="#project-panel" hx-swap="innerHTML"{% endif %}
-        class="settings-form"
         id="{{ form_id }}"
         data-scope-form>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     {% if return_tab %}<input type="hidden" name="return_tab" value="{{ return_tab }}">{% endif %}
     <input type="hidden" name="scope_keys" value="" data-scope-hidden>
 
-    <fieldset class="field-group">
+    <fieldset class="rounded-box border border-base-300 p-4">
       <legend>Token</legend>
-      <div class="field-grid">
-        <label>Name
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="grid gap-1">Name
           <input type="text" name="name" value="{{ default_name }}" placeholder="e.g. eso-prod" required autocomplete="off" class="input">
         </label>
-        <label>Role
+        <label class="grid gap-1">Role
           <select name="role" data-token-role aria-label="Token role" class="select">
             <option value="service-read"{% if not compact %} selected{% endif %}>Read: metadata only, no plaintext</option>
             <option value="service-reveal"{% if compact %} selected{% endif %}>Reveal (fetch secrets for ESO)</option>
             <option value="service-write">Write (fetch and update)</option>
           </select>
         </label>
-        <label class="span-2">Description
+        <label class="grid gap-1 sm:col-span-2">Description
           <input type="text" name="description" maxlength="500" placeholder="e.g. ESO pull for prod cluster" autocomplete="off" class="input">
         </label>
-        <label>Expires (days)
+        <label class="grid gap-1">Expires (days)
           <input type="number" name="expires_days" min="1" max="{{ max_expiry_days|default(3650) }}"
                  placeholder="{% if default_token_days %}{{ default_token_days }} (team default){% else %}Never{% endif %}" class="input">
         </label>
       </div>
     </fieldset>
 
-    <div class="token-scope-panel" data-scope-panel>
-      <div class="token-scope-head">
+    <div data-scope-panel>
+      <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
           <strong>Key access</strong>
-          <p class="muted token-scope-hint">Limit which secret keys this token can use.</p>
+          <p class="text-sm opacity-70">Limit which secret keys this token can use.</p>
         </div>
-        <label class="token-scope-switch">
+        <label class="flex items-center gap-2">
           <input type="checkbox" role="switch" class="toggle" data-scope-toggle
                  aria-controls="{{ form_id }}-scope-body" checked>
           Restrict keys
         </label>
       </div>
-      <div class="token-scope-body" id="{{ form_id }}-scope-body" data-scope-body>
-        <div class="token-scope-chips">
+      <div id="{{ form_id }}-scope-body" data-scope-body>
+        <div>
           <ss-taginput data-scope-tags>
             <input type="text"
                    list="{{ form_id }}-key-suggest"
@@ -71,33 +70,33 @@
             {% endfor %}
           </datalist>
         </div>
-        <div class="token-scope-presets" role="group" aria-label="Quick patterns">
-          <span class="muted">Quick add:</span>
-          <button type="button" class="btn btn-outline small" data-scope-preset="*">All keys (*)</button>
-          <button type="button" class="btn btn-outline small" data-scope-preset="prod/*">prod/*</button>
-          <button type="button" class="btn btn-outline small" data-scope-preset="DB_*">DB_*</button>
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Quick patterns">
+          <span class="text-sm opacity-70">Quick add:</span>
+          <button type="button" class="btn btn-outline btn-xs" data-scope-preset="*">All keys (*)</button>
+          <button type="button" class="btn btn-outline btn-xs" data-scope-preset="prod/*">prod/*</button>
+          <button type="button" class="btn btn-outline btn-xs" data-scope-preset="DB_*">DB_*</button>
           {% for sk in (project_secret_keys|default([]))[:5] %}
-          <button type="button" class="btn btn-outline small" data-scope-preset="{{ sk }}">{{ sk }}</button>
+          <button type="button" class="btn btn-outline btn-xs" data-scope-preset="{{ sk }}">{{ sk }}</button>
           {% endfor %}
         </div>
-        <p class="muted token-scope-help">
-          Exact keys or globs (<code class="k">*</code>, <code class="k">?</code>).
-          Restricted secrets need an exact key; <code class="k">*</code> does not cover them.
+        <p class="text-xs opacity-70">
+          Exact keys or globs (<code class="font-mono">*</code>, <code class="font-mono">?</code>).
+          Restricted secrets need an exact key; <code class="font-mono">*</code> does not cover them.
         </p>
-        <p class="token-scope-empty" data-scope-empty-err hidden>
+        <p class="text-xs opacity-70" data-scope-empty-err hidden>
           Add at least one key or glob, or turn restrict off to allow every non-restricted key.
         </p>
       </div>
-      <p class="token-scope-open muted" data-scope-open-msg hidden>
+      <p class="text-sm opacity-70" data-scope-open-msg hidden>
         This token can access every <strong>non-restricted</strong> key. Restricted secrets stay closed unless you name them.
       </p>
     </div>
 
-    <div role="alert" data-token-write-warn hidden class="alert alert-warning">
+    <div role="alert" data-token-write-warn hidden class="text-sm text-warning">
       Write tokens create and update secrets via the machine API. Prefer reveal for ESO.
     </div>
 
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Create machine account</button>
     </p>
   </form>

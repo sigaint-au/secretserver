@@ -1,5 +1,5 @@
 /* Scope-key tag input: <ss-taginput> wrapping a text input + optional datalist.
-   Replaces the former oat.ink ot-taginput with the same value contract so
+   Replaces the former legacy tag input with the same value contract so
    forms.js needs no changes: `.value` reads/writes an array of tag strings.
    Tags render as daisyUI badges; Enter/comma (or a datalist pick) adds one. */
 'use strict';

@@ -1,26 +1,26 @@
 {# Machine accounts results panel: table + pager (swapped via HTMX).
    The search form lives in machines.html, outside this swap target. #}
 <div id="machines-results">
-  <section class="list-panel">
+  <section class="flex min-w-0 flex-col gap-4">
     {% if tokens %}
-    <div class="table">
+    <div class="overflow-x-auto">
     <table class="table">
       <thead><tr><th>Name</th><th>Description</th><th>Project</th><th>Machine account ID</th><th>Prefix</th><th>Role</th><th>Last used</th><th>Created</th><th>Expires</th></tr></thead>
       <tbody>
       {% for t in tokens %}
         <tr>
-           <td class="col-key">{{ t.name }}</td>
-            <td class="muted">{% if t.description %}{{ t.description }}{% endif %}</td>
-            <td><a href="{{ url_for('project_detail', project_id=t.project_id) }}">{{ t.project_name }}</a></td>
-            <td><code class="k">{{ t.id }}</code></td>
-            <td><code class="k">{{ t.token_prefix }}…</code></td>
-          <td><span class="badge badge-soft" >{{ t.role or 'service-read' }}</span></td>
-          <td class="muted" title="{% if t.last_used_at %}{{ t.last_used_at|time_when }}{% endif %}">{% if t.last_used_at %}{{ t.last_used_at|time_ago }}{% else %}never{% endif %}</td>
-          <td class="muted" title="{{ t.created_at|time_when }}">{{ t.created_at|time_ago }}</td>
-          <td class="muted"{% if t.expires_at %} title="{{ t.expires_at|time_when }}"{% endif %}>
+           <td>{{ t.name }}</td>
+            <td class="opacity-70">{% if t.description %}{{ t.description }}{% endif %}</td>
+            <td><a class="link" href="{{ url_for('project_detail', project_id=t.project_id) }}">{{ t.project_name }}</a></td>
+            <td><code class="font-mono">{{ t.id }}</code></td>
+            <td><code class="font-mono">{{ t.token_prefix }}…</code></td>
+          <td><span class="badge badge-soft">{{ t.role or 'service-read' }}</span></td>
+          <td class="opacity-70" title="{% if t.last_used_at %}{{ t.last_used_at|time_when }}{% endif %}">{% if t.last_used_at %}{{ t.last_used_at|time_ago }}{% else %}never{% endif %}</td>
+          <td class="opacity-70" title="{{ t.created_at|time_when }}">{{ t.created_at|time_ago }}</td>
+          <td class="opacity-70"{% if t.expires_at %} title="{{ t.expires_at|time_when }}"{% endif %}>
             {% if t.expires_at %}{{ t.expires_at|time_ago }}{% else %}never{% endif %}
-            {% if t.due == 'overdue' %}<span class="badge badge-soft badge-error" >expired</span>
-            {% elif t.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
+            {% if t.due == 'overdue' %}<span class="badge badge-soft badge-error">expired</span>
+            {% elif t.due == 'soon' %}<span class="badge badge-soft badge-warning">expiring soon</span>{% endif %}
           </td>
         </tr>
       {% endfor %}
@@ -31,7 +31,7 @@
     {% include "partials/pager.html" %}
     {% endwith %}
     {% elif search_q or q %}
-    <p class="empty">No machine accounts match “{{ search_q or q }}”.</p>
+    <p class="text-sm opacity-70">No machine accounts match “{{ search_q or q }}”.</p>
     {% else %}
     {% set icon = 'key' %}
     {% set title = 'No machine accounts' %}

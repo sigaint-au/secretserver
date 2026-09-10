@@ -7,54 +7,57 @@
 ] %}
 {% include "partials/breadcrumb.html" %}
 
-<div class="page-head">
-  <h1>{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
 </div>
-<p class="page-desc muted">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
+<p class="text-sm opacity-70">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
 
-<form method="post" action="{{ url_for('hsm_slot_new_wizard') }}" class="settings-form" id="hsm-slot-form">
+<form method="post" action="{{ url_for('hsm_slot_new_wizard') }}" class="flex flex-col gap-4" id="hsm-slot-form">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" id="hsm-slot-action" data-dialog-action value="">
   {% if slot_id %}<input type="hidden" name="slot_id" value="{{ slot_id }}">{% endif %}
 
-  <section>
-    <div class="section-head"><h2>Details</h2></div>
-    <div class="field-grid">
-      <label class="span-2">Name
-        <input type="text" name="name" value="{{ name or '' }}" required maxlength="80"
+  <section class="rounded-box border border-base-300 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Details</h2></div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-1 sm:col-span-2">
+        <label class="label" for="hsm-slot-name"><span>Name</span></label>
+        <input type="text" id="hsm-slot-name" name="name" value="{{ name or '' }}" required maxlength="80"
                placeholder="e.g. prod-hsm" autocomplete="off" class="input">
-      </label>
-      <label class="span-2">PKCS#11 URL
-        <input type="text" name="pkcs11_url" value="{{ pkcs11_url or '' }}"{% if not slot_id %} required{% endif %}{% if slot_id and project_count %} readonly{% endif %}
+      </div>
+      <div class="grid gap-1 sm:col-span-2">
+        <label class="label" for="hsm-slot-url"><span>PKCS#11 URL</span></label>
+        <input type="text" id="hsm-slot-url" name="pkcs11_url" value="{{ pkcs11_url or '' }}"{% if not slot_id %} required{% endif %}{% if slot_id and project_count %} readonly{% endif %}
                placeholder="{{ pkcs11_url_display or 'pkcs11:token=...;object=...?module-path=/path/to/module.so&pin-source=/run/secrets/hsm-pin' }}" autocomplete="off" class="input">
         {% if slot_id and project_count %}
-        <span class="field-hint">Read-only: {{ project_count }} project key(s) use this slot, so its URL cannot be changed.</span>
+        <span class="text-xs opacity-70">Read-only: {{ project_count }} project key(s) use this slot, so its URL cannot be changed.</span>
         {% else %}
-        <span class="field-hint">Format: <code>pkcs11:token=&lt;label&gt;;object=&lt;KEK label&gt;?module-path=&lt;.so&gt;&amp;pin-source=&lt;pin file&gt;</code></span>
-        <span class="field-hint">For edits, leave this blank to keep the current URL. Prefer <code>pin-source=</code>; inline PINs are stored in the database.</span>
+        <span class="text-xs opacity-70">Format: <code class="font-mono">pkcs11:token=&lt;label&gt;;object=&lt;KEK label&gt;?module-path=&lt;.so&gt;&amp;pin-source=&lt;pin file&gt;</code></span>
+        <span class="text-xs opacity-70">For edits, leave this blank to keep the current URL. Prefer <code class="font-mono">pin-source=</code>; inline PINs are stored in the database.</span>
         {% endif %}
-      </label>
-      <label class="span-2">Description
-        <input type="text" name="description" value="{{ description or '' }}" maxlength="200" autocomplete="off" class="input">
-      </label>
-      <label class="check-row span-2">
-        <input type="checkbox" name="is_default" value="1" {% if is_default %}checked{% endif %}> Default slot
+      </div>
+      <div class="grid gap-1 sm:col-span-2">
+        <label class="label" for="hsm-slot-desc"><span>Description</span></label>
+        <input type="text" id="hsm-slot-desc" name="description" value="{{ description or '' }}" maxlength="200" autocomplete="off" class="input">
+      </div>
+      <label class="flex items-center gap-2 sm:col-span-2" for="hsm-slot-default">
+        <input type="checkbox" id="hsm-slot-default" name="is_default" class="checkbox" value="1" {% if is_default %}checked{% endif %}> Default slot
       </label>
     </div>
 
     {% if test_result is not none %}
-    <p class="status-row">
+    <p class="flex flex-wrap items-center gap-2">
       {% if test_result %}
-      <span class="badge badge-soft badge-success" >Connection OK</span>
-      <span class="muted">{{ test_message or 'Connection OK' }}</span>
+      <span class="badge badge-soft badge-success">Connection OK</span>
+      <span class="text-sm opacity-70">{{ test_message or 'Connection OK' }}</span>
       {% else %}
-      <span class="badge badge-soft badge-error" >Connection failed</span>
-      <span class="muted">{{ test_message or 'Could not open the token.' }}</span>
+      <span class="badge badge-soft badge-error">Connection failed</span>
+      <span class="text-sm opacity-70">{{ test_message or 'Could not open the token.' }}</span>
       {% endif %}
     </p>
     {% endif %}
 
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <a class="btn btn-ghost" href="{{ url_for('server_settings', tab='encryption') }}">Cancel</a>
       <button type="submit" name="action" value="test" class="btn btn-outline">Test connection</button>
       <button type="submit" name="action" value="create" class="btn btn-neutral">{{ 'Save changes' if slot_id else 'Create slot' }}</button>
@@ -67,19 +70,18 @@
   </section>
 </form>
 {% if test_result is sameas false %}
-<dialog id="hsm-save-dialog" class="modal access-dlg" closedby="any" aria-labelledby="hsm-save-dialog-title">
+<dialog id="hsm-save-dialog" class="modal" closedby="any" aria-labelledby="hsm-save-dialog-title">
   <div class="modal-box">
   <form method="dialog">
-    <header>
-      <h3 id="hsm-save-dialog-title">Save without testing?</h3>
-      <p>The slot will be saved even though the HSM connection test failed. It may not work until the HSM is reachable.</p>
-    </header>
-    <footer>
-      <button type="button" class="btn btn-outline" data-close-dialog="hsm-save-dialog">Cancel</button>
+    <h3 id="hsm-save-dialog-title" class="text-lg font-bold">Save without testing?</h3>
+    <p class="py-4">The slot will be saved even though the HSM connection test failed. It may not work until the HSM is reachable.</p>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" data-close-dialog="hsm-save-dialog">Cancel</button>
       <button type="button" data-submit-form="hsm-slot-form" data-submit-action="force_create" class="btn btn-neutral">Save slot</button>
-    </footer>
+    </div>
   </form>
   </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
 </dialog>
 {% endif %}
 {% endblock %}

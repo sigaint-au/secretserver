@@ -1,16 +1,16 @@
 {% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
 {% endif %}{% if active_tab == 'builtin' %}
-<section>
-  <div class="section-head">
-    <h2>Built-in roles</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Built-in roles</h2>
     {% if can_edit %}
     <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
   </div>
-  <p class="muted mt-0">Built-in roles used by the Access dropdowns. Rules cannot be edited.</p>
+  <p class="text-sm opacity-70">Built-in roles used by the Access dropdowns. Rules cannot be edited.</p>
   {% if builtin_roles %}
-  <div class="table">
-    <table>
+  <div class="overflow-x-auto">
+    <table class="table">
       <thead>
         <tr>
           <th>Name</th>
@@ -22,8 +22,8 @@
         {% for r in builtin_roles %}
         <tr>
           <td><span class="badge badge-soft">{{ r.name }}</span></td>
-          <td class="col-note">{{ r.description or "-" }}</td>
-          <td class="col-note">{% include "partials/role_rules.html" %}</td>
+          <td class="opacity-70">{{ r.description or "-" }}</td>
+          <td class="opacity-70">{% include "partials/role_rules.html" %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -38,35 +38,35 @@
 {% endif %}
 
 {% if active_tab == 'custom' %}
-<section>
-  <div class="section-head">
-    <h2>Custom roles</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Custom roles</h2>
     {% if can_edit %}
     <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
   </div>
   {% if not can_edit %}
-  <p class="muted mt-0">Only global admins can create or delete custom roles.</p>
+  <p class="text-sm opacity-70">Only global admins can create or delete custom roles.</p>
   {% endif %}
   {% if custom_roles %}
-  <div class="table">
-    <table>
+  <div class="overflow-x-auto">
+    <table class="table">
       <thead>
         <tr>
           <th>Name</th>
           <th>Description</th>
           <th>Rules</th>
-          {% if can_edit %}<th class="acts-col" aria-label="Actions"></th>{% endif %}
+          {% if can_edit %}<th class="text-right" aria-label="Actions"></th>{% endif %}
         </tr>
       </thead>
       <tbody>
         {% for r in custom_roles %}
         <tr>
           <td><span class="badge badge-soft">{{ r.name }}</span></td>
-          <td class="col-note">{{ r.description or "-" }}</td>
-          <td class="col-note">{% include "partials/role_rules.html" %}</td>
+          <td class="opacity-70">{{ r.description or "-" }}</td>
+          <td class="opacity-70">{% include "partials/role_rules.html" %}</td>
           {% if can_edit %}
-          <td class="acts">
+          <td class="text-right">
             <form method="post" action="{{ url_for('rbac_roles_delete', role_id=r.id) }}" class="inline"
                   onsubmit="return confirm('Delete role {{ r.name }}?');">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -93,75 +93,75 @@
 {% endif %}
 
 {% if active_tab == 'create' and can_edit %}
-<section>
-  <div class="section-head">
-    <h2>New custom role</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">New custom role</h2>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('rbac_roles', tab='custom') }}">Back to roles</a>
   </div>
-  <form method="post" action="{{ url_for('rbac_roles_create') }}" class="settings-form" id="role-create-form">
+  <form method="post" action="{{ url_for('rbac_roles_create') }}" class="flex flex-col gap-4" id="role-create-form">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="tab" value="custom">
     <input type="hidden" name="mode" id="create-mode" value="form">
 
-    <fieldset class="field-group">
-      <legend>Details</legend>
-      <div class="field-grid">
-        <label>Name
-          <input type="text" name="name" required
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Details</legend>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid gap-1">
+          <label class="label" for="role-create-name"><span>Name</span></label>
+          <input type="text" id="role-create-name" name="name" required
                  placeholder="secrets-operator"
                  pattern="[a-z0-9][a-z0-9\-]*"
                  title="Lowercase letters, numbers, hyphens"
                  autocomplete="off" class="input">
-          <span class="field-hint">Lowercase letters, numbers, hyphens</span>
-        </label>
-        <label>Description
-          <input type="text" name="description" placeholder="Optional summary" autocomplete="off" class="input">
-        </label>
+          <span class="text-xs opacity-70">Lowercase letters, numbers, hyphens</span>
+        </div>
+        <div class="grid gap-1">
+          <label class="label" for="role-create-desc"><span>Description</span></label>
+          <input type="text" id="role-create-desc" name="description" placeholder="Optional summary" autocomplete="off" class="input">
+        </div>
       </div>
-      <fieldset class="field-group">
-        <legend>Assignable at scopes</legend>
-        <div class="field-grid">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Assignable at scopes</legend>
+        <div class="grid gap-2 sm:grid-cols-3">
           {% for scope in scope_kinds|default(['team', 'project', 'folder', 'secret', 'cluster']) %}
-          <label class="check-row"><input type="checkbox" name="scopes" value="{{ scope }}"{% if scope == 'team' %} checked{% endif %}> {{ scope|capitalize }}</label>
+          <label class="flex items-center gap-2" for="role-scope-{{ scope }}"><input type="checkbox" id="role-scope-{{ scope }}" name="scopes" class="checkbox" value="{{ scope }}"{% if scope == 'team' %} checked{% endif %}> {{ scope|capitalize }}</label>
           {% endfor %}
         </div>
       </fieldset>
     </fieldset>
 
-      <div role="tablist" class="tabs role-mode-tabs">
-        <button type="button" class="tab active" data-mode="form" id="mode-form-btn"
+      <div role="tablist" class="tabs tabs-box role-mode-tabs">
+        <button type="button" class="tab tab-active active" data-mode="form" id="mode-form-btn"
                 role="tab" aria-selected="true" aria-controls="mode-form-panel">Form</button>
         <button type="button" class="tab" data-mode="yaml" id="mode-yaml-btn"
                 role="tab" aria-selected="false" aria-controls="mode-yaml-panel">YAML</button>
       </div>
 
-      <div id="mode-form-panel" class="role-create-panel" role="tabpanel" aria-labelledby="mode-form-btn">
-        <p class="muted role-panel-hint">
+      <div id="mode-form-panel" role="tabpanel" aria-labelledby="mode-form-btn">
+        <p class="text-sm opacity-70">
           Pick a resource and its verbs for one rule. Use YAML for multiple rules.
         </p>
-        <div class="role-create-cols">
-          <fieldset class="field-group">
-            <legend>Resource</legend>
-            <div class="field-grid">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Resource</legend>
+            <div class="grid gap-2">
               {% for res in resources %}
-              <label class="check-row">
-                <input type="checkbox" name="resources" value="{{ res }}"
-                       class="form-resource"
+              <label class="flex items-center gap-2" for="role-res-{{ res }}">
+                <input type="checkbox" id="role-res-{{ res }}" name="resources" class="checkbox" value="{{ res }}"
                        {% if res == 'secrets' %}checked{% endif %}>
-                <code>{{ res }}</code>
+                <code class="font-mono">{{ res }}</code>
               </label>
               {% endfor %}
             </div>
           </fieldset>
-          <fieldset class="field-group">
-            <legend>Verbs</legend>
-            <div class="field-grid">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Verbs</legend>
+            <div class="grid gap-2">
               {% for v in verbs %}
-              <label class="check-row">
-                <input type="checkbox" name="verbs" value="{{ v }}"
-                       class="form-verb"
+              <label class="flex items-center gap-2" for="role-verb-{{ v }}">
+                <input type="checkbox" id="role-verb-{{ v }}" name="verbs" class="checkbox" value="{{ v }}"
                        {% if v in ('get', 'list') %}checked{% endif %}>
-                <code>{{ v }}</code>
+                <code class="font-mono">{{ v }}</code>
               </label>
               {% endfor %}
             </div>
@@ -169,17 +169,18 @@
         </div>
       </div>
 
-      <div id="mode-yaml-panel" class="role-create-panel" role="tabpanel" aria-labelledby="mode-yaml-btn" hidden>
-        <p class="muted role-panel-hint">
-          One or more rules. Leave a blank line between rules; lines starting with <code>#</code> are ignored.
+      <div id="mode-yaml-panel" role="tabpanel" aria-labelledby="mode-yaml-btn" hidden>
+        <p class="text-sm opacity-70">
+          One or more rules. Leave a blank line between rules; lines starting with <code class="font-mono">#</code> are ignored.
         </p>
-        <label class="visually-hidden" for="rules_yaml">Rules YAML</label>
-        <textarea name="rules_yaml" id="rules_yaml" rows="16" class="role-yaml mono"
+        <label class="sr-only" for="rules_yaml">Rules YAML</label>
+        <textarea name="rules_yaml" id="rules_yaml" rows="16" class="textarea font-mono w-full"
                   spellcheck="false">resources: secrets
 verbs: get, list, reveal</textarea>
-        <details class="role-yaml-help">
-          <summary class="muted">Format reference</summary>
-          <pre class="mono muted role-yaml-ref">resources: secrets, projects
+        <details class="collapse collapse-arrow border border-base-300">
+          <summary class="collapse-title text-sm opacity-70">Format reference</summary>
+          <div class="collapse-content">
+            <pre class="font-mono text-xs opacity-70">resources: secrets, projects
 verbs: get, list, reveal
 
 resources: *
@@ -187,10 +188,11 @@ verbs: *
 
 # valid resources: {{ resources|join(', ') }}
 # valid verbs: {{ verbs|join(', ') }}</pre>
+          </div>
         </details>
       </div>
 
-    <p class="form-actions">
+    <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Create role</button>
       <a class="btn btn-ghost" href="{{ url_for('rbac_roles', tab='custom') }}">Cancel</a>
     </p>
@@ -209,7 +211,9 @@ verbs: *
     formPanel.hidden = !isForm;
     yamlPanel.hidden = isForm;
     formBtn.classList.toggle('active', isForm);
+    formBtn.classList.toggle('tab-active', isForm);
     yamlBtn.classList.toggle('active', !isForm);
+    yamlBtn.classList.toggle('tab-active', !isForm);
     formBtn.setAttribute('aria-selected', isForm ? 'true' : 'false');
     yamlBtn.setAttribute('aria-selected', isForm ? 'false' : 'true');
     formPanel.querySelectorAll('input').forEach(function (el) { el.disabled = !isForm; });
@@ -232,5 +236,5 @@ verbs: *
 })();
 </script>
 {% elif active_tab == 'create' %}
-<p class="muted">Only global admins can create roles.</p>
+<p class="text-sm opacity-70">Only global admins can create roles.</p>
 {% endif %}

@@ -1,12 +1,12 @@
-<section class="list-panel">
-  <h2>Platform users</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Platform users</h2>
+  <p class="text-sm opacity-70">
     Disabling blocks sign-in and revokes sessions.
     Password reset issues a one-time link (emailed when SMTP is configured).
     Resetting 2FA clears TOTP and recovery codes.
   </p>
   {% if all_users %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead>
       <tr>
         <th>User</th>
@@ -14,7 +14,7 @@
         <th>Role</th>
         <th>2FA</th>
         <th>Status</th>
-        <th class="acts-col" aria-label="Actions"></th>
+        <th class="text-right" aria-label="Actions"></th>
       </tr>
     </thead>
     <tbody>
@@ -22,34 +22,34 @@
       <tr>
         <td>
           {{ u.name or '-' }}
-          <span class="muted">{{ u.email }}</span>
+          <span class="opacity-70">{{ u.email }}</span>
           {% if u.id|string == session.user_id %}
-          <span class="badge badge-soft" >you</span>
+          <span class="badge badge-soft">you</span>
           {% endif %}
         </td>
-        <td class="muted">{{ u.auth_source or 'local' }}</td>
+        <td class="opacity-70">{{ u.auth_source or 'local' }}</td>
         <td>
           {% if u.is_global_admin %}
-          <span class="badge badge-soft" >Global admin</span>
+          <span class="badge badge-soft">Global admin</span>
           {% else %}
-          <span class="muted">User</span>
+          <span class="opacity-70">User</span>
           {% endif %}
         </td>
         <td>
           {% if u.totp_enabled_at %}
-          <span class="badge badge-soft" >On</span>
+          <span class="badge badge-soft">On</span>
           {% else %}
-          <span class="muted">Off</span>
+          <span class="opacity-70">Off</span>
           {% endif %}
         </td>
         <td>
           {% if u.disabled_at %}
           <span class="badge badge-soft" title="{{ u.disabled_at }}">Disabled</span>
           {% else %}
-          <span class="muted">Active</span>
+          <span class="opacity-70">Active</span>
           {% endif %}
         </td>
-        <td class="acts">
+        <td class="text-right">
           {% if u.id|string != session.user_id %}
             {% if u.disabled_at %}
             <form method="post" class="inline"
@@ -87,7 +87,7 @@
             </form>
             {% endif %}
           {% else %}
-          <span class="muted">-</span>
+          <span class="opacity-70">-</span>
           {% endif %}
         </td>
       </tr>
@@ -95,7 +95,6 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">No users found.</p>
+  <p class="text-sm opacity-70">No users found.</p>
   {% endif %}
 </section>
-

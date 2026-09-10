@@ -5,7 +5,7 @@
 {% set _grant = approved_until is defined and approved_until and not revealed %}
 <button type="button"
         id="{{ toggle_id }}"
-        class="reveal-toggle{% if _grant %} reveal-granted{% endif %}{% if menu %} ghost{% endif %}"
+        class="reveal-toggle{% if not menu %} btn btn-ghost btn-sm{% endif %}"
         {% if menu %}role="menuitem" popovertarget="{{ menu }}" popovertargetaction="hide"{% endif %}
         hx-get="{% if revealed %}{{ hide_url }}{% else %}{{ reveal_url }}{% endif %}"
         hx-target="#{{ cell_id }}"

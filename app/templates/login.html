@@ -1,38 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Login - {{ app_name }}{% endblock %}
+{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-4xl shadow-xl{% endblock %}
 {% block body %}
-<h1>Sign in</h1>
-{% if setup_notice %}
-<p role="alert" class="alert alert-error">{{ setup_notice }}</p>
-{% endif %}
-{% if oidc_enabled %}
-<p>
-  <a class="btn auth-sso"
-     href="{{ url_for('login_oidc') }}">{{ oidc_button_label or 'Sign in with SSO' }}</a>
-</p>
-<p class="muted auth-divider">or sign in with an account</p>
-{% elif ldap_enabled %}
-<p class="muted">Use your account email or directory username.</p>
-{% endif %}
-<form method="post">
-  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <label>{% if ldap_enabled %}Account email or username{% else %}Account email{% endif %}
-    <input type="{% if ldap_enabled %}text{% else %}email{% endif %}"
-           name="email" required autocomplete="username" class="input">
-  </label>
-  <label>Password <input type="password" name="password" required autocomplete="current-password" class="input"></label>
-  <button type="submit" class="btn btn-neutral">Sign in</button>
-</form>
-{% if ldap_enabled or oidc_enabled %}
-<p class="muted">Use single sign-on above, or continue with a local account below.</p>
-{% endif %}
-<p class="muted"><a href="{{ url_for('forgot_password') }}">Forgot your local account password?</a>
-</p>
-{% if registration_enabled %}
-<p class="muted">No account? <a href="{{ url_for('register') }}">Create a local account</a>
-</p>
-{% endif %}
+<div class="grid grid-cols-1 lg:grid-cols-2">
+  <div class="p-6 sm:p-10">
+    <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
+      {% include "partials/brand_logo.html" %}
+      <span>
+        {{ brand_name or 'Corvus' }}
+        {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
+      </span>
+    </a>
+    <h1 class="mt-4 text-2xl font-bold">Sign in</h1>
+    {% if setup_notice %}
+    <p role="alert" class="alert alert-error mt-4">{{ setup_notice }}</p>
+    {% endif %}
+    {% if oidc_enabled %}
+    <p class="mt-4">
+      <a class="btn btn-neutral w-full"
+         href="{{ url_for('login_oidc') }}">{{ oidc_button_label or 'Sign in with SSO' }}</a>
+    </p>
+    <div class="divider">or continue with email</div>
+    {% elif ldap_enabled %}
+    <p class="mt-4 text-sm opacity-70">Use your account email or directory username.</p>
+    {% endif %}
+    <form method="post" class="flex flex-col gap-3">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="flex flex-col gap-1">
+        <label class="label" for="login-email"><span>{% if ldap_enabled %}Account email or username{% else %}Account email{% endif %}</span></label>
+        <input class="input w-full" type="{% if ldap_enabled %}text{% else %}email{% endif %}"
+               id="login-email" name="email" required autocomplete="username">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="label" for="login-password"><span>Password</span></label>
+        <input class="input w-full" type="password" id="login-password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-neutral w-full" data-busy="Signing in…">Sign in</button>
+    </form>
+    {% if ldap_enabled or oidc_enabled %}
+    <p class="mt-4 text-sm opacity-70">Use single sign-on above, or continue with a local account below.</p>
+    {% endif %}
+    <p class="mt-2 text-sm opacity-70"><a class="link" href="{{ url_for('forgot_password') }}">Forgot your local account password?</a>
+    </p>
+    {% if registration_enabled %}
+    <p class="mt-2 text-sm opacity-70">No account? <a class="link" href="{{ url_for('register') }}">Create a local account</a>
+    </p>
+    {% endif %}
+  </div>
+  <aside class="hidden lg:flex flex-col justify-center gap-6 bg-neutral text-neutral-content p-10" aria-label="About Corvus">
+    <div>
+      {% include "partials/brand_logo.html" %}
+      <p class="text-2xl font-bold">{{ brand_name or 'Corvus' }}</p>
+      {% if brand_tagline %}<p class="opacity-70">{{ brand_tagline }}</p>{% endif %}
+    </div>
+    <ul class="flex flex-col gap-4">
+      <li>
+        <strong class="block">Self-hosted</strong>
+        <span class="opacity-70">Secrets stay on your infrastructure, encrypted at rest.</span>
+      </li>
+      <li>
+        <strong class="block">Scoped access</strong>
+        <span class="opacity-70">Teams, projects, and per-secret roles decide who can reveal.</span>
+      </li>
+      <li>
+        <strong class="block">Audited</strong>
+        <span class="opacity-70">Every reveal is logged with actor and timestamp.</span>
+      </li>
+    </ul>
+  </aside>
+</div>
 {% endblock %}
 {% block extra %}
-<p class="muted auth-source"><a href="https://git.sigaint.au/Sigaint/corvus">Source code</a> (AGPL-3.0)</p>
+<p class="mx-auto w-full max-w-md text-sm opacity-70 auth-source"><a class="link" href="https://git.sigaint.au/Sigaint/corvus">Source code</a> (AGPL-3.0)</p>
 {% endblock %}

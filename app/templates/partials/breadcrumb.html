@@ -5,7 +5,7 @@
      {% set breadcrumbs = [('Teams', url_for('teams')), (team.name, url_for('team_detail', team_id=team.id)), (group.name, none)] %}
      {% include "partials/breadcrumb.html" %}
 #}
-<nav aria-label="Breadcrumb" class="breadcrumb breadcrumbs">
+<nav aria-label="Breadcrumb" class="breadcrumbs text-sm">
   <ul>
     {% for label, url in breadcrumbs %}
     {% if not loop.last %}

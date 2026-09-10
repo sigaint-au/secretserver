@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Recovery codes - {{ app_name }}{% endblock %}
 {% block body %}
-<h1>Recovery codes</h1>
-<p role="alert" class="alert alert-error">
+<h1 class="text-2xl font-bold">Recovery codes</h1>
+<p role="alert" class="alert alert-error mt-4">
   Save these codes now. Each can be used once if you lose access to your authenticator.
   They will not be shown again.
 </p>
-<ul class="recovery-codes" id="recovery-codes-list">
+<ul class="mt-4 flex flex-col gap-2" id="recovery-codes-list">
   {% for c in codes %}
-  <li><code>{{ c }}</code></li>
+  <li><code class="font-mono">{{ c }}</code></li>
   {% endfor %}
 </ul>
-<p class="muted">Store them offline (password manager, printed copy).</p>
-<p class="form-actions">
+<p class="mt-4 text-sm opacity-70">Store them offline (password manager, printed copy).</p>
+<p class="mt-2 flex flex-wrap items-center gap-3">
   <button type="button" class="link copy-btn" data-copy-target="recovery-codes-list">Copy all</button>
   <a class="btn btn-outline" href="{{ url_for('profile', tab='security') }}">Done, I saved them</a>
 </p>

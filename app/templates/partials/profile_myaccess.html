@@ -1,16 +1,16 @@
-<section>
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>My access</h2>
-      <p class="muted">How your access is granted.</p>
+      <h2 class="text-lg font-bold">My access</h2>
+      <p class="text-sm opacity-70">How your access is granted.</p>
     </div>
-    <form method="get" action="{{ url_for('profile') }}" class="toolbar" role="search">
+    <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="myaccess">
       <input type="hidden" name="scope" value="{{ my_access_scope }}">
-      <fieldset class="group search-input">
+      <fieldset class="join">
         {% include "partials/search_icon.html" %}
-        <input type="search" name="q" value="{{ my_access_q or '' }}"
-               placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}" class="input">
+        <input type="search" name="q" value="{{ my_access_q or '' }}" id="myaccess-q"
+               placeholder="Search" autocomplete="off" aria-label="Search {{ my_access_scope_label }}" class="input join-item">
       </fieldset>
       {% if my_access_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('profile', tab='myaccess', scope=my_access_scope) }}">Clear search</a>{% endif %}
     </form>
@@ -21,20 +21,20 @@
   </div>
   {% endif %}
 
-  <nav class="tabs" aria-label="Access scope">
+  <nav class="tabs tabs-box" aria-label="Access scope">
     <a href="{{ url_for('profile', tab='myaccess', scope='team') }}"
-       class="tab{% if my_access_scope == 'team' %} active{% endif %}"{% if my_access_scope == 'team' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'team' %} tab-active active{% endif %}"{% if my_access_scope == 'team' %} aria-current="page"{% endif %}
     >Team access</a>
     <a href="{{ url_for('profile', tab='myaccess', scope='project') }}"
-       class="tab{% if my_access_scope == 'project' %} active{% endif %}"{% if my_access_scope == 'project' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'project' %} tab-active active{% endif %}"{% if my_access_scope == 'project' %} aria-current="page"{% endif %}
     >Project access</a>
     <a href="{{ url_for('profile', tab='myaccess', scope='secret') }}"
-       class="tab{% if my_access_scope == 'secret' %} active{% endif %}"{% if my_access_scope == 'secret' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'secret' %} tab-active active{% endif %}"{% if my_access_scope == 'secret' %} aria-current="page"{% endif %}
     >Secret access</a>
   </nav>
 
   {% if my_access_rows %}
-  <div class="table">
+  <div class="overflow-x-auto">
       <table class="table">
         <thead>
           <tr>
@@ -48,7 +48,7 @@
           {% for r in my_access_rows %}
           <tr>
             <td>
-              {% if my_access_scope == 'secret' %}<code class="k">{{ r.scope_label or '-' }}</code>
+              {% if my_access_scope == 'secret' %}<code class="font-mono">{{ r.scope_label or '-' }}</code>
               {% else %}{{ r.scope_label or '-' }}{% endif %}
             </td>
             <td>
@@ -58,14 +58,14 @@
               <span class="badge badge-neutral">{{ r.grant_kind }}</span>
               {{ r.grant_subject }}
             </td>
-            <td class="muted">{{ r.created_at|time_ago if r.created_at else '-' }}</td>
+            <td class="opacity-70">{{ r.created_at|time_ago if r.created_at else '-' }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   {% else %}
-  <p class="empty">
+  <p class="text-sm opacity-70">
     {% if my_access_q %}No {{ my_access_scope_label|lower }} bindings match "{{ my_access_q }}".
     {% else %}No {{ my_access_scope_label|lower }} bindings reference you or your groups. Ask a team owner or admin to grant access.{% endif %}
   </p>

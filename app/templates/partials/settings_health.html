@@ -1,8 +1,8 @@
-<section class="crypto-panel">
-  <div class="section-head">
-    <h2>Server health</h2>
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-bold">Server health</h2>
   </div>
-  <div class="table">
+  <div class="overflow-x-auto">
     <table class="table">
       <tbody>
         <tr><th scope="row">Uptime</th><td>{{ health_probe.uptime }}</td></tr>
@@ -11,11 +11,11 @@
   </div>
 </section>
 
-<section class="crypto-panel">
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>PostgreSQL</h2>
-      <p class="muted">Admin connection used by settings, schema, and audit.</p>
+      <h2 class="text-lg font-bold">PostgreSQL</h2>
+      <p class="text-sm opacity-70">Admin connection used by settings, schema, and audit.</p>
     </div>
     <form method="post">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -23,21 +23,21 @@
       <button type="submit" class="btn btn-outline btn-sm">Test connection</button>
     </form>
   </div>
-  <div class="status-row">
+  <div class="flex flex-wrap items-center gap-2">
     {% if health_probe.postgres.ok %}
-    <span class="badge badge-soft badge-success" >Connected</span>
+    <span class="badge badge-soft badge-success">Connected</span>
     {% else %}
-    <span class="badge badge-soft badge-error" >Unreachable</span>
+    <span class="badge badge-soft badge-error">Unreachable</span>
     {% endif %}
-    <code class="k">{{ health_probe.postgres.detail }}</code>
+    <code class="font-mono">{{ health_probe.postgres.detail }}</code>
   </div>
 </section>
 
-<section class="crypto-panel">
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>Redis</h2>
-      <p class="muted">Optional shared cache for DEK wrappers and OIDC discovery.</p>
+      <h2 class="text-lg font-bold">Redis</h2>
+      <p class="text-sm opacity-70">Optional shared cache for DEK wrappers and OIDC discovery.</p>
     </div>
     <form method="post">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -45,23 +45,23 @@
       <button type="submit" class="btn btn-outline btn-sm">Test connection</button>
     </form>
   </div>
-  <div class="status-row">
+  <div class="flex flex-wrap items-center gap-2">
     {% if health_probe.redis.ok %}
-    <span class="badge badge-soft badge-success" >Connected</span>
+    <span class="badge badge-soft badge-success">Connected</span>
     {% elif 'not configured' in health_probe.redis.detail %}
-    <span class="badge badge-soft" >Not configured</span>
+    <span class="badge badge-soft">Not configured</span>
     {% else %}
-    <span class="badge badge-soft badge-error" >Unreachable</span>
+    <span class="badge badge-soft badge-error">Unreachable</span>
     {% endif %}
-    <code class="k">{{ health_probe.redis.detail }}</code>
+    <code class="font-mono">{{ health_probe.redis.detail }}</code>
   </div>
 </section>
 
-<section class="crypto-panel">
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>HSM slots</h2>
-      <p class="muted">PKCS#11 tokens holding project key-encryption keys.</p>
+      <h2 class="text-lg font-bold">HSM slots</h2>
+      <p class="text-sm opacity-70">PKCS#11 tokens holding project key-encryption keys.</p>
     </div>
     <form method="post">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -70,7 +70,7 @@
     </form>
   </div>
   {% if health_probe.hsm.slots %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead><tr><th>Slot</th><th>Status</th><th>Details</th></tr></thead>
     <tbody>
     {% for slot in health_probe.hsm.slots %}
@@ -81,17 +81,17 @@
         </td>
         <td>
           {% if slot.ok %}
-          <span class="badge badge-soft badge-success" >Connected</span>
+          <span class="badge badge-soft badge-success">Connected</span>
           {% else %}
-          <span class="badge badge-soft badge-error" >Unreachable</span>
+          <span class="badge badge-soft badge-error">Unreachable</span>
           {% endif %}
         </td>
-        <td class="muted col-note">{{ slot.detail }}</td>
+        <td class="opacity-70">{{ slot.detail }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% else %}
-  <p class="empty">No HSM slots configured.</p>
+  <p class="text-sm opacity-70">No HSM slots configured.</p>
   {% endif %}
 </section>

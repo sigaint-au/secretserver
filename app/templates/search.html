@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Search - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Search{% if scope %} · {{ scope|capitalize }}{% endif %}</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Search{% if scope %} · {{ scope|capitalize }}{% endif %}</h1>
 </div>
-<form method="get" action="{{ url_for('global_search') }}" class="audit-filters" role="search">
+<form method="get" action="{{ url_for('global_search') }}" class="flex flex-wrap items-end gap-4" role="search">
   {% if scope %}<input type="hidden" name="scope" value="{{ scope }}">{% endif %}
-  <fieldset class="group search-input">
+  <fieldset class="join w-full">
     {% include "partials/search_icon.html" %}
     <input type="search" name="q" value="{{ search_q or '' }}"
            placeholder="Search" autocomplete="off"
-           aria-label="Global search" class="input">
+           aria-label="Global search" class="input join-item w-full">
   </fieldset>
   {% if scope == 'secrets' %}
-  <label>
-    <span class="field-label">Kind</span>
+  <label class="grid gap-1">
+    <span class="text-sm opacity-70">Kind</span>
     <select name="kind" aria-label="Filter secrets by kind" class="select">
       <option value="">All kinds</option>
       {% for k in secret_kinds or [] %}
@@ -22,8 +22,8 @@
       {% endfor %}
     </select>
   </label>
-  <label>
-    <span class="field-label">Expiry</span>
+  <label class="grid gap-1">
+    <span class="text-sm opacity-70">Expiry</span>
     <select name="due" aria-label="Filter secrets by expiry" class="select">
       <option value="">Any</option>
       <option value="overdue" {% if filter_due == 'overdue' %}selected{% endif %}>Overdue</option>
@@ -33,178 +33,178 @@
   </label>
   {% endif %}
   {% if search_q or scope %}
-  <div class="audit-filter-actions">
+  <div class="flex items-center gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('global_search') }}">Clear search</a>
   </div>
   {% endif %}
 </form>
 
 {% if not search_q %}
-<p class="empty">Search across all teams, projects, and secrets you can access.</p>
+<p class="text-sm opacity-70">Search across all teams, projects, and secrets you can access.</p>
 {% elif scope %}
 
   {% if scope == 'teams' %}
   <section>
-    <h2>Teams <span class="muted">({{ teams_total }})</span></h2>
+    <h2 class="text-lg font-bold">Teams <span class="opacity-70">({{ teams_total }})</span></h2>
     {% if teams %}
-    <div class="table"><table class="table">
+    <div class="overflow-x-auto"><table class="table">
       <thead><tr><th>Name</th></tr></thead>
       <tbody>
       {% for t in teams %}
-        <tr><td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
+        <tr><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
       {% endfor %}
       </tbody>
     </table></div>
     {% with pager=search_pager %}{% include "partials/pager.html" %}{% endwith %}
     {% else %}
-    <p class="empty">No teams match.</p>
+    <p class="text-sm opacity-70">No teams match.</p>
     {% endif %}
   </section>
   {% elif scope == 'projects' %}
   <section>
-    <h2>Projects <span class="muted">({{ projects_total }})</span></h2>
+    <h2 class="text-lg font-bold">Projects <span class="opacity-70">({{ projects_total }})</span></h2>
     {% if projects %}
-    <div class="table"><table class="table">
+    <div class="overflow-x-auto"><table class="table">
       <thead><tr><th>Project</th><th>Team</th><th>Description</th></tr></thead>
       <tbody>
       {% for p in projects %}
         <tr>
-          <td><a href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
-          <td class="muted"><a href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
-          <td class="muted col-note">{{ p.description or '-' }}</td>
+          <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+          <td class="opacity-70"><a class="link" href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
+          <td class="opacity-70">{{ p.description or '-' }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table></div>
     {% with pager=search_pager %}{% include "partials/pager.html" %}{% endwith %}
     {% else %}
-    <p class="empty">No projects match.</p>
+    <p class="text-sm opacity-70">No projects match.</p>
     {% endif %}
   </section>
   {% elif scope == 'secrets' %}
   <section>
-    <h2>Secrets <span class="muted">({{ secrets_total }})</span></h2>
+    <h2 class="text-lg font-bold">Secrets <span class="opacity-70">({{ secrets_total }})</span></h2>
     {% if secrets %}
-    <div class="table secrets-table"><table class="table">
-      <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
+    <div class="overflow-x-auto"><table class="table">
+      <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
       <tbody>
       {% for s in secrets %}
         <tr>
-          <td class="col-key">
-            <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
-              <code class="k">{{ s.key }}</code>
+          <td>
+            <a class="link" href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
+              <code class="font-mono">{{ s.key }}</code>
             </a>
-            {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error" >overdue</span>
-            {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
-            {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error" >rotation overdue</span>
-            {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning" >rotation soon</span>{% endif %}
+            {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error">overdue</span>
+            {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning">expiring soon</span>{% endif %}
+            {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error">rotation overdue</span>
+            {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning">rotation soon</span>{% endif %}
           </td>
-          <td><span class="badge badge-soft" >{{ s.kind or 'plain' }}</span></td>
-          <td><a href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
-          <td class="muted">{{ s.team_name }}</td>
-          <td class="col-note muted">{{ s.note }}</td>
+          <td><span class="badge badge-soft">{{ s.kind or 'plain' }}</span></td>
+          <td><a class="link" href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
+          <td class="opacity-70">{{ s.team_name }}</td>
+          <td class="opacity-70">{{ s.note }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table></div>
     {% with pager=search_pager %}{% include "partials/pager.html" %}{% endwith %}
     {% else %}
-    <p class="empty">No secrets match.</p>
+    <p class="text-sm opacity-70">No secrets match.</p>
     {% endif %}
   </section>
   {% endif %}
-  <p class="muted"><a href="{{ url_for('global_search', q=search_q) }}">← All result types</a></p>
+  <p class="text-sm opacity-70"><a class="link" href="{{ url_for('global_search', q=search_q) }}">← All result types</a></p>
 
 {% else %}
 
 <section>
-  <h2>
+  <h2 class="text-lg font-bold">
     Teams
-    <span class="muted">
+    <span class="opacity-70">
       ({% if teams_total > (preview.teams if preview else 25) %}showing first {{ teams|length }} of {{ teams_total }}{% else %}{{ teams_total }}{% endif %})
     </span>
   </h2>
   {% if teams %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead><tr><th>Name</th></tr></thead>
     <tbody>
     {% for t in teams %}
-      <tr><td><a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
+      <tr><td><a class="link" href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% if teams_total > teams|length %}
-  <p class="muted">
-    <a href="{{ url_for('global_search', q=search_q, scope='teams') }}">View all {{ teams_total }} matching teams →</a>
+  <p class="text-sm opacity-70">
+    <a class="link" href="{{ url_for('global_search', q=search_q, scope='teams') }}">View all {{ teams_total }} matching teams →</a>
   </p>
   {% endif %}
   {% else %}
-  <p class="empty">No teams match.</p>
+  <p class="text-sm opacity-70">No teams match.</p>
   {% endif %}
 </section>
 
 <section>
-  <h2>
+  <h2 class="text-lg font-bold">
     Projects
-    <span class="muted">
+    <span class="opacity-70">
       ({% if projects_total > (preview.projects if preview else 40) %}showing first {{ projects|length }} of {{ projects_total }}{% else %}{{ projects_total }}{% endif %})
     </span>
   </h2>
   {% if projects %}
-  <div class="table"><table class="table">
+  <div class="overflow-x-auto"><table class="table">
     <thead><tr><th>Project</th><th>Team</th></tr></thead>
     <tbody>
     {% for p in projects %}
       <tr>
-        <td><a href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
-        <td class="muted"><a href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
+        <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+        <td class="opacity-70"><a class="link" href="{{ url_for('team_detail', team_id=p.team_id) }}">{{ p.team_name }}</a></td>
       </tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% if projects_total > projects|length %}
-  <p class="muted">
-    <a href="{{ url_for('global_search', q=search_q, scope='projects') }}">View all {{ projects_total }} matching projects →</a>
+  <p class="text-sm opacity-70">
+    <a class="link" href="{{ url_for('global_search', q=search_q, scope='projects') }}">View all {{ projects_total }} matching projects →</a>
   </p>
   {% endif %}
   {% else %}
-  <p class="empty">No projects match.</p>
+  <p class="text-sm opacity-70">No projects match.</p>
   {% endif %}
 </section>
 
 <section>
-  <h2>
+  <h2 class="text-lg font-bold">
     Secrets
-    <span class="muted">
+    <span class="opacity-70">
       ({% if secrets_total > (preview.secrets if preview else 50) %}showing first {{ secrets|length }} of {{ secrets_total }}{% else %}{{ secrets_total }}{% endif %})
     </span>
   </h2>
   {% if secrets %}
-  <div class="table secrets-table"><table class="table">
-    <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th class="col-note">Note</th></tr></thead>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>Key</th><th>Kind</th><th>Project</th><th>Team</th><th>Note</th></tr></thead>
     <tbody>
     {% for s in secrets %}
       <tr>
-        <td class="col-key">
-          <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
-            <code class="k">{{ s.key }}</code>
+        <td>
+          <a class="link" href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
+            <code class="font-mono">{{ s.key }}</code>
           </a>
-          {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error" >overdue</span>
-          {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning" >expiring soon</span>{% endif %}
-          {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error" >rotation overdue</span>
-          {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning" >rotation soon</span>{% endif %}
+          {% if s.due == 'overdue' %}<span class="badge badge-soft badge-error">overdue</span>
+          {% elif s.due == 'soon' %}<span class="badge badge-soft badge-warning">expiring soon</span>{% endif %}
+          {% if s.rotation_due == 'overdue' %}<span class="badge badge-soft badge-error">rotation overdue</span>
+          {% elif s.rotation_due == 'soon' %}<span class="badge badge-soft badge-warning">rotation soon</span>{% endif %}
         </td>
-        <td><span class="badge badge-soft" >{{ s.kind or 'plain' }}</span></td>
-        <td><a href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
-        <td class="muted">{{ s.team_name }}</td>
-        <td class="col-note muted">{{ s.note }}</td>
+        <td><span class="badge badge-soft">{{ s.kind or 'plain' }}</span></td>
+        <td><a class="link" href="{{ url_for('project_detail', project_id=s.project_id) }}">{{ s.project_name }}</a></td>
+        <td class="opacity-70">{{ s.team_name }}</td>
+        <td class="opacity-70">{{ s.note }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table></div>
   {% if secrets_total > secrets|length %}
-  <p class="muted">
-    <a href="{{ url_for('global_search', q=search_q, scope='secrets') }}">View all {{ secrets_total }} matching secrets →</a>
+  <p class="text-sm opacity-70">
+    <a class="link" href="{{ url_for('global_search', q=search_q, scope='secrets') }}">View all {{ secrets_total }} matching secrets →</a>
     · Filter by kind or expiry on the full results page
   </p>
   {% endif %}

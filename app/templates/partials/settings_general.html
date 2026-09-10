@@ -1,176 +1,184 @@
-<section class="list-panel">
-  <h2>Server URL</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Server URL</h2>
+  <p class="text-sm opacity-70">
     Public base URL of this application (no trailing slash). Used for OIDC redirect URIs
     and ESO / External Secrets Operator YAML defaults.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="server_url">
-    <label>Server URL
-      <input type="url" name="server_url" value="{{ settings.server_url or '' }}"
+    <div class="grid gap-1">
+      <label class="label" for="settings-server-url"><span>Server URL</span></label>
+      <input type="url" name="server_url" id="settings-server-url" value="{{ settings.server_url or '' }}"
              placeholder="https://secrets.example.com or http://…" autocomplete="off" class="input">
-    </label>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save server URL</button></p>
+    </div>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save server URL</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Login banner</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Login banner</h2>
+  <p class="text-sm opacity-70">
     Add the required disclosure notice and an optional link to your system-use policy.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="login_banner">
-    <label class="check-row">
-      <input type="checkbox" name="login_banner_enabled" value="1"
+    <label class="flex items-center gap-2" for="settings-login-banner">
+      <input type="checkbox" id="settings-login-banner" name="login_banner_enabled" class="checkbox" value="1"
              {% if settings.login_banner_enabled in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Show login banner
     </label>
-    <label>Banner text
-      <textarea name="login_banner_text" rows="4" maxlength="1000"
+    <div class="grid gap-1">
+      <label class="label" for="settings-login-text"><span>Banner text</span></label>
+      <textarea name="login_banner_text" id="settings-login-text" rows="4" maxlength="1000"
                 placeholder="You are accessing an authorized US Government system…"
                 autocomplete="off" class="textarea">{{ settings.login_banner_text or '' }}</textarea>
-    </label>
-    <label>Policy link text
-      <input type="text" name="login_banner_link_text" maxlength="80"
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="settings-login-link-text"><span>Policy link text</span></label>
+      <input type="text" name="login_banner_link_text" id="settings-login-link-text" maxlength="80"
              value="{{ settings.login_banner_link_text or '' }}"
              placeholder="Acceptable Use Policy" autocomplete="off" class="input">
-    </label>
-    <label>Policy link URL
-      <input type="text" name="login_banner_link_url" maxlength="500"
+    </div>
+    <div class="grid gap-1">
+      <label class="label" for="settings-login-link-url"><span>Policy link URL</span></label>
+      <input type="text" name="login_banner_link_url" id="settings-login-link-url" maxlength="500"
              value="{{ settings.login_banner_link_url or '' }}"
              placeholder="https://… or /policy" autocomplete="off" class="input">
-    </label>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save login banner</button></p>
+    </div>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save login banner</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Reveal &amp; clipboard</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Reveal &amp; clipboard</h2>
+  <p class="text-sm opacity-70">
     Clipboard auto-clear and reveal auto-hide are per-device defaults; the scope
     of an approved reveal grant is server-wide.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="ux">
-    <div class="field-grid">
-      <label>Clipboard auto-clear (seconds, 0 = off)
-        <input type="number" name="clipboard_clear_seconds" min="0" max="3600"
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-1">
+        <label class="label" for="settings-clipboard-secs"><span>Clipboard auto-clear (seconds, 0 = off)</span></label>
+        <input type="number" name="clipboard_clear_seconds" id="settings-clipboard-secs" min="0" max="3600"
                value="{{ settings.clipboard_clear_seconds or 30 }}"
                aria-label="Clipboard auto-clear seconds" class="input">
-      </label>
-      <label>Auto-hide revealed values (seconds, 0 = off)
-        <input type="number" name="reveal_auto_hide_seconds" min="0" max="3600"
+      </div>
+      <div class="grid gap-1">
+        <label class="label" for="settings-autohide-secs"><span>Auto-hide revealed values (seconds, 0 = off)</span></label>
+        <input type="number" name="reveal_auto_hide_seconds" id="settings-autohide-secs" min="0" max="3600"
                value="{{ settings.reveal_auto_hide_seconds or 30 }}"
                aria-label="Auto-hide revealed values seconds" class="input">
-      </label>
-      <label>Reveal grant window (minutes)
-        <input type="number" name="reveal_access_grant_minutes" min="1" max="1440"
+      </div>
+      <div class="grid gap-1">
+        <label class="label" for="settings-grant-mins"><span>Reveal grant window (minutes)</span></label>
+        <input type="number" name="reveal_access_grant_minutes" id="settings-grant-mins" min="1" max="1440"
                value="{{ settings.reveal_access_grant_minutes or 15 }}"
                aria-label="Reveal grant window minutes" class="input">
-      </label>
+      </div>
     </div>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save reveal &amp; clipboard settings</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save reveal &amp; clipboard settings</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Account registration</h2>
-  <p class="muted">
-    Control whether new local accounts can be created at <code>/register</code>.
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Account registration</h2>
+  <p class="text-sm opacity-70">
+    Control whether new local accounts can be created at <code class="font-mono">/register</code>.
     Existing users and LDAP login are unaffected.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="registration">
-    <label class="check-row">
-      <input type="checkbox" name="registration_enabled" value="1"
+    <label class="flex items-center gap-2" for="settings-registration">
+      <input type="checkbox" id="settings-registration" name="registration_enabled" class="checkbox" value="1"
              {% if settings.registration_enabled in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Allow new account registration
     </label>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save registration setting</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save registration setting</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Team creation</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Team creation</h2>
+  <p class="text-sm opacity-70">
     When disabled, only global admins can create teams. Existing teams are unchanged.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="team_creation">
-    <label class="check-row">
-      <input type="checkbox" name="user_team_creation_enabled" value="1"
+    <label class="flex items-center gap-2" for="settings-team-creation">
+      <input type="checkbox" id="settings-team-creation" name="user_team_creation_enabled" class="checkbox" value="1"
              {% if settings.user_team_creation_enabled in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Allow non–global admins to create teams
     </label>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save team creation setting</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save team creation setting</button></p>
   </form>
 </section>
 
-<section class="list-panel">
-  <h2>Two-factor authentication</h2>
-  <p class="muted">
+<section class="rounded-box border border-base-300 p-4">
+  <h2 class="text-lg font-bold">Two-factor authentication</h2>
+  <p class="text-sm opacity-70">
     Any user can enable TOTP. When enforced below, global admins must enroll and cannot disable 2FA.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="totp_enforce">
-    <label class="check-row">
-      <input type="checkbox" name="totp_enforce_global_admins" value="1"
+    <label class="flex items-center gap-2" for="settings-totp-enforce">
+      <input type="checkbox" id="settings-totp-enforce" name="totp_enforce_global_admins" class="checkbox" value="1"
              {% if settings.totp_enforce_global_admins in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Require two-factor authentication for global admins
     </label>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save 2FA policy</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save 2FA policy</button></p>
   </form>
 </section>
 
-<section class="token-policy-section">
-  <div class="section-head">
+<section class="rounded-box border border-base-300 p-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2>Token expiry policy</h2>
-      <p class="muted">Set expiry requirements for newly issued personal access and machine tokens.</p>
+      <h2 class="text-lg font-bold">Token expiry policy</h2>
+      <p class="text-sm opacity-70">Set expiry requirements for newly issued personal access and machine tokens.</p>
     </div>
   </div>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" aria-describedby="token-policy-help">
+  <form method="post" data-dirty-guard onsubmit="this._dirty=false" aria-describedby="token-policy-help" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="token_policy">
-    <p id="token-policy-help" class="field-hint">Maximum lifetime is measured in days and applies when an expiry is required. Lifetime fields are enabled only while the matching expiry requirement is on.</p>
-    <div class="field-grid token-policy-grid">
-      <fieldset class="policy-card">
+    <p id="token-policy-help" class="text-xs opacity-70">Maximum lifetime is measured in days and applies when an expiry is required. Lifetime fields are enabled only while the matching expiry requirement is on.</p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <fieldset class="fieldset rounded-box border border-base-300 p-4">
         <legend class="sr-only">Personal access tokens</legend>
-        <label class="check-row">
-          <input type="checkbox" name="require_pat_expiry" id="require-pat-expiry" value="1"
+        <label class="flex items-center gap-2" for="require-pat-expiry">
+          <input type="checkbox" name="require_pat_expiry" id="require-pat-expiry" class="checkbox" value="1"
                  {% if settings.require_pat_expiry in ('true', '1', 'yes', 'on') %}checked{% endif %}>
           Require personal access token expiry
         </label>
-        <span class="field-hint">Prevent personal tokens from remaining valid indefinitely.</span>
-        <label class="policy-card-limit">Maximum lifetime
+        <span class="text-xs opacity-70">Prevent personal tokens from remaining valid indefinitely.</span>
+        <div class="grid gap-1">
+          <label class="label" for="max-pat-lifetime"><span>Maximum lifetime</span></label>
           <input type="number" name="max_pat_lifetime_days" id="max-pat-lifetime" min="1" max="3650"
                  value="{{ settings.max_pat_lifetime_days or '' }}" placeholder="3650"
                  aria-label="Maximum personal access token lifetime in days" class="input">
-        </label>
+        </div>
       </fieldset>
-      <fieldset class="policy-card">
+      <fieldset class="fieldset rounded-box border border-base-300 p-4">
         <legend class="sr-only">Machine tokens</legend>
-        <label class="check-row">
-          <input type="checkbox" name="require_machine_token_expiry" id="require-machine-token-expiry" value="1"
+        <label class="flex items-center gap-2" for="require-machine-token-expiry">
+          <input type="checkbox" name="require_machine_token_expiry" id="require-machine-token-expiry" class="checkbox" value="1"
                  {% if settings.require_machine_token_expiry in ('true', '1', 'yes', 'on') %}checked{% endif %}>
           Require machine token expiry
         </label>
-        <span class="field-hint">Limit service credentials to a defined lifetime.</span>
-        <label class="policy-card-limit">Maximum lifetime
+        <span class="text-xs opacity-70">Limit service credentials to a defined lifetime.</span>
+        <div class="grid gap-1">
+          <label class="label" for="max-machine-token-lifetime"><span>Maximum lifetime</span></label>
           <input type="number" name="max_machine_token_lifetime_days" id="max-machine-token-lifetime" min="1" max="3650"
                  value="{{ settings.max_machine_token_lifetime_days or '' }}" placeholder="3650"
                  aria-label="Maximum machine token lifetime in days" class="input">
-        </label>
+        </div>
       </fieldset>
     </div>
-    <p class="form-actions"><button type="submit" class="btn btn-neutral">Save token policy</button></p>
+    <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save token policy</button></p>
   </form>
 </section>
-

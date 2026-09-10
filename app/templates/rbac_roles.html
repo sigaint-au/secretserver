@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Roles - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="page-head">
-  <h1>Roles</h1>
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-bold">Roles</h1>
 </div>
-<p class="page-desc muted">
+<p class="text-sm opacity-70">
   Named sets of permissions (verbs × resources). Assign them under
-  <a href="{{ url_for('rbac_bindings') }}">Role bindings</a>.
+  <a class="link" href="{{ url_for('rbac_bindings') }}">Role bindings</a>.
 </p>
 
-<div class="page-side">
-<nav class="page-subnav" aria-label="Roles sections">
+<div class="flex flex-col gap-4">
+<nav class="page-subnav tabs" aria-label="Roles sections">
   <a hx-get="{{ url_for('rbac_roles', tab='builtin') }}" hx-target="#roles-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('rbac_roles', tab='builtin') }}"
-     class="page-subnav-link {% if active_tab == 'builtin' %}active{% endif %}"{% if active_tab == 'builtin' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'builtin' %}active{% endif %} tab{% if active_tab == 'builtin' %} tab-active{% endif %}"{% if active_tab == 'builtin' %} aria-current="page"{% endif %}
   >Built-in
-    <span class="tab-badge">{{ builtin_roles|length }}</span>
+    <span class="badge badge-soft badge-sm">{{ builtin_roles|length }}</span>
   </a>
   <a hx-get="{{ url_for('rbac_roles', tab='custom') }}" hx-target="#roles-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('rbac_roles', tab='custom') }}"
-     class="page-subnav-link {% if active_tab == 'custom' or active_tab == 'create' %}active{% endif %}"{% if active_tab == 'custom' or active_tab == 'create' %} aria-current="page"{% endif %}
+     class="page-subnav-link {% if active_tab == 'custom' or active_tab == 'create' %}active{% endif %} tab{% if active_tab == 'custom' or active_tab == 'create' %} tab-active{% endif %}"{% if active_tab == 'custom' or active_tab == 'create' %} aria-current="page"{% endif %}
   >Custom
-    <span class="tab-badge">{{ custom_roles|length }}</span>
+    <span class="badge badge-soft badge-sm">{{ custom_roles|length }}</span>
   </a>
 </nav>
-<div class="page-panel" id="roles-panel" tabindex="-1">
+<div class="flex min-w-0 flex-col gap-4" id="roles-panel" tabindex="-1">
 
 {% include "partials/roles_panel.html" %}
 </div>
