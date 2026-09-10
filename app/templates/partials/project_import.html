@@ -3,7 +3,7 @@
 
   <h3 class="text-base font-bold">Export</h3>
   <p class="text-sm opacity-70">Prefer encrypted JSON for backups; plaintext formats ask for confirmation first.</p>
-  <form id="export-form" action="#" method="get" class="flex flex-wrap items-end gap-4">
+  <form id="export-form" action="#" method="get" class="flex flex-wrap items-end gap-4" data-export-gate>
     <label>Format
       <select id="export-format" name="format" aria-label="Export format" class="select">
         <option value="{{ url_for('export_secrets', project_id=project.id, format='json', mode='enc') }}"
@@ -20,22 +20,6 @@
       <button type="submit" class="btn btn-neutral">Download</button>
     </p>
   </form>
-  <script>
-  (function () {
-    var form = document.getElementById('export-form');
-    var sel = document.getElementById('export-format');
-    if (!form || !sel) return;
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var opt = sel.options[sel.selectedIndex];
-      if (!opt || !opt.value) return;
-      if (opt.getAttribute('data-plain') === '1') {
-        if (!confirm('Download PLAINTEXT secrets for this project?')) return;
-      }
-      window.location.href = opt.value;
-    });
-  })();
-  </script>
 
   <h3 class="text-base font-bold">Import</h3>
   {% if can_write %}

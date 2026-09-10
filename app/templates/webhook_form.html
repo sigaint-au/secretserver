@@ -37,7 +37,7 @@
   </section>
   {% endif %}
 
-  <form method="post" class="flex flex-col gap-4"
+  <form method="post" class="flex flex-col gap-4" data-require-one="events"
         action="{{ url_for('webhook_create') if mode == 'create' else url_for('webhook_update', webhook_id=webhook.id) }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="back" value="{{ back }}">
@@ -110,7 +110,7 @@
       {% endif %}
     </fieldset>
 
-    <p id="wh-events-error" hidden role="alert" class="alert alert-error">
+    <p id="wh-events-error" hidden role="alert" class="alert alert-error" data-require-error>
       Select at least one event before saving.
     </p>
 
@@ -118,27 +118,13 @@
       <button type="submit" class="btn btn-neutral">{{ 'Save changes' if mode == 'edit' else 'Add webhook' }}</button>
     </p>
   </form>
-  <script>
-    (function () {
-      var form = document.querySelector('.flex.min-w-0 form');
-      if (!form) return;
-      form.addEventListener('submit', function (e) {
-        var err = document.getElementById('wh-events-error');
-        if (!form.querySelector('input[name="events"]:checked')) {
-          e.preventDefault();
-          err.hidden = false;
-        } else {
-          err.hidden = true;
-        }
-      });
-    })();
-  </script>
 
   {% if mode == 'edit' %}
   <details class="collapse collapse-arrow border border-error">
     <summary class="collapse-title font-bold">Danger zone</summary>
     <div class="collapse-content">
-    <form method="post" action="{{ url_for('webhook_delete', webhook_id=webhook.id) }}">
+    <form method="post" action="{{ url_for('webhook_delete', webhook_id=webhook.id) }}"
+          data-confirm="Delete this webhook? Deliveries stop immediately.">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="back" value="{{ back }}">
       <button type="submit" class="btn btn-error">Delete webhook</button>

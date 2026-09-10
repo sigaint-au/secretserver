@@ -410,3 +410,67 @@ document.addEventListener("click", function (evt) {
   if (typeof window.onContent === "function") window.onContent(sync);
   else sync();
 })();
+
+/* Plaintext export gate. Hook: form[data-export-gate] whose format
+   <select> options carry download URLs; options with data-plain="1"
+   need a styled confirm before navigating. Replaces the per-page
+   export script (native confirm + location assign). */
+(function exportGate() {
+  var pendingNav = null;
+
+  function styledConfirm(message, opener, proceed) {
+    var dlg = document.getElementById("confirm-dlg");
+    if (!dlg || typeof window.openDialog !== "function") {
+      if (window.confirm(message)) proceed();
+      return;
+    }
+    pendingNav = proceed;
+    document.getElementById("confirm-dlg-msg").textContent = message;
+    dlg._opener = opener || null;
+    dlg.onclose = function () {
+      pendingNav = null;
+    };
+    window.openDialog(dlg);
+  }
+
+  window.__corvusNavConfirm = function () {
+    var fn = pendingNav;
+    if (!fn) return false;
+    pendingNav = null;
+    var dlg = document.getElementById("confirm-dlg");
+    if (dlg && dlg.open && typeof window.closeDialog === "function") {
+      window.closeDialog(dlg);
+    }
+    fn();
+    return true;
+  };
+
+  document.addEventListener("submit", function (evt) {
+    var form =
+      evt.target && evt.target.closest
+        ? evt.target.closest("form[data-export-gate]")
+        : null;
+    if (!form) return;
+    var sel = form.querySelector("select");
+    var opt = sel && sel.options[sel.selectedIndex];
+    if (!opt || !opt.value) {
+      evt.preventDefault();
+      return;
+    }
+    var go = function () {
+      window.location.href = opt.value;
+    };
+    if (opt.getAttribute("data-plain") === "1") {
+      evt.preventDefault();
+      var btn = form.querySelector('[type="submit"]');
+      styledConfirm(
+        "Download PLAINTEXT secrets for this project?",
+        btn,
+        go
+      );
+    } else {
+      evt.preventDefault();
+      go();
+    }
+  });
+})();

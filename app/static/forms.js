@@ -330,6 +330,37 @@ document.addEventListener(
      stopPropagation) must leave the dirty flag untouched. */
 );
 
+/* Required-choice gate: form[data-require-one="<input name>"] blocks
+   submit until at least one same-named control is checked, showing
+   [data-require-error]. Replaces per-page validation scripts. */
+document.addEventListener(
+  "submit",
+  function (evt) {
+    var form = evt.target;
+    if (!form || form.tagName !== "FORM") return;
+    var name = form.getAttribute("data-require-one");
+    if (!name) return;
+    var ok = false;
+    try {
+      ok =
+        form.querySelector(
+          'input[name="' + name + '"]:checked, ' +
+            'select[name="' + name + '"], ' +
+            'textarea[name="' + name + '"]'
+        ) !== null;
+    } catch (err) {
+      ok = true;
+    }
+    var errBox = form.querySelector("[data-require-error]");
+    if (errBox) errBox.hidden = ok;
+    if (!ok) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+  },
+  true
+);
+
 /* Dim full-page GET search/filter forms the moment they submit. */
 document.addEventListener(
   "submit",
