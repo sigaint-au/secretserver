@@ -14,7 +14,7 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <div class="flex flex-col gap-1">
         <label class="label" for="2fa-code"><span>Authentication code</span></label>
-        <input class="input input-lg w-full text-center font-mono tracking-[0.5em]" type="text" id="2fa-code" name="code" required autocomplete="one-time-code"
+        <input class="input input-lg w-full text-center font-mono tracking-widest" type="text" id="2fa-code" name="code" required autocomplete="one-time-code"
                inputmode="numeric" pattern="[0-9A-Za-z\- ]{6,20}"
                placeholder="123456 or xxxx-xxxx" autofocus>
       </div>

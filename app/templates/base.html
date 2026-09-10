@@ -90,7 +90,7 @@
         <form method="post" action="{{ url_for('select_team') }}" class="rounded-xl bg-white/5 p-2">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
-          <label for="side-team-select" class="label px-1 text-[11px] font-semibold tracking-wider uppercase opacity-60">Team</label>
+          <label for="side-team-select" class="label px-1 text-xs font-semibold tracking-wider uppercase opacity-60">Team</label>
           <div class="join w-full">
             <select id="side-team-select" name="team_id" aria-label="Team"
                     class="select select-sm join-item min-w-0 flex-1">
@@ -110,7 +110,7 @@
             {% for g in nav_groups %}
             <li>
               <details data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
-                <summary class="text-[11px] font-semibold tracking-wider uppercase opacity-60">{{ g['label'] }}</summary>
+                <summary class="text-xs font-semibold tracking-wider uppercase opacity-60">{{ g['label'] }}</summary>
                 <ul>
                   {% for it in g['items'] %}
                   <li>
@@ -129,7 +129,7 @@
             {% if nav_recent %}
             <li>
               <details id="side-recent" data-side-group="recent" open>
-                <summary class="text-[11px] font-semibold tracking-wider uppercase opacity-60">Recent</summary>
+                <summary class="text-xs font-semibold tracking-wider uppercase opacity-60">Recent</summary>
                 <ul>
                   {% for s in nav_recent %}
                   <li>
