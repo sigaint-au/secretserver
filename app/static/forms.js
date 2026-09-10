@@ -67,7 +67,6 @@ document.addEventListener('input', function (ev) {
       const on = t === btn;
       t.setAttribute('aria-selected', on ? 'true' : 'false');
       t.tabIndex = on ? 0 : -1;
-      t.classList.toggle('active', on);
       const panel = t.getAttribute('aria-controls') && document.getElementById(t.getAttribute('aria-controls'));
       if (panel) panel.hidden = !on;
     });
@@ -238,7 +237,7 @@ document.addEventListener('input', function (ev) {
   /* Intercept sidebar subnav links when a guarded form is dirty.
      Capture phase so the confirm runs before HTMX navigation starts. */
   document.addEventListener('click', function (e) {
-    const link = e.target.closest && e.target.closest('.side-nav-link');
+    const link = e.target.closest && e.target.closest('a[data-nav-link]');
     if (!link) return;
     if (findDirtyForm() && !window.confirm('You have unsaved changes. Leave anyway?')) {
       e.preventDefault();

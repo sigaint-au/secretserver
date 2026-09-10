@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/daisyui.min.css') }}"
-        integrity="sha384-U70I1EXUFg+ETzaS+j1xuPFu4MpJ4PJaEnSTbPuhAZmcnFQMxBzoPXlswZlpWqUi">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/daisyui.min.css') }}">
+  {# Synchronous theme init: sets data-theme before first paint (no FOUC). #}
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
   {# htmx 4.0.0 (2026): https://github.com/bigskysoftware/htmx/releases/tag/v4.0.0 #}
-  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer
-        integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>
+  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer></script>
   <meta name="csrf-token" content="{{ csrf_token }}">
 </head>
 <body>
@@ -37,28 +37,19 @@
           {% include "partials/brand_logo.html" %}
           <span>{{ brand_name or 'Corvus' }}</span>
         </a>
+        {% include "partials/theme_toggle.html" %}
       </div>
       <main id="main-content" class="p-4 lg:p-6">
         {% include "partials/flash_messages.html" %}
 
-        <dialog id="confirm-dlg" closedby="any" class="modal" aria-labelledby="confirm-dlg-title">
-          <div class="modal-box">
-            <h3 id="confirm-dlg-title" class="text-lg font-bold">Confirm action</h3>
-            <p id="confirm-dlg-msg" class="py-4"></p>
-            <div class="modal-action">
-              <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
-              <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
-            </div>
-          </div>
-          <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
-        </dialog>
+        {% include "partials/confirm_dialog.html" %}
 
         {% block body %}{% endblock %}
       </main>
     </div>
     <div class="drawer-side">
       <label for="app-drawer" id="side-backdrop" class="drawer-overlay" aria-label="Close navigation menu"></label>
-      <aside id="app-sidebar" class="sidebar bg-base-200 flex min-h-full w-64 flex-col gap-2 p-4">
+      <aside id="app-sidebar" class="bg-base-200 flex min-h-full w-64 flex-col gap-2 p-4">
         <a class="flex items-center gap-2 px-2 pt-1 text-lg font-bold" href="{{ url_for('projects_list') }}">
           {% include "partials/brand_logo.html" %}
           <span class="truncate">
@@ -97,26 +88,16 @@
         <nav class="flex-1" aria-label="Workspace">
           <ul class="menu w-full p-0">
             {% for g in nav_groups %}
+            <li class="menu-title">{{ g['label'] }}</li>
+            {% for it in g['items'] %}
             <li>
-              <details data-side-group="{{ g['key'] }}"{% if g['open'] %} open{% endif %}>
-                <summary class="menu-title">{{ g['label'] }}</summary>
-                <ul>
-                  {% for it in g['items'] %}
-                  <li>
-                    <a class="side-nav-link{% if it['active'] %} menu-active{% endif %}"{% if it['active'] %} aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="badge badge-soft badge-sm ms-auto" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </details>
+              <a data-nav-link{% if it['active'] %} class="menu-active" aria-current="page"{% endif %} href="{{ it['href'] }}">{{ it['label'] }}{% if it['badge'] %}<span class="badge badge-soft badge-sm ms-auto" id="nav-access-badge" title="{{ it['badge'] }} pending">{{ it['badge'] }}</span>{% endif %}</a>
             </li>
             {% endfor %}
-          </ul>
-        </nav>
-        {% include "partials/side_pins.html" %}
-        {% if nav_recent %}
-        <details id="side-recent" data-side-group="recent" open>
-          <summary class="menu-title">Recent</summary>
-          <ul class="menu w-full p-0">
+            {% endfor %}
+            {% include "partials/side_pins.html" %}
+            {% if nav_recent %}
+            <li class="menu-title">Recent</li>
             {% for s in nav_recent %}
             <li>
               <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}"
@@ -126,16 +107,19 @@
               </a>
             </li>
             {% endfor %}
+            {% endif %}
           </ul>
-        </details>
-        {% endif %}
+        </nav>
         <div class="border-t border-base-300 pt-2">
           <ul class="menu w-full p-0">
             <li>
               <a href="{{ url_for('profile') }}" title="{{ session.email }} - My profile" class="truncate">{{ session.email }}</a>
             </li>
           </ul>
-          {% if is_global_admin %}<span class="badge badge-soft badge-sm m-2">Global admin</span>{% endif %}
+          <div class="flex items-center gap-2 px-2 py-1">
+            {% if is_global_admin %}<span class="badge badge-soft badge-sm">Global admin</span>{% endif %}
+            <span class="ms-auto">{% include "partials/theme_toggle.html" %}</span>
+          </div>
           <form method="post" action="{{ url_for('logout') }}">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <button type="submit" class="btn btn-ghost btn-sm w-full justify-start">Log out</button>
@@ -149,33 +133,26 @@
   <div class="flex min-h-screen flex-col justify-center gap-4 p-4">
     <div class="{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-md shadow-xl{% endblock %}">
       <div class="card-body">
-        <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
-          {% include "partials/brand_logo.html" %}
-          <span>
-            {{ brand_name or 'Corvus' }}
-            {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
-          </span>
-        </a>
+        <div class="flex items-center justify-between gap-2">
+          <a class="flex items-center gap-2 text-lg font-bold" href="{{ url_for('login') }}">
+            {% include "partials/brand_logo.html" %}
+            <span>
+              {{ brand_name or 'Corvus' }}
+              {% if brand_tagline %}<span class="block text-xs font-medium uppercase opacity-60">{{ brand_tagline }}</span>{% endif %}
+            </span>
+          </a>
+          {% include "partials/theme_toggle.html" %}
+        </div>
 
         {% include "partials/flash_messages.html" %}
 
-        <dialog id="confirm-dlg" closedby="any" class="modal" aria-labelledby="confirm-dlg-title">
-          <div class="modal-box">
-            <h3 id="confirm-dlg-title" class="text-lg font-bold">Confirm action</h3>
-            <p id="confirm-dlg-msg" class="py-4"></p>
-            <div class="modal-action">
-              <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
-              <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
-            </div>
-          </div>
-          <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
-        </dialog>
+        {% include "partials/confirm_dialog.html" %}
 
         {{ self.body() }}
       </div>
     </div>
     {% if login_banner and login_banner.enabled %}
-    <aside class="login-note alert alert-info mx-auto w-full max-w-md" role="status">
+    <aside id="login-banner" class="alert alert-info mx-auto w-full max-w-md" role="status">
       <span>{{ login_banner.text }}</span>
       {% if login_banner.link_url %}
       <a class="link" href="{{ login_banner.link_url }}" rel="noopener noreferrer">{{ login_banner.link_text }}</a>

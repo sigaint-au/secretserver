@@ -202,10 +202,11 @@ def nav_groups() -> list[dict]:
 
     Single source of truth for sidebar grouping/active-state so new routes
     only need to be added here, not threaded through template tuples.
+    Sections always render expanded as daisyUI ``menu-title`` headers.
 
     Returns:
-        List of group dicts: ``key`` (localStorage id), ``label``, ``open``,
-        and ``items`` (label/href/active/badge).
+        List of group dicts: ``key``, ``label``, and ``items``
+        (label/href/active/badge).
     """
     from flask import request
 
@@ -269,28 +270,9 @@ def nav_groups() -> list[dict]:
         },
     ]
 
-    claimed_eps = set(workspace_eps) | set(teams_eps) | {
-        "access_requests_inbox", "profile", "secrets_list",
-        "shared_secrets_list", "machines_list", "trash",
-    } | set(rbac_eps) | {
-        "rbac_roles", "rbac_roles_create", "rbac_roles_delete",
-        "rbac_access_review", "admin_audit", "admin_audit_access_export",
-        "admin_audit_export", "server_settings",
-    }
-    groups[0]["open"] = any(i["active"] for i in groups[0]["items"]) or (
-        ep not in claimed_eps and ep != "profile")
-    for g in groups[1:]:
-        g["open"] = any(i["active"] for i in g["items"])
-
     if session.get("is_global_admin"):
-        admin_open = (is_rbac_bindings and not rbac_scoped) or ep in (
-            "rbac_roles", "rbac_roles_create", "rbac_roles_delete",
-            "rbac_access_review", "admin_audit", "admin_audit_access_export",
-            "admin_audit_export", "server_settings",
-        )
         groups.append({
             "key": "administration", "label": "Administration",
-            "open": admin_open,
             "items": [
                 {
                     "label": "Role bindings",

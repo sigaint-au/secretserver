@@ -16,7 +16,7 @@
       {% endif %}
     </form>
     {% if can_create_project %}
-    <a class="btn btn-outline btn-sm" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
+    <a class="btn btn-neutral btn-sm" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
     {% endif %}
   </div>
   {% endif %}
@@ -47,32 +47,34 @@
 {% include "partials/empty_state.html" %}
 {% endif %}
 {% else %}
-<p class="text-sm opacity-70">Team: <strong>{{ team.name }}</strong>
+<p class="text-sm opacity-70">Team <span class="badge badge-soft">{{ team.name }}</span>
   · <a class="link" href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Manage access</a>
 </p>
 <section class="flex min-w-0 flex-col gap-4">
   {% if projects %}
-  <div class="overflow-x-auto"><table class="table">
+  <div class="overflow-x-auto rounded-box border border-base-300"><table class="table table-zebra table-pin-rows">
     <thead>
       <tr>
         <th>Name</th>
         <th>Description</th>
         <th>Encryption</th>
         <th>Secrets</th>
+        <th>Created</th>
         <th>ID</th>
       </tr>
     </thead>
     <tbody>
     {% for p in projects %}
-      <tr>
-        <td><a class="link" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+      <tr class="hover">
+        <td><a class="link font-medium" href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
         <td class="opacity-70">{{ p.description or '-' }}</td>
-        <td class="opacity-70">
+        <td><span class="badge badge-soft badge-sm">
           {% if p.key_provider == 'hsm' %}HSM
           {% elif p.key_provider == 'local' %}Local
           {% else %}Server key{% endif %}
-        </td>
-        <td class="opacity-70">{{ p.secret_count if p.secret_count is defined else '-' }}</td>
+        </span></td>
+        <td>{% if p.secret_count is defined %}<span class="badge badge-soft badge-sm">{{ p.secret_count }}</span>{% else %}<span class="opacity-70">-</span>{% endif %}</td>
+        <td class="opacity-70"><span title="{{ p.created_at }}">{{ p.created_at|time_ago }}</span></td>
         <td class="opacity-70"><code class="font-mono">{{ p.id }}</code></td>
       </tr>
     {% endfor %}

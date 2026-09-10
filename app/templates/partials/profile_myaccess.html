@@ -23,13 +23,13 @@
 
   <nav class="tabs tabs-box" aria-label="Access scope">
     <a href="{{ url_for('profile', tab='myaccess', scope='team') }}"
-       class="tab{% if my_access_scope == 'team' %} tab-active active{% endif %}"{% if my_access_scope == 'team' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'team' %} tab-active{% endif %}"{% if my_access_scope == 'team' %} aria-current="page"{% endif %}
     >Team access</a>
     <a href="{{ url_for('profile', tab='myaccess', scope='project') }}"
-       class="tab{% if my_access_scope == 'project' %} tab-active active{% endif %}"{% if my_access_scope == 'project' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'project' %} tab-active{% endif %}"{% if my_access_scope == 'project' %} aria-current="page"{% endif %}
     >Project access</a>
     <a href="{{ url_for('profile', tab='myaccess', scope='secret') }}"
-       class="tab{% if my_access_scope == 'secret' %} tab-active active{% endif %}"{% if my_access_scope == 'secret' %} aria-current="page"{% endif %}
+       class="tab{% if my_access_scope == 'secret' %} tab-active{% endif %}"{% if my_access_scope == 'secret' %} aria-current="page"{% endif %}
     >Secret access</a>
   </nav>
 

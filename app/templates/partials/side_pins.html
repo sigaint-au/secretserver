@@ -1,18 +1,14 @@
-{# Pinned secrets shortcut list. data-side-group="pins" keeps the sidebar
-   persistence helper in sync; oob swaps refresh it without a reload. #}
-<details id="side-pins" data-side-group="pins"{% if nav_pins %} open{% endif %}{% if oob %} hx-swap-oob="true"{% endif %}>
-  {% if nav_pins %}
-  <summary class="menu-title">Pinned</summary>
-  <ul class="menu w-full p-0">
-    {% for s in nav_pins %}
-    <li>
-      <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}"
-         title="{{ s.team_name }} / {{ s.project_name }}">
-        <span class="font-mono text-xs">{{ s.key }}</span>
-        <span class="truncate text-xs opacity-60">{{ s.project_name }}</span>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-</details>
+{# Pinned secrets shortcut list: one menu item of the sidebar menu holding
+   the section title and pinned links. The whole item swaps out-of-band
+   (id="side-pins") so pin/unpin refreshes it without a reload; it stays
+   hidden until the first pin. #}
+<li id="side-pins"{% if oob %} hx-swap-oob="true"{% endif %}{% if not nav_pins %} hidden{% endif %}>
+  <span class="menu-title">Pinned</span>
+  {% for s in nav_pins %}
+  <a href="{{ url_for('project_detail', project_id=s.project_id, tab='secrets', q=s.key) }}"
+     title="{{ s.team_name }} / {{ s.project_name }}">
+    <span class="font-mono text-xs">{{ s.key }}</span>
+    <span class="truncate text-xs opacity-60">{{ s.project_name }}</span>
+  </a>
+  {% endfor %}
+</li>

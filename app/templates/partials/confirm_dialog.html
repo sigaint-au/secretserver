@@ -1,0 +1,13 @@
+{# Shared confirm dialog (daisyUI modal). Opened by dialogs.js via
+   hx-confirm / data-confirm hooks; confirm-dlg-msg/ok are wired there. #}
+<dialog id="confirm-dlg" closedby="any" class="modal" aria-labelledby="confirm-dlg-title">
+  <div class="modal-box">
+    <h3 id="confirm-dlg-title" class="text-lg font-bold">Confirm action</h3>
+    <p id="confirm-dlg-msg" class="py-4"></p>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" data-close-dialog="confirm-dlg">Cancel</button>
+      <button type="button" id="confirm-dlg-ok" class="btn btn-error">Confirm</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+</dialog>

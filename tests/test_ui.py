@@ -40,16 +40,16 @@ class TestUIShell:
 
     def test_app_js_is_plain_javascript(self):
         # Leftover HTML <script> wrappers from the base.html extraction make
-        # the whole file a SyntaxError, so sidebar group persistence never runs
-        # and clicking a nav item collapses every other <details> menu.
+        # the whole file a SyntaxError, so the sidebar subnav highlight
+        # never moves on HTMX navigation.
         c = store.app.test_client()
-        for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js"):
+        for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js", "theme.js"):
             r = c.get(f"/static/{name}")
             assert r.status_code == 200
             assert b"<script>" not in r.data
             assert b"</script>" not in r.data
         r = c.get("/static/sidebar.js")
-        assert b"secretstore.sidebar.groups" in r.data
+        assert b"menu-active" in r.data
 
     def test_app_has_sidebar(self):
         c = store.app.test_client()
@@ -75,6 +75,28 @@ class TestUIShell:
         assert b"side-team-select" in r.data
         assert b"Active team" not in r.data
         assert b"Server settings" not in r.data
+
+    def test_shell_has_explicit_theme_toggle(self):
+        # The light/dark toggle is a daisyUI swap synced by theme.js
+        # (no backend involvement); it must render in both layouts.
+        c = store.app.test_client()
+        with c.session_transaction() as s:
+            s["user_id"] = str(uuid4())
+            s["email"] = "x@y.z"
+        conn, _ = _conn(fetchall=[])
+        with (
+            patch.object(db, "as_user", return_value=conn),
+            patch.object(authz, "is_global_admin", return_value=False),
+        ):
+            r = c.get("/teams")
+        assert r.status_code == 200
+        assert b"theme.js" in r.data
+        assert b"data-theme-toggle" in r.data
+        assert b"Toggle dark mode" in r.data
+        anon = store.app.test_client()
+        r_login = anon.get("/login")
+        assert r_login.status_code == 200
+        assert b"data-theme-toggle" in r_login.data
 
     def test_global_admin_sees_settings_nav(self):
         c = store.app.test_client()
@@ -286,10 +308,11 @@ class TestUIShell:
         assert r2.status_code == 200
         assert r2.data.count(b">Role bindings</a>") == 1
 
-    def test_non_admin_role_bindings_keeps_organisation_open(self):
+    def test_non_admin_role_bindings_highlights_organisation_link(self):
         # Members reach Role bindings from Organisation. That endpoint used to
-        # be classified as Administration, so the Organisation <details> closed
-        # and nothing replaced it (Administration is hidden for non-admins).
+        # be classified as Administration, so no Organisation link highlighted
+        # (Administration is hidden for non-admins). Sections always render
+        # expanded; exactly one link carries the active highlight.
         tid = str(uuid4())
         team = {
             "id": tid,
@@ -334,8 +357,9 @@ class TestUIShell:
         ):
             r = c.get(f"/rbac/bindings?scope=team&scope_id={tid}")
         assert r.status_code == 200
-        assert b'data-side-group="account" open' in r.data
-        assert b'data-side-group="administration"' not in r.data
+        assert b'<li class="menu-title">Organisation</li>' in r.data
+        assert b'<li class="menu-title">Administration</li>' not in r.data
+        assert r.data.count(b"menu-active") == 1
         # Same default as other Organisation pages (e.g. Teams).
         teams = store.app.test_client()
         with teams.session_transaction() as s:
@@ -349,9 +373,9 @@ class TestUIShell:
         ):
             r_teams = teams.get("/teams")
         assert r_teams.status_code == 200
-        assert b'data-side-group="account" open' in r_teams.data
+        assert b'<li class="menu-title">Organisation</li>' in r_teams.data
 
-    def test_global_admin_role_bindings_keeps_administration_open(self):
+    def test_global_admin_role_bindings_highlights_administration_link(self):
         tid = str(uuid4())
         team = {
             "id": tid,
@@ -396,8 +420,8 @@ class TestUIShell:
         ):
             r = c.get("/rbac/bindings?scope=team")
         assert r.status_code == 200
-        assert b'data-side-group="administration" open' in r.data
-        assert b'data-side-group="account" open' not in r.data
+        assert b'<li class="menu-title">Administration</li>' in r.data
+        assert r.data.count(b"menu-active") == 1
 
     def test_app_has_skip_link_and_responsive_table_css(self):
         c = store.app.test_client()

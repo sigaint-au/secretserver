@@ -1,9 +1,13 @@
 /* Corvus daisyUI bundle input (Tailwind CSS v4).
    Rebuild with: sh scripts/build-css.sh
    Output (committed, served self-hosted): app/static/vendor/daisyui.min.css
-   Uses daisyUI's built-in light (default) and dark (prefers-color-scheme)
-   themes; all UI styling is daisyUI 5 + Tailwind utilities, no custom CSS. */
+   Uses daisyUI's built-in light (default) and dark themes; the explicit
+   light/dark toggle (app/static/theme.js) sets data-theme and persists the
+   choice in localStorage, falling back to prefers-color-scheme.
+   All UI styling is daisyUI 5 + Tailwind utilities, no custom CSS. */
 @import "tailwindcss";
 @source "../app/templates";
 @source "../app/static";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}

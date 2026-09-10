@@ -2,10 +2,10 @@
 {% if webhook_filter is defined %}
 <nav class="tabs tabs-box" aria-label="Webhook scope">
   <a href="{{ url_for('server_settings', tab='webhooks', filter='cluster') }}"
-     class="tab{% if webhook_filter == 'cluster' %} tab-active active{% endif %}"{% if webhook_filter == 'cluster' %} aria-current="page"{% endif %}
+     class="tab{% if webhook_filter == 'cluster' %} tab-active{% endif %}"{% if webhook_filter == 'cluster' %} aria-current="page"{% endif %}
   >Cluster wide</a>
   <a href="{{ url_for('server_settings', tab='webhooks', filter='all') }}"
-     class="tab{% if webhook_filter == 'all' %} tab-active active{% endif %}"{% if webhook_filter == 'all' %} aria-current="page"{% endif %}
+     class="tab{% if webhook_filter == 'all' %} tab-active{% endif %}"{% if webhook_filter == 'all' %} aria-current="page"{% endif %}
   >All webhooks</a>
 </nav>
 {% endif %}

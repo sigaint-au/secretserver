@@ -131,7 +131,7 @@
     </fieldset>
 
       <div role="tablist" class="tabs tabs-box role-mode-tabs">
-        <button type="button" class="tab tab-active active" data-mode="form" id="mode-form-btn"
+        <button type="button" class="tab tab-active" data-mode="form" id="mode-form-btn"
                 role="tab" aria-selected="true" aria-controls="mode-form-panel">Form</button>
         <button type="button" class="tab" data-mode="yaml" id="mode-yaml-btn"
                 role="tab" aria-selected="false" aria-controls="mode-yaml-panel">YAML</button>
@@ -210,9 +210,7 @@ verbs: *
     var isForm = mode === 'form';
     formPanel.hidden = !isForm;
     yamlPanel.hidden = isForm;
-    formBtn.classList.toggle('active', isForm);
     formBtn.classList.toggle('tab-active', isForm);
-    yamlBtn.classList.toggle('active', !isForm);
     yamlBtn.classList.toggle('tab-active', !isForm);
     formBtn.setAttribute('aria-selected', isForm ? 'true' : 'false');
     yamlBtn.setAttribute('aria-selected', isForm ? 'false' : 'true');
