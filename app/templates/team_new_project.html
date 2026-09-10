@@ -14,7 +14,8 @@
 <p class="text-sm opacity-70">{{ team.name }}</p>
 
 <form method="post" action="{{ url_for('create_project', team_id=team.id) }}" class="flex flex-col gap-4"
-      onsubmit="var h=this.querySelector('input[name=encryption]:checked');return h&&h.value==='hsm'?confirm('Create with an HSM-wrapped key? The HSM must stay available for future access.'):true;">
+      data-confirm="Create with an HSM-wrapped key? The HSM must stay available for future access."
+      data-confirm-if="input[name=encryption][value=hsm]">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
   <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">

@@ -1,6 +1,6 @@
 <form method="post" action="{{ url_for('update_team_settings', team_id=team.id) }}"
       id="team-settings-form" data-dirty-guard
-      onsubmit="this._dirty=false" class="flex flex-col gap-4">
+      class="flex flex-col gap-4">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
   <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
@@ -30,23 +30,28 @@
     </fieldset>
   </section>
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm"
+           x-data="{ override: {{ 'true' if team.classification_enabled is not none else 'false' }} }">
     <h2 class="text-lg font-bold">Classification banner</h2>
     <p class="text-sm opacity-70">Optional override of the server banner while this team is selected.</p>
     <label class="flex items-center gap-2" for="class-override">
       <input type="checkbox" name="use_classification_override" id="class-override" class="checkbox" value="1"
              {% if team.classification_enabled is not none %}checked{% endif %}
-             onchange="syncTeamClassForm()">
+             x-model="override">
       Override the server classification banner
     </label>
-    <div id="team-banner-fields">
-      <fieldset class="fieldset">
+    <div id="team-banner-fields"
+         {% if team.classification_enabled is none %}hidden{% endif %}
+         x-bind:hidden="!override">
+      <fieldset class="fieldset"
+                {% if team.classification_enabled is none %}disabled{% endif %}
+                x-bind:disabled="!override">
         <legend class="fieldset-legend">Banner</legend>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="flex items-center gap-2 sm:col-span-2" for="classification_enabled">
             <input type="checkbox" name="classification_enabled" id="classification_enabled" class="checkbox" value="1"
                    {% if team.classification_enabled %}checked{% endif %}
-                   onchange="updatePreview()">
+                   @change="window.updatePreview && window.updatePreview()">
             Show banner
           </label>
           <div class="grid gap-1 sm:col-span-2">
@@ -54,18 +59,18 @@
             <input type="text" name="classification_text" id="classification_text" maxlength="120"
                    value="{{ team.classification_text or classification.text or 'OFFICIAL' }}"
                    placeholder="OFFICIAL - SENSITIVE"
-                   oninput="updatePreview()" class="input">
+                   @input="window.updatePreview && window.updatePreview()" class="input">
           </div>
           <div class="grid gap-1">
             <span class="label" id="team-bg-label">Background</span>
             <div class="flex items-center gap-2" role="group" aria-labelledby="team-bg-label">
               <input type="color" id="classification_color_picker" aria-label="Background colour picker"
                      value="{{ team.classification_color or classification.color or '#677381' }}"
-                     oninput="document.getElementById('classification_color').value=this.value; updatePreview();" class="input h-10 w-14 p-1">
+                     @input="document.getElementById('classification_color').value = $event.target.value; window.updatePreview && window.updatePreview()" class="input h-10 w-14 p-1">
               <input type="text" name="classification_color" id="classification_color"
                      value="{{ team.classification_color or classification.color or '#677381' }}"
                      pattern="#[0-9A-Fa-f]{6}"
-                     oninput="syncColor('classification_color'); updatePreview();" class="input" aria-label="Background colour hex">
+                     @input="window.syncColor && window.syncColor('classification_color'); window.updatePreview && window.updatePreview()" class="input" aria-label="Background colour hex">
             </div>
           </div>
           <div class="grid gap-1">
@@ -73,11 +78,11 @@
             <div class="flex items-center gap-2" role="group" aria-labelledby="team-fg-label">
               <input type="color" id="classification_fg_picker" aria-label="Text colour picker"
                      value="{{ team.classification_fg or classification.fg or '#ffffff' }}"
-                     oninput="document.getElementById('classification_fg').value=this.value; updatePreview();" class="input h-10 w-14 p-1">
+                     @input="document.getElementById('classification_fg').value = $event.target.value; window.updatePreview && window.updatePreview()" class="input h-10 w-14 p-1">
               <input type="text" name="classification_fg" id="classification_fg"
                      value="{{ team.classification_fg or classification.fg or '#ffffff' }}"
                      pattern="#[0-9A-Fa-f]{6}"
-                     oninput="syncColor('classification_fg'); updatePreview();" class="input" aria-label="Text colour hex">
+                     @input="window.syncColor && window.syncColor('classification_fg'); window.updatePreview && window.updatePreview()" class="input" aria-label="Text colour hex">
             </div>
           </div>
         </div>
@@ -102,20 +107,6 @@
 </form>
 {% set _preview_id = 'team-banner-preview' %}
 {% include "partials/color_picker_js.html" %}
-<script>
-function syncTeamClassForm() {
-  var on = document.getElementById('class-override').checked;
-  var box = document.getElementById('team-banner-fields');
-  if (!box) return;
-  box.hidden = !on;
-  box.querySelectorAll('input, button').forEach(function (el) {
-    if (el.type === 'hidden') return;
-    el.disabled = !on;
-  });
-  if (on && typeof updatePreview === 'function') updatePreview();
-}
-syncTeamClassForm();
-</script>
 
 <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Directory groups</h2>
@@ -143,7 +134,7 @@ syncTeamClassForm();
             <form method="post"
                   action="{{ url_for('delete_team_ldap_map', team_id=team.id, map_id=m.id) }}"
                   class="inline"
-                  onsubmit="return confirm('Remove this LDAP mapping?')">
+                  data-confirm="Remove this LDAP mapping?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link link-error">Remove</button>
             </form>
@@ -193,7 +184,7 @@ syncTeamClassForm();
             <form method="post"
                   action="{{ url_for('delete_team_oidc_map', team_id=team.id, map_id=m.id) }}"
                   class="inline"
-                  onsubmit="return confirm('Remove this OIDC mapping?')">
+                  data-confirm="Remove this OIDC mapping?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" class="link link-error">Remove</button>
             </form>
@@ -233,7 +224,7 @@ syncTeamClassForm();
   <p class="text-sm opacity-70">Transfer ownership: the chosen user becomes owner and you become admin.</p>
   <form method="post" action="{{ url_for('transfer_team_ownership', team_id=team.id) }}"
         class="flex flex-col gap-4"
-        onsubmit="return confirm('Transfer ownership to ' + (this.email.value || 'this user') + '? You will become admin.')">
+        data-confirm="Transfer ownership to {email}? You will become admin.">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-1 sm:col-span-2">
@@ -262,7 +253,7 @@ syncTeamClassForm();
                data-confirm-for="delete-team-btn" data-confirm-value="{{ team.name }}" class="input">
       </div>
       <p class="flex flex-wrap items-center gap-2 pt-2">
-        <button type="submit" id="delete-team-btn" class="btn btn-error">Delete team</button>
+        <button type="submit" id="delete-team-btn" class="btn btn-error" disabled>Delete team</button>
       </p>
     </form>
   </div>

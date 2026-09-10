@@ -142,6 +142,12 @@ function restoreAccessBusy(form) {
     }
 
     if (near("#confirm-dlg-ok")) {
+      if (
+        window.__corvusFormConfirm &&
+        window.__corvusFormConfirm()
+      ) {
+        return;
+      }
       settleConfirm(true);
     }
   });
@@ -219,6 +225,83 @@ function restoreAccessBusy(form) {
       window.applyPreset(sw.getAttribute("data-bg"), sw.getAttribute("data-fg") || "#ffffff");
     }
   });
+
+  /* Styled confirm gate for plain (non-HTMX) POST forms. Hook:
+     form[data-confirm], with optional data-confirm-if (gate only when
+     the selector matches a checked control) and {field} placeholders
+     filled from the form's named fields. Replaces native confirm()
+     so plain destructive posts share the app dialog styling.
+     Capture phase + stopPropagation: a dismissed gate must not reach
+     the duplicate-submit guard (buttons stay usable). */
+  var pendingForm = null;
+
+  function formMessage(form) {
+    var raw = form.getAttribute("data-confirm") || "Are you sure?";
+    return raw.replace(/\{([A-Za-z0-9_-]+)\}/g, function (match, name) {
+      var field = form.elements ? form.elements.namedItem(name) : null;
+      var val = field && field.value ? String(field.value).trim() : "";
+      return val || "this user";
+    });
+  }
+
+  function gateApplies(form) {
+    var sel = form.getAttribute("data-confirm-if");
+    if (!sel) return true;
+    var node = null;
+    try {
+      node = form.querySelector(sel);
+    } catch (err) {
+      node = null;
+    }
+    return !!(node && node.checked);
+  }
+
+  document.addEventListener(
+    "submit",
+    function (evt) {
+      var form = evt.target;
+      if (!form || form.tagName !== "FORM" || !form.hasAttribute("data-confirm")) {
+        return;
+      }
+      if (form.__corvusConfirmed) {
+        form.__corvusConfirmed = false;
+        return;
+      }
+      if (!gateApplies(form)) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      var dlg = document.getElementById("confirm-dlg");
+      if (!dlg) {
+        /* No styled dialog available: fall back to native confirm. */
+        if (window.confirm(formMessage(form))) {
+          form.__corvusConfirmed = true;
+          if (form.requestSubmit) form.requestSubmit();
+          else form.submit();
+        }
+        return;
+      }
+      pendingForm = form;
+      document.getElementById("confirm-dlg-msg").textContent = formMessage(form);
+      dlg._opener = form.querySelector('button[type="submit"]');
+      dlg.onclose = function () {
+        pendingForm = null;
+      };
+      openDialog(dlg);
+    },
+    true
+  );
+
+  window.__corvusFormConfirm = function () {
+    var form = pendingForm;
+    if (!form) return false;
+    pendingForm = null;
+    var dlg = document.getElementById("confirm-dlg");
+    if (dlg && dlg.open) closeDialog(dlg);
+    form.__corvusConfirmed = true;
+    if (form.requestSubmit) form.requestSubmit();
+    else form.submit();
+    return true;
+  };
 
   /* After an access-request POST re-renders its dialog, keep it open. */
   function keepOpen(node) {

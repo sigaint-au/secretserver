@@ -287,6 +287,19 @@ document.addEventListener("input", function (evt) {
   );
 })();
 
+/* Intentional submits are saves, not abandonment: drop the dirty flag
+   so the unload prompt never fires for the form's own navigation.
+   Capture phase; purely bookkeeping, never blocks the submit. */
+document.addEventListener(
+  "submit",
+  function (evt) {
+    var form = evt.target;
+    if (form && form.tagName === "FORM") form.__corvusDirty = false;
+  }
+  /* Bubble phase: a confirm gate that cancels the submit (capture +
+     stopPropagation) must leave the dirty flag untouched. */
+);
+
 /* Dim full-page GET search/filter forms the moment they submit. */
 document.addEventListener(
   "submit",
