@@ -22,24 +22,35 @@
 <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
 <nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Team sections">
 <ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
-  {% set team_tabs = [
-    ('Overview', [('projects', 'Projects', none), ('activity', 'Activity', none)]),
-    ('People', [('members', 'Members', none), ('groups', 'Groups', none)]),
-  ] %}
+  <li class="menu-title">Overview</li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='projects') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}"
+     class="page-subnav-link{% if active_tab == 'projects' %} menu-active{% endif %}"{% if active_tab == 'projects' %} aria-current="page"{% endif %}
+  >Projects</a></li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='activity') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='activity') }}"
+     class="page-subnav-link{% if active_tab == 'activity' %} menu-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
+  >Activity</a></li>
+  <li class="menu-title">People</li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='members') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='members') }}"
+     class="page-subnav-link{% if active_tab == 'members' %} menu-active{% endif %}"{% if active_tab == 'members' %} aria-current="page"{% endif %}
+  >Members</a></li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='groups') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='groups') }}"
+     class="page-subnav-link{% if active_tab == 'groups' %} menu-active{% endif %}"{% if active_tab == 'groups' %} aria-current="page"{% endif %}
+  >Groups</a></li>
   {% if is_admin %}
-  {% set team_tabs = team_tabs + [
-    ('Administration', [('access', 'Access', 'Role bindings for this team'), ('webhooks', 'Webhooks', none), ('settings', 'Settings', none)]),
-  ] %}
+  <li class="menu-title">Administration</li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='access') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='access') }}"
+     class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %} title="Role bindings for this team"
+  >Access</a></li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='webhooks') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='webhooks') }}"
+     class="page-subnav-link{% if active_tab == 'webhooks' %} menu-active{% endif %}"{% if active_tab == 'webhooks' %} aria-current="page"{% endif %}
+  >Webhooks</a></li>
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='settings') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='settings') }}"
+     class="page-subnav-link{% if active_tab == 'settings' %} menu-active{% endif %}"{% if active_tab == 'settings' %} aria-current="page"{% endif %}
+  >Settings</a></li>
   {% endif %}
-  {% set team_tabs = team_tabs + [(none, [('meta', 'Metadata', none)])] %}
-  {% for group_label, tabs in team_tabs %}
-  {% if group_label %}<li class="menu-title">{{ group_label }}</li>{% endif %}
-  {% for tab_id, tab_label, tab_title in tabs %}
-  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab=tab_id) }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab=tab_id) }}"
-     class="page-subnav-link{% if active_tab == tab_id %} menu-active{% endif %}"{% if active_tab == tab_id %} aria-current="page"{% endif %}{% if tab_title %} title="{{ tab_title }}"{% endif %}
-  >{{ tab_label }}</a></li>
-  {% endfor %}
-  {% endfor %}
+  <li><a hx-get="{{ url_for('team_detail', team_id=team.id, tab='meta') }}" hx-target="#team-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('team_detail', team_id=team.id, tab='meta') }}"
+     class="page-subnav-link{% if active_tab == 'meta' %} menu-active{% endif %}"{% if active_tab == 'meta' %} aria-current="page"{% endif %}
+  >Metadata</a></li>
 </ul>
 </nav>
 <div class="flex min-w-0 flex-1 flex-col gap-4" id="team-panel" tabindex="-1">

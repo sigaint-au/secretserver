@@ -41,20 +41,44 @@
 <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
 <nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Project sections">
 <ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
-  {% set project_tabs = [
-    ('Secrets', [('secrets', 'Secrets', none, true), ('requests', 'Requests', none, true), ('import', 'Import / Export', none, true)]),
-    ('Administration', [('access', 'Access', 'Role bindings for this project', can_admin), ('audit', 'Activity', none, true), ('tokens', 'Machine accounts', none, true), ('integrations', 'Integrations', none, true), ('webhooks', 'Webhooks', none, can_admin), ('settings', 'Settings', none, can_settings), ('meta', 'Metadata', none, true)]),
-  ] %}
-  {% for group_label, tabs in project_tabs %}
-  <li class="menu-title">{{ group_label }}</li>
-  {% for tab_id, tab_label, tab_title, tab_show in tabs %}
-  {% if tab_show %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab=tab_id) }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab=tab_id) }}"
-     class="page-subnav-link{% if active_tab == tab_id %} menu-active{% endif %}"{% if active_tab == tab_id %} aria-current="page"{% endif %}{% if tab_title %} title="{{ tab_title }}"{% endif %}
-  >{{ tab_label }}{% if tab_id == 'requests' and access_pending_count %}<span class="badge badge-soft badge-sm" title="{{ access_pending_count }} pending">{{ access_pending_count }}</span>{% endif %}</a></li>
+  <li class="menu-title">Secrets</li>
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}"
+     class="page-subnav-link{% if active_tab == 'secrets' %} menu-active{% endif %}"{% if active_tab == 'secrets' %} aria-current="page"{% endif %}
+  >Secrets</a></li>
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='requests') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='requests') }}"
+     class="page-subnav-link{% if active_tab == 'requests' %} menu-active{% endif %}"{% if active_tab == 'requests' %} aria-current="page"{% endif %}
+  >Requests{% if access_pending_count %}<span class="badge badge-soft badge-sm" title="{{ access_pending_count }} pending">{{ access_pending_count }}</span>{% endif %}</a></li>
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='import') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='import') }}"
+     class="page-subnav-link{% if active_tab == 'import' %} menu-active{% endif %}"{% if active_tab == 'import' %} aria-current="page"{% endif %}
+  >Import / Export</a></li>
+  <li class="menu-title">Administration</li>
+  {% if can_admin %}
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='access') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}"
+     class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %} title="Role bindings for this project"
+  >Access</a></li>
   {% endif %}
-  {% endfor %}
-  {% endfor %}
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='audit') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"
+     class="page-subnav-link{% if active_tab == 'audit' %} menu-active{% endif %}"{% if active_tab == 'audit' %} aria-current="page"{% endif %}
+  >Activity</a></li>
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}"
+     class="page-subnav-link{% if active_tab == 'tokens' %} menu-active{% endif %}"{% if active_tab == 'tokens' %} aria-current="page"{% endif %}
+  >Machine accounts</a></li>
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}"
+     class="page-subnav-link{% if active_tab == 'integrations' %} menu-active{% endif %}"{% if active_tab == 'integrations' %} aria-current="page"{% endif %}
+  >Integrations</a></li>
+  {% if can_admin %}
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}"
+     class="page-subnav-link{% if active_tab == 'webhooks' %} menu-active{% endif %}"{% if active_tab == 'webhooks' %} aria-current="page"{% endif %}
+  >Webhooks</a></li>
+  {% endif %}
+  {% if can_settings %}
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='settings') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
+     class="page-subnav-link{% if active_tab == 'settings' %} menu-active{% endif %}"{% if active_tab == 'settings' %} aria-current="page"{% endif %}
+  >Settings</a></li>
+  {% endif %}
+  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='meta') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='meta') }}"
+     class="page-subnav-link{% if active_tab == 'meta' %} menu-active{% endif %}"{% if active_tab == 'meta' %} aria-current="page"{% endif %}
+  >Metadata</a></li>
 </ul>
 </nav>
 <div class="flex min-w-0 flex-1 flex-col gap-4" id="project-panel" tabindex="-1">
