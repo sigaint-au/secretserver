@@ -4,7 +4,7 @@
     Authorization-code login (Keycloak and other OIDC providers). Accounts are linked by
     <strong>email</strong> on first SSO sign-in; local password login stays available for break-glass.
   </p>
-  <form method="post" class="flex flex-col gap-4" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" class="flex flex-col gap-4" data-dirty-guard>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
     <label class="flex items-center gap-2" for="oidc-enabled">
@@ -110,7 +110,7 @@
         <td><span class="badge badge-soft">{{ m.role }}</span></td>
         <td class="text-right">
           <form method="post" class="inline"
-                onsubmit="return confirm('Remove this mapping?')">
+                data-confirm="Remove this mapping?">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="action" value="oidc_role_map_delete">
             <input type="hidden" name="map_id" value="{{ m.id }}">

@@ -7,21 +7,12 @@
 <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
 <nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Auditing sections">
 <ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
-  <li><a href="{{ url_for('admin_audit', tab='access') }}"
-     class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %}
-  >Grants export</a></li>
-  <li><a href="{{ url_for('admin_audit', tab='roles') }}"
-     class="page-subnav-link{% if active_tab == 'roles' %} menu-active{% endif %}"{% if active_tab == 'roles' %} aria-current="page"{% endif %}
-  >Role changes</a></li>
-  <li><a href="{{ url_for('admin_audit', tab='activity') }}"
-     class="page-subnav-link{% if active_tab == 'activity' %} menu-active{% endif %}"{% if active_tab == 'activity' %} aria-current="page"{% endif %}
-  >Secret activity</a></li>
-  <li><a href="{{ url_for('admin_audit', tab='logins') }}"
-     class="page-subnav-link{% if active_tab == 'logins' %} menu-active{% endif %}"{% if active_tab == 'logins' %} aria-current="page"{% endif %}
-  >Sign-in failures</a></li>
-  <li><a href="{{ url_for('admin_audit', tab='export') }}"
-     class="page-subnav-link{% if active_tab == 'export' %} menu-active{% endif %}"{% if active_tab == 'export' %} aria-current="page"{% endif %}
-  >Export &amp; retention</a></li>
+  {% set audit_tabs = [('access', 'Grants export'), ('roles', 'Role changes'), ('activity', 'Secret activity'), ('logins', 'Sign-in failures'), ('export', 'Export & retention')] %}
+  {% for tab_id, tab_label in audit_tabs %}
+  <li><a href="{{ url_for('admin_audit', tab=tab_id) }}"
+     class="page-subnav-link{% if active_tab == tab_id %} menu-active{% endif %}"{% if active_tab == tab_id %} aria-current="page"{% endif %}
+  >{{ tab_label }}</a></li>
+  {% endfor %}
 </ul>
 </nav>
 <div class="flex min-w-0 flex-1 flex-col gap-4">
@@ -437,7 +428,7 @@
     {% endif %}
   </p>
   <form method="post" class="flex flex-wrap items-center gap-2 pt-2"
-        onsubmit="return confirm('Permanently delete audit rows older than the configured retention? This cannot be undone.')">
+        data-confirm="Permanently delete audit rows older than the configured retention? This cannot be undone.">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="tab" value="export">
     <input type="hidden" name="action" value="purge">

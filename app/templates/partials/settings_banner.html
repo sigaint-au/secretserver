@@ -1,11 +1,12 @@
 <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
   <h2 class="text-lg font-bold">Classification banner</h2>
   <p class="text-sm opacity-70">Shown at the top of every page when enabled.</p>
-  <form method="post" id="banner-form" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" id="banner-form" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="classification">
     <label class="flex items-center gap-2" for="classification_enabled">
       <input type="checkbox" id="classification_enabled" name="classification_enabled" class="checkbox" value="1"
+             @change="window.updatePreview && window.updatePreview()"
              {% if settings.classification_enabled in ('true', '1', 'yes', 'on') %}checked{% endif %}>
       Show classification banner
     </label>
@@ -15,7 +16,8 @@
       <label class="label" for="classification_text"><span>Banner text</span></label>
       <input type="text" name="classification_text" id="classification_text" maxlength="120"
              value="{{ settings.classification_text }}"
-             placeholder="OFFICIAL - SENSITIVE" required class="input">
+             placeholder="OFFICIAL - SENSITIVE" required class="input"
+             @input="window.updatePreview && window.updatePreview()">
     </div>
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-1">
@@ -23,10 +25,10 @@
         <div class="flex items-center gap-2" role="group" aria-labelledby="banner-bg-label">
           <input type="color" id="classification_color_picker" aria-label="Background colour picker"
                  value="{{ settings.classification_color }}"
-                 oninput="document.getElementById('classification_color').value=this.value; updatePreview();" class="input h-10 w-14 p-1">
+                 @input="document.getElementById('classification_color').value = $event.target.value; window.updatePreview && window.updatePreview()" class="input h-10 w-14 p-1">
           <input type="text" name="classification_color" id="classification_color"
                  value="{{ settings.classification_color }}" pattern="#[0-9A-Fa-f]{6}"
-                 required oninput="syncColor('classification_color'); updatePreview();" class="input" aria-label="Background colour hex">
+                 required @input="window.syncColor && window.syncColor('classification_color'); window.updatePreview && window.updatePreview()" class="input" aria-label="Background colour hex">
         </div>
       </div>
       <div class="grid gap-1">
@@ -34,10 +36,10 @@
         <div class="flex items-center gap-2" role="group" aria-labelledby="banner-fg-label">
           <input type="color" id="classification_fg_picker" aria-label="Text colour picker"
                  value="{{ settings.classification_fg }}"
-                 oninput="document.getElementById('classification_fg').value=this.value; updatePreview();" class="input h-10 w-14 p-1">
+                 @input="document.getElementById('classification_fg').value = $event.target.value; window.updatePreview && window.updatePreview()" class="input h-10 w-14 p-1">
           <input type="text" name="classification_fg" id="classification_fg"
                  value="{{ settings.classification_fg }}" pattern="#[0-9A-Fa-f]{6}"
-                 required oninput="syncColor('classification_fg'); updatePreview();" class="input" aria-label="Text colour hex">
+                 required @input="window.syncColor && window.syncColor('classification_fg'); window.updatePreview && window.updatePreview()" class="input" aria-label="Text colour hex">
         </div>
       </div>
     </div>

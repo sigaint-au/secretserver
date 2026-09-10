@@ -16,7 +16,7 @@
         <td>Global admin</td>
         <td class="text-right">
           {% if u.id|string != session.user_id %}
-          <form method="post" class="inline" onsubmit="return confirm('Remove global admin?');">
+          <form method="post" class="inline" data-confirm="Remove global admin?">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="action" value="demote">
             <input type="hidden" name="user_id" value="{{ u.id }}">

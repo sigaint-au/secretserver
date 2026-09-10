@@ -247,25 +247,38 @@ function restoreAccessBusy(form) {
      the duplicate-submit guard (buttons stay usable). */
   var pendingForm = null;
 
-  function formMessage(form) {
-    var raw = form.getAttribute("data-confirm") || "Are you sure?";
-    return raw.replace(/\{([A-Za-z0-9_-]+)\}/g, function (match, name) {
-      var field = form.elements ? form.elements.namedItem(name) : null;
-      var val = field && field.value ? String(field.value).trim() : "";
-      return val || "this user";
-    });
+  function fillPlaceholders(form, raw) {
+    return String(raw || "Are you sure?").replace(
+      /\{([A-Za-z0-9_-]+)\}/g,
+      function (match, name) {
+        var field = form.elements ? form.elements.namedItem(name) : null;
+        var val = field && field.value ? String(field.value).trim() : "";
+        return val || "this user";
+      }
+    );
   }
 
-  function gateApplies(form) {
+  /* Resolve the confirm plan: data-confirm-if gates on a checked
+     control; data-confirm-alt supplies the message for the other
+     branch (e.g. HSM vs local key adoption). */
+  function gatePlan(form) {
+    var main = form.getAttribute("data-confirm");
+    var alt = form.getAttribute("data-confirm-alt");
     var sel = form.getAttribute("data-confirm-if");
-    if (!sel) return true;
+    if (!sel) return { show: true, text: fillPlaceholders(form, main) };
     var node = null;
     try {
       node = form.querySelector(sel);
     } catch (err) {
       node = null;
     }
-    return !!(node && node.checked);
+    if (node && node.checked) {
+      return { show: true, text: fillPlaceholders(form, main) };
+    }
+    if (alt !== null && alt !== undefined) {
+      return { show: true, text: fillPlaceholders(form, alt) };
+    }
+    return { show: false, text: "" };
   }
 
   document.addEventListener(
@@ -279,13 +292,14 @@ function restoreAccessBusy(form) {
         form.__corvusConfirmed = false;
         return;
       }
-      if (!gateApplies(form)) return;
+      var plan = gatePlan(form);
+      if (!plan.show) return;
       evt.preventDefault();
       evt.stopPropagation();
       var dlg = document.getElementById("confirm-dlg");
       if (!dlg) {
         /* No styled dialog available: fall back to native confirm. */
-        if (window.confirm(formMessage(form))) {
+        if (window.confirm(plan.text)) {
           form.__corvusConfirmed = true;
           if (form.requestSubmit) form.requestSubmit();
           else form.submit();
@@ -293,7 +307,7 @@ function restoreAccessBusy(form) {
         return;
       }
       pendingForm = form;
-      document.getElementById("confirm-dlg-msg").textContent = formMessage(form);
+      document.getElementById("confirm-dlg-msg").textContent = plan.text;
       dlg._opener = form.querySelector('button[type="submit"]');
       dlg.onclose = function () {
         pendingForm = null;

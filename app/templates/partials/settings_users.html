@@ -53,7 +53,7 @@
           {% if u.id|string != session.user_id %}
             {% if u.disabled_at %}
             <form method="post" class="inline"
-                  onsubmit="return confirm('Re-enable this account?')">
+                  data-confirm="Re-enable this account?">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_enable">
               <input type="hidden" name="user_id" value="{{ u.id }}">
@@ -61,7 +61,7 @@
             </form>
             {% else %}
             <form method="post" class="inline"
-                  onsubmit="return confirm('Disable this account? They will be signed out.')">
+                  data-confirm="Disable this account? They will be signed out.">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_disable">
               <input type="hidden" name="user_id" value="{{ u.id }}">
@@ -70,7 +70,7 @@
             {% endif %}
             {% if u.auth_source == 'local' and not u.disabled_at %}
             <form method="post" class="inline"
-                  onsubmit="return confirm('Issue a password reset for this user? All sessions will be signed out.')">
+                  data-confirm="Issue a password reset for this user? All sessions will be signed out.">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_reset_password">
               <input type="hidden" name="user_id" value="{{ u.id }}">
@@ -79,7 +79,7 @@
             {% endif %}
             {% if u.totp_enabled_at %}
             <form method="post" class="inline"
-                  onsubmit="return confirm('Clear 2FA for this user? Sessions will be signed out.')">
+                  data-confirm="Clear 2FA for this user? Sessions will be signed out.">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <input type="hidden" name="action" value="user_reset_2fa">
               <input type="hidden" name="user_id" value="{{ u.id }}">

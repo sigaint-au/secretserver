@@ -4,7 +4,7 @@
     Directory login alongside local accounts. Groups are read on each sign-in.
     Use <code class="font-mono">ldaps://</code> or StartTLS. Plain <code class="font-mono">ldap://</code> without TLS is refused.
   </p>
-  <form method="post" class="flex flex-col gap-4" data-dirty-guard onsubmit="this._dirty=false">
+  <form method="post" class="flex flex-col gap-4" data-dirty-guard>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
     <label class="flex items-center gap-2" for="ldap-enabled">
@@ -134,7 +134,7 @@
         <td><span class="badge badge-soft">{{ m.role }}</span></td>
         <td class="text-right">
           <form method="post" class="inline"
-                onsubmit="return confirm('Remove this mapping?')">
+                data-confirm="Remove this mapping?">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="action" value="ldap_role_map_delete">
             <input type="hidden" name="map_id" value="{{ m.id }}">

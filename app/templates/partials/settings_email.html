@@ -5,7 +5,7 @@
     When SMTP is disabled or incomplete, password resets still create a token
     (logged server-side); login alerts are skipped.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="smtp">
     <label class="flex items-center gap-2" for="smtp-enabled">

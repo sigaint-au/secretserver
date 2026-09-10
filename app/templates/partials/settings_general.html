@@ -4,7 +4,7 @@
     Public base URL of this application (no trailing slash). Used for OIDC redirect URIs
     and ESO / External Secrets Operator YAML defaults.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="server_url">
     <div class="grid gap-1">
@@ -21,7 +21,7 @@
   <p class="text-sm opacity-70">
     Add the required disclosure notice and an optional link to your system-use policy.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="login_banner">
     <label class="flex items-center gap-2" for="settings-login-banner">
@@ -57,7 +57,7 @@
     Clipboard auto-clear and reveal auto-hide are per-device defaults; the scope
     of an approved reveal grant is server-wide.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="ux">
     <div class="grid gap-4 sm:grid-cols-2">
@@ -90,7 +90,7 @@
     Control whether new local accounts can be created at <code class="font-mono">/register</code>.
     Existing users and LDAP login are unaffected.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="registration">
     <label class="flex items-center gap-2" for="settings-registration">
@@ -107,7 +107,7 @@
   <p class="text-sm opacity-70">
     When disabled, only global admins can create teams. Existing teams are unchanged.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="team_creation">
     <label class="flex items-center gap-2" for="settings-team-creation">
@@ -124,7 +124,7 @@
   <p class="text-sm opacity-70">
     Any user can enable TOTP. When enforced below, global admins must enroll and cannot disable 2FA.
   </p>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="totp_enforce">
     <label class="flex items-center gap-2" for="settings-totp-enforce">
@@ -143,7 +143,7 @@
       <p class="text-sm opacity-70">Set expiry requirements for newly issued personal access and machine tokens.</p>
     </div>
   </div>
-  <form method="post" data-dirty-guard onsubmit="this._dirty=false" aria-describedby="token-policy-help" class="flex flex-col gap-4">
+  <form method="post" data-dirty-guard aria-describedby="token-policy-help" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="token_policy">
     <p id="token-policy-help" class="text-xs opacity-70">Maximum lifetime is measured in days and applies when an expiry is required. Lifetime fields are enabled only while the matching expiry requirement is on.</p>
@@ -152,6 +152,7 @@
         <legend class="sr-only">Personal access tokens</legend>
         <label class="flex items-center gap-2" for="require-pat-expiry">
           <input type="checkbox" name="require_pat_expiry" id="require-pat-expiry" class="checkbox" value="1"
+                 data-locks="max-pat-lifetime"
                  {% if settings.require_pat_expiry in ('true', '1', 'yes', 'on') %}checked{% endif %}>
           Require personal access token expiry
         </label>
@@ -160,6 +161,7 @@
           <label class="label" for="max-pat-lifetime"><span>Maximum lifetime</span></label>
           <input type="number" name="max_pat_lifetime_days" id="max-pat-lifetime" min="1" max="3650"
                  value="{{ settings.max_pat_lifetime_days or '' }}" placeholder="3650"
+                 {% if settings.require_pat_expiry not in ('true', '1', 'yes', 'on') %}readonly{% endif %}
                  aria-label="Maximum personal access token lifetime in days" class="input">
         </div>
       </fieldset>
@@ -167,6 +169,7 @@
         <legend class="sr-only">Machine tokens</legend>
         <label class="flex items-center gap-2" for="require-machine-token-expiry">
           <input type="checkbox" name="require_machine_token_expiry" id="require-machine-token-expiry" class="checkbox" value="1"
+                 data-locks="max-machine-token-lifetime"
                  {% if settings.require_machine_token_expiry in ('true', '1', 'yes', 'on') %}checked{% endif %}>
           Require machine token expiry
         </label>
@@ -175,6 +178,7 @@
           <label class="label" for="max-machine-token-lifetime"><span>Maximum lifetime</span></label>
           <input type="number" name="max_machine_token_lifetime_days" id="max-machine-token-lifetime" min="1" max="3650"
                  value="{{ settings.max_machine_token_lifetime_days or '' }}" placeholder="3650"
+                 {% if settings.require_machine_token_expiry not in ('true', '1', 'yes', 'on') %}readonly{% endif %}
                  aria-label="Maximum machine token lifetime in days" class="input">
         </div>
       </fieldset>

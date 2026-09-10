@@ -91,7 +91,7 @@
       {% if can_manage_keys and project_crypto and project_master_rows %}
       <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
             class="inline"
-            onsubmit="return confirm('Re-encrypt {{ project_master_rows }} secret(s) with the project key?');">
+            data-confirm="Re-encrypt {{ project_master_rows }} secret(s) with the project key?">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <input type="hidden" name="action" value="adopt">
         <input type="hidden" name="provider" value="{{ project_crypto.key_provider or 'local' }}">
@@ -112,7 +112,7 @@
     </div>
     <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
           data-dirty-guard
-          onsubmit="return confirm('Migrate this project to an HSM-wrapped key? All secrets will be re-encrypted. The HSM must remain available for all future access.');">
+          data-confirm="Migrate this project to an HSM-wrapped key? All secrets will be re-encrypted. The HSM must remain available for all future access.">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="action" value="migrate">
       <input type="hidden" name="provider" value="hsm">
@@ -135,13 +135,16 @@
   <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
         class="crypto-adopt"
         data-dirty-guard
-        onsubmit="var p=this.querySelector('input[name=provider]:checked');var h=p&&p.value==='hsm';return confirm(h?'Create an HSM-wrapped project key and re-encrypt secrets onto it?':'Create a project key and re-encrypt secrets onto it?');">
+        x-data="{ provider: 'local' }"
+        data-confirm="Create an HSM-wrapped project key and re-encrypt secrets onto it?"
+        data-confirm-alt="Create a project key and re-encrypt secrets onto it?"
+        data-confirm-if="input[name=provider][value=hsm]">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="adopt">
     <fieldset>
       <legend>Key provider</legend>
       <label class="flex items-center gap-2">
-        <input type="radio" name="provider" class="radio" value="local" checked>
+        <input type="radio" name="provider" class="radio" value="local" checked x-model="provider">
         <span>
           <strong>Local</strong>
           <span class="text-sm opacity-70">Wrapped by the server; portable across instances</span>
@@ -149,7 +152,7 @@
       </label>
       {% if hsm_available %}
       <label class="flex items-center gap-2">
-        <input type="radio" name="provider" class="radio" value="hsm">
+        <input type="radio" name="provider" class="radio" value="hsm" x-model="provider">
         <span>
           <strong>HSM</strong>
           <span class="text-sm opacity-70">Wrapped by hardware; stronger separation of keys</span>
@@ -158,7 +161,7 @@
       {% endif %}
     </fieldset>
     {% if hsm_slots %}
-    <label data-hsm-slot hidden>HSM slot
+    <label data-hsm-slot hidden x-bind:hidden="provider !== 'hsm'">HSM slot
       <select name="hsm_slot" class="select">
         {% for s in hsm_slots %}
         <option value="{{ s.id }}" {% if s.is_default %}selected{% endif %} title="{{ s.description or '' }}">{{ s.name }}</option>
@@ -170,20 +173,6 @@
       <button type="submit" class="btn btn-neutral">Adopt project key</button>
     </p>
   </form>
-  <script>
-  (function () {
-    var form = document.querySelector('.crypto-adopt');
-    if (!form) return;
-    var slot = form.querySelector('[data-hsm-slot]');
-    var radios = form.querySelectorAll('input[name="provider"]');
-    function sync() {
-      var hsm = form.querySelector('input[name="provider"]:checked');
-      if (slot) slot.hidden = !(hsm && hsm.value === 'hsm');
-    }
-    radios.forEach(function (r) { r.addEventListener('change', sync); });
-    sync();
-  })();
-  </script>
   {% endif %}
 </section>
 {% endif %}
@@ -194,7 +183,7 @@
   </div>
   <p class="text-sm opacity-70">Delete this project and all secrets, audit history, and machine tokens. Irreversible.</p>
   <form method="post" action="{{ url_for('delete_project', project_id=project.id) }}"
-        onsubmit="return confirm('Delete project “{{ project.name }}” and all its data? This cannot be undone.')">
+        data-confirm="Delete project “{{ project.name }}” and all its data? This cannot be undone.">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <button type="submit" class="btn btn-error">Delete project</button>
   </form>

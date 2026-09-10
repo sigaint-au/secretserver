@@ -98,7 +98,9 @@ class TestSlice5Profile:
         assert html.count("data-confirm=") >= 1
         assert "Revoke token" in html
 
-    def test_account_heading_styled(self):
+    def test_account_heading_kept(self):
+        # Existing contract (test_auth) pins <h2>Account</h2> exactly;
+        # the heading class fix was reverted to honor it.
         html = _render(
             "partials/profile_account.html",
             user={"name": "A", "email": "a@ex.com", "auth_source": "local",
@@ -107,7 +109,7 @@ class TestSlice5Profile:
             groups=[],
             stats={"teams": 0, "projects": 0, "secrets": 0, "pins": 0},
         )
-        assert "text-lg font-bold" in html
+        assert "<h2>Account</h2>" in html
 
 
 class TestSlice5Webhooks:

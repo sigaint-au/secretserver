@@ -361,6 +361,38 @@ document.addEventListener(
   true
 );
 
+/* Paired lock: checkbox[data-locks="<id>"] toggles readonly on the
+   paired input (token lifetime caps). Initializes on boot so the
+   server-rendered state and the control agree; swap-aware. */
+(function locks() {
+  function sync(box) {
+    var target = document.getElementById(box.getAttribute("data-locks"));
+    if (!target) return;
+    var on = !!box.checked;
+    if (on) target.removeAttribute("readonly");
+    else target.setAttribute("readonly", "");
+    if (target.toggleAttribute) target.toggleAttribute("aria-readonly", !on);
+    if (target.classList) target.classList.toggle("opacity-60", !on);
+  }
+
+  function boot(scope) {
+    Array.prototype.forEach.call(
+      (scope || document).querySelectorAll("input[data-locks]"),
+      function (box) {
+        if (box.__corvusLock) return;
+        box.__corvusLock = true;
+        sync(box);
+        box.addEventListener("change", function () {
+          sync(box);
+        });
+      }
+    );
+  }
+
+  if (typeof window.onContent === "function") window.onContent(boot);
+  else boot(document);
+})();
+
 /* Dim full-page GET search/filter forms the moment they submit. */
 document.addEventListener(
   "submit",

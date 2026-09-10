@@ -112,7 +112,8 @@
   <p class="text-sm opacity-70">No named slots configured.</p>
   {% endif %}
   {% if encryption.hsm_slots and c.local > 0 %}
-  <form method="post" class="flex flex-wrap items-end gap-4">
+  <form method="post" class="flex flex-wrap items-end gap-4"
+        data-confirm="Migrate all {{ c.local }} local project key(s) to the selected HSM slot? All secrets will be re-encrypted.">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="hsm_migrate_all">
     <div class="grid gap-1 flex-1">
@@ -123,8 +124,7 @@
         {% endfor %}
       </select>
     </div>
-    <button type="submit"
-            onclick="return confirm('Migrate all {{ c.local }} local project key(s) to the selected HSM slot? All secrets will be re-encrypted.')" class="btn btn-neutral">
+    <button type="submit" class="btn btn-neutral">
       Migrate all local to HSM
     </button>
   </form>
@@ -224,27 +224,3 @@
   </p>
   {% endif %}
 </section>
-  <script>
-  /* Token-policy: lifetime inputs editable only while the matching expiry
-     requirement is checked. readonly (not disabled) so saved values survive. */
-  (function () {
-    function sync(cb, input) {
-      var on = !!cb.checked;
-      if (on) input.removeAttribute('readonly');
-      else input.setAttribute('readonly', '');
-      input.toggleAttribute('aria-readonly', !on);
-      input.classList.toggle('opacity-60', !on);
-    }
-    var pairs = [
-      ['require-pat-expiry', 'max-pat-lifetime'],
-      ['require-machine-token-expiry', 'max-machine-token-lifetime']
-    ];
-    pairs.forEach(function (p) {
-      var cb = document.getElementById(p[0]);
-      var input = document.getElementById(p[1]);
-      if (!cb || !input) return;
-      cb.addEventListener('change', function () { sync(cb, input); });
-      sync(cb, input);
-    });
-  })();
-  </script>
