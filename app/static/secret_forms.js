@@ -345,29 +345,30 @@ function corvusSuggestKind(value) {
 
 /* View/edit mode toggle on the secret full view. */
 (function editMode() {
-  function boot(scope) {
-    var root = scope && scope.querySelectorAll ? scope : document;
-    var btn = root.querySelector
-      ? root.querySelector("#toggle-edit-mode")
-      : null;
+  function boot() {
+    var btn = document.getElementById("toggle-edit-mode");
     if (!btn || btn.__corvusEdit) return;
     btn.__corvusEdit = true;
     btn.addEventListener("click", function (evt) {
       evt.preventDefault();
       var view = document.getElementById("secret-view-panel");
       var form = document.getElementById("secret-edit-form");
-      if (!view || !form) return;
-      view.hidden = true;
-      form.hidden = false;
-      var first = form.querySelector(
-        "input:not([type=hidden]):not([readonly]), textarea, select"
-      );
-      if (first) first.focus();
+      if (view && form) {
+        view.hidden = true;
+        form.hidden = false;
+        var first = form.querySelector(
+          "input:not([type=hidden]):not([readonly]), textarea, select"
+        );
+        if (first) first.focus();
+        return;
+      }
+      var url = btn.getAttribute("data-secret-tab");
+      if (url) window.location.assign(url);
     });
   }
 
   if (typeof window.onContent === "function") window.onContent(boot);
-  else boot(document);
+  else boot();
 })();
 
 /* File downloads for SSH key material (.dl-btn). Delegated. */
@@ -379,7 +380,10 @@ document.addEventListener("click", function (evt) {
   if (!btn) return;
   var el = document.getElementById(btn.getAttribute("data-download-target"));
   if (!el) return;
-  var text = el.textContent || el.value || "";
+  var raw = el.id ? document.getElementById(el.id + "-raw") : null;
+  var text = raw
+    ? (raw.value || raw.textContent || "")
+    : (el.textContent || el.value || "");
   var blob = new Blob([text], { type: "text/plain" });
   var link = document.createElement("a");
   link.href = URL.createObjectURL(blob);

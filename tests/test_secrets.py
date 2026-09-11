@@ -41,7 +41,7 @@ class TestSecrets:
         {'name': 'secret-reveal', 'description': 'Reveal', 'scopes': ['folder', 'secret'], 'precedence': 0, 'built_in': True},
     ]
 
-    def _project_conn(self, tab='secrets', can_write=True, can_admin=None, team_role='team-owner', secrets=None, tokens=None, audit_log=None, access_requests=None, total=None, pending_count=0):
+    def _project_conn(self, tab='secrets', can_write=True, can_admin=None, team_role='team-owner', secrets=None, tokens=None, audit_log=None, access_requests=None, total=None, pending_count=0, folder_rows=None):
         """as_user used by project_detail (tab-scoped queries)."""
         project = {'id': self.pid, 'name': 'prod', 'team_name': 'Ops', 'team_id': uuid4()}
         if can_admin is None:
@@ -59,7 +59,7 @@ class TestSecrets:
             fa = [[]]
         elif tab == 'secrets':
             # _load_secrets_page: secrets page + pins + grants; then detail.py: folders + expiry + rotation
-            fa = [rows, [], [], [], [], []] if rows else [rows, [], [], [], []]
+            fa = [rows, [], [], folder_rows or [], [], []] if rows else [rows, [], [], [], []]
             # rows truthy → pins + grants executed; rows falsy → pins/grants skipped, one fewer fetchall
         elif tab in ('access', 'requests'):
             fa = [access_requests or []]
@@ -107,6 +107,44 @@ class TestSecrets:
         assert b'project-panel' not in r.data
         assert b'Projects' not in r.data
         assert b'Add secret' in r.data
+
+    def _secret_dict(self, key='API_KEY', **kw):
+        from datetime import datetime, timezone
+        row = {'id': uuid4(), 'key': key, 'note': 'main key', 'kind': 'plain',
+               'expires_at': datetime(2030, 1, 1, tzinfo=timezone.utc),
+               'updated_at': datetime(2030, 1, 1, tzinfo=timezone.utc),
+               'rotation_next_at': None, 'rotation_owner': None, 'rotated_at': None,
+               'is_pinned': True, 'due': None, 'rotation_due': None,
+               'access_mode': 'inherit', 'access_restricted': False,
+               'reveal_access': 'locked', 'needs_approval': False, 'can_reveal': False}
+        row.update(kw)
+        return row
+
+    def _assert_project_tab_balanced(self, secrets, query='?tab=secrets', folder_rows=None):
+        from tests.helpers import assert_balanced_html
+        conn = self._project_conn(secrets=secrets, folder_rows=folder_rows)
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get(f'/projects/{self.pid}{query}')
+        assert r.status_code == 200
+        html = r.data.decode()
+        assert 'id="app-drawer"' in html
+        assert 'id="app-sidebar"' in html
+        assert html.index('id="app-sidebar"') > html.index('id="project-panel"')
+        assert_balanced_html(html)
+        return html
+
+    def test_project_secrets_tab_keeps_app_drawer(self):
+        """Full secrets tab must keep the app drawer: unbalanced fragment
+        HTML used to swallow the sidebar (unclosed card-body div on the
+        no-folders branch)."""
+        self._assert_project_tab_balanced([self._secret_dict()])
+
+    def test_project_secrets_tab_balanced_with_folders_and_search(self):
+        folder = {'id': uuid4(), 'parent_id': None, 'path': 'ops',
+                  'access_mode': 'inherit', 'n_secrets': 1}
+        html = self._assert_project_tab_balanced(
+            [self._secret_dict()], query='?tab=secrets&q=API', folder_rows=[folder])
+        assert 'ops' in html
 
     def test_viewer_can_request_reveal_without_reveal_acl(self):
         sid = uuid4()
@@ -319,7 +357,7 @@ class TestSecrets:
         assert b'>Hide</button>' in r.data
         assert b'/hide' in r.data
         assert b'<button type="button"' in r.data
-        # OOB toggle must be an oat menu item (button, not anchor) that closes
+        # OOB toggle must be a dropdown menu item (button, not anchor) that closes
         # the kebab popover after clicking, styled like the other menu items.
         assert b'role="menuitem"' in r.data
         assert b'popovertarget="secret-menu-' + str(sid).encode() + b'"' in r.data
@@ -888,11 +926,13 @@ class TestSecrets:
         assert r.status_code == 200
         assert b'DATABASE_URL' in r.data
         assert b'plain-value' in r.data
-        plain_copy = r.data[
-            r.data.index(b'data-copy-target="plain-view"') - 100 :
-        ]
-        assert b'class="btn btn-outline btn-sm copy-btn"' in plain_copy
+        assert b'data-copy-target="plain-view"' in r.data
+        assert b'data-copy-text="DATABASE_URL"' in r.data
+        assert b"reveal-head" in r.data
+        assert b"secret-show-btn" in r.data
         assert b'id="toggle-edit-mode"' in r.data
+        assert b">Show</button>" in r.data
+        assert r.data.index(b'id="toggle-edit-mode"') < r.data.index(b'id="secret-view-panel"')
 
     def _secret_row(self, sid):
         return {
@@ -979,6 +1019,8 @@ class TestSecrets:
             )
         assert r.status_code == 200
         assert b'Custom fields' in r.data
+        assert b'Last accessed' in r.data
+        assert b'<th>Field</th>' in r.data
         assert b'<html' not in r.data
 
     def test_secret_view_htmx_access_tab_returns_panel(self):

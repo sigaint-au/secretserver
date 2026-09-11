@@ -12,6 +12,16 @@
   function textOf(el, explicit) {
     if (explicit) return explicit;
     if (!el) return "";
+    var raw = el.id ? document.getElementById(el.id + "-raw") : null;
+    if (raw) {
+      var rtag = (raw.tagName || "").toUpperCase();
+      if (rtag === "INPUT" || rtag === "TEXTAREA" || rtag === "SELECT") {
+        return raw.value || "";
+      }
+      return (raw.innerText != null ? raw.innerText : raw.textContent) || "";
+    }
+    var stored = el.getAttribute("data-secret");
+    if (stored) return stored;
     var tag = (el.tagName || "").toUpperCase();
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
       return el.value || "";
@@ -76,6 +86,7 @@
         : null;
     if (!btn) return;
     evt.preventDefault();
+    if (evt.stopPropagation) evt.stopPropagation();
     var id = btn.getAttribute("data-copy-target");
     var text = textOf(
       id ? document.getElementById(id) : null,
@@ -105,9 +116,10 @@
 document.addEventListener("click", function (evt) {
   var el =
     evt.target && evt.target.closest
-      ? evt.target.closest("input.secret-value[readonly]")
+      ? evt.target.closest("input.secret-value[readonly], textarea.secret-value[readonly]")
       : null;
-  if (el && typeof el.select === "function") {
+  if (!el || el.getAttribute("data-revealed") === "false") return;
+  if (typeof el.select === "function") {
     try {
       el.select();
     } catch (err) {
@@ -184,12 +196,61 @@ document.addEventListener("click", function (evt) {
 
 /* Auto-hide for revealed secrets. Hook: .reveal-wrap[data-auto-hide].
    Re-masking goes through the reveal toggle's hx-get so the server
-   stays canonical; standalone wraps mask in place with a reload path. */
+   stays canonical; standalone wraps mask in place (Show next to the field). */
 (function autoHide() {
+  function rawOf(el) {
+    if (!el) return "";
+    var raw = el.id ? document.getElementById(el.id + "-raw") : null;
+    if (raw) {
+      var tag = (raw.tagName || "").toUpperCase();
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+        return raw.value || "";
+      }
+      return (raw.innerText != null ? raw.innerText : raw.textContent) || "";
+    }
+    return el.getAttribute("data-secret") || "";
+  }
+
+  function showBtnFor(el) {
+    if (!el || !el.id) return null;
+    return document.querySelector(
+      '.secret-show-btn[aria-controls="' + el.id + '"]'
+    );
+  }
+
+  function setRevealed(el, on) {
+    if (!el) return;
+    el.setAttribute("data-revealed", on ? "true" : "false");
+    var text = on ? rawOf(el) : "••••••••";
+    var tag = (el.tagName || "").toUpperCase();
+    if (tag === "INPUT" || tag === "TEXTAREA") el.value = text;
+    else el.textContent = text;
+    var btn = showBtnFor(el);
+    if (btn) {
+      btn.textContent = on ? "Hide" : "Show";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  }
+
+  function wrapIsRevealed(wrap) {
+    var nodes = wrap.querySelectorAll(".secret-value[data-revealed]");
+    if (!nodes.length) return true;
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].getAttribute("data-revealed") === "true") return true;
+    }
+    return false;
+  }
+
   function maskStandalone(wrap) {
+    var local = false;
     Array.prototype.forEach.call(
       wrap.querySelectorAll(".secret-value"),
       function (el) {
+        if (el.getAttribute("data-revealed") != null) {
+          local = true;
+          setRevealed(el, false);
+          return;
+        }
         if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
           el.value = "••••••••";
           el.readOnly = true;
@@ -198,31 +259,88 @@ document.addEventListener("click", function (evt) {
         }
       }
     );
-    var hiddenEnv = wrap.querySelector("#kv-all-env");
-    if (hiddenEnv) hiddenEnv.textContent = "••••••••";
-    Array.prototype.forEach.call(
-      wrap.querySelectorAll(".copy-btn, .dl-btn"),
-      function (btn) {
-        btn.disabled = true;
-      }
-    );
+    if (!local) {
+      var hiddenEnv = wrap.querySelector("#kv-all-env");
+      if (hiddenEnv) hiddenEnv.textContent = "••••••••";
+      Array.prototype.forEach.call(
+        wrap.querySelectorAll(".copy-btn, .dl-btn"),
+        function (btn) {
+          btn.disabled = true;
+        }
+      );
+    }
     var note = wrap.querySelector(".auto-hide-note");
     if (note) {
+      note.hidden = true;
       note.removeAttribute("data-hide-until");
-      note.innerHTML = '<span class="auto-hide-label">Hidden</span>';
     }
-    if (!wrap.querySelector(".reveal-again-btn")) {
+    if (!local && !wrap.querySelector(".secret-show-btn") &&
+        !wrap.querySelector(".reveal-again-btn")) {
       var again = document.createElement("button");
       again.type = "button";
       again.className = "btn btn-outline btn-sm reveal-again-btn";
       again.textContent = "Show again";
-      again.addEventListener("click", function () {
-        window.location.reload();
-      });
-      wrap.insertBefore(again, wrap.firstChild);
+      var head = wrap.querySelector(".reveal-head") || wrap;
+      head.appendChild(again);
     }
-    if (window.ssToast) window.ssToast("Secret hidden — reload to reveal again");
+    if (window.ssToast) {
+      window.ssToast(local ? "Secret hidden" : "Secret hidden — reload to reveal again");
+    }
   }
+
+  function hideNow(wrap) {
+    if (!wrap) return;
+    if (wrap.__corvusHideTimer) {
+      window.clearTimeout(wrap.__corvusHideTimer);
+      wrap.__corvusHideTimer = null;
+    }
+    maskStandalone(wrap);
+  }
+
+  function targetValue(btn) {
+    var id = btn.getAttribute("aria-controls");
+    if (id) return document.getElementById(id);
+    var unit = btn.closest(".join") || btn.closest(".list-row") || btn.parentElement;
+    return unit ? unit.querySelector(".secret-value") : null;
+  }
+
+  document.addEventListener("click", function (evt) {
+    var t = evt.target;
+    if (!t || !t.closest) return;
+    if (t.closest(".reveal-again-btn")) {
+      evt.preventDefault();
+      window.location.reload();
+      return;
+    }
+    var hide = t.closest(".reveal-hide-btn");
+    if (hide) {
+      evt.preventDefault();
+      hideNow(hide.closest(".reveal-wrap"));
+      return;
+    }
+    var show = t.closest(".secret-show-btn");
+    if (show) {
+      evt.preventDefault();
+      if (evt.stopPropagation) evt.stopPropagation();
+      var el = targetValue(show);
+      if (!el) return;
+      var on = el.getAttribute("data-revealed") !== "true";
+      setRevealed(el, on);
+      var wrap = el.closest(".reveal-wrap");
+      if (wrap) {
+        if (on) arm(wrap);
+        else if (!wrapIsRevealed(wrap)) hideNow(wrap);
+      }
+      return;
+    }
+    var field = t.closest(".secret-value");
+    if (field && field.getAttribute("data-revealed") === "false") {
+      evt.preventDefault();
+      setRevealed(field, true);
+      var wrap = field.closest(".reveal-wrap");
+      if (wrap) arm(wrap);
+    }
+  });
 
   function fire(wrap) {
     wrap.__corvusHideTimer = null;
@@ -252,6 +370,7 @@ document.addEventListener("click", function (evt) {
 
   function arm(wrap) {
     if (!wrap || !wrap.getAttribute) return;
+    if (!wrapIsRevealed(wrap)) return;
     var secs = parseInt(wrap.getAttribute("data-auto-hide") || "0", 10);
     if (!(secs > 0)) return;
     if (wrap.__corvusHideTimer) window.clearTimeout(wrap.__corvusHideTimer);
@@ -259,11 +378,15 @@ document.addEventListener("click", function (evt) {
     var note = head.querySelector(".auto-hide-note");
     if (!note) {
       note = document.createElement("span");
-      note.className = "auto-hide-note";
+      note.className = "auto-hide-note badge badge-soft";
+      note.setAttribute("aria-live", "polite");
       note.innerHTML =
-        '<span class="auto-hide-label">Auto-hides in</span> <span class="auto-hide-count"></span>';
+        '<span class="auto-hide-label">Hides in</span> <span class="auto-hide-count"></span>';
       head.appendChild(note);
     }
+    note.hidden = false;
+    note.innerHTML =
+      '<span class="auto-hide-label">Hides in</span> <span class="auto-hide-count"></span>';
     note.setAttribute(
       "data-hide-until",
       new Date(Date.now() + secs * 1000).toISOString()

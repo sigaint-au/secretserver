@@ -52,6 +52,24 @@ def _render(name, **ctx):
         return render_template(name, **ctx)
 
 
+class TestSlice3ProjectSecretsCard:
+    def test_secrets_heading_table_and_controls_share_one_card(self):
+        # Project secrets tab: heading, search, bulk toolbar, and table live
+        # in one card. The HTMX list fragment has no card chrome so swaps
+        # never nest cards (same contract as team-wide list pages).
+        src = (TEMPLATES / "partials/project_secrets.html").read_text()
+        heading = src.find('<h2 class="card-title">Secrets')
+        assert heading != -1
+        card_open = src.rfind('<section class="card card-border', 0, heading)
+        assert card_open != -1
+        card = src[card_open:src.find("</section>", heading)]
+        assert "card-body gap-6" in card
+        assert 'id="bulk-toolbar"' in card
+        assert 'id="secrets-list"' in card
+        assert "Add secret" in card
+        assert "card card-border" not in (TEMPLATES / "partials/secrets.html").read_text()
+
+
 class TestSlice3NoInlineJS:
     def test_no_inline_handlers_in_slice(self):
         bad = []
@@ -98,10 +116,9 @@ class TestSlice3SecretNew:
 
 
 class TestSlice3SecretView:
-    def _html(self):
+    def _html(self, path="/projects/x", **kw):
         pid, sid = str(uuid4()), str(uuid4())
-        return _render(
-            "secret_view.html",
+        ctx = dict(
             project_id=pid,
             secret_id=sid,
             secret_key="API_KEY",
@@ -131,16 +148,67 @@ class TestSlice3SecretView:
             last_accessed_by_email="",
             clipboard_clear_seconds=30,
         )
+        ctx.update(kw)
+        with store.app.test_request_context(path):
+            from flask import render_template
+
+            return render_template("secret_view.html", **ctx)
 
     def test_delete_uses_data_confirm(self):
         html = self._html()
         assert "data-confirm=" in html
         assert "Move API_KEY to trash?" in html
 
-    def test_subnav_tabs_present(self):
+    def test_section_tabs_present(self):
         html = self._html()
         assert "secret-panel" in html
         assert "Metadata" in html
+
+    def test_version_view_keeps_section_nav(self):
+        # Historical versions hide Metadata/Access, but the section nav
+        # itself must stay: Secret tab active, version context preserved.
+        vid = str(uuid4())
+        html = self._html(f"/projects/x?version_id={vid}",
+                          is_version=True, can_admin=True)
+        assert 'role="tablist"' in html
+        assert "tab tab-active" in html
+        assert ">Secret</a>" in html
+        assert f"version_id={vid}" in html
+        assert ">Metadata</a>" not in html
+        assert ">Access</a>" not in html
+
+    def test_current_view_tab_links_carry_no_version(self):
+        html = self._html()
+        assert 'role="tablist"' in html
+        assert "version_id" not in html.split('role="tablist"')[1].split("</div>")[0]
+
+    def test_value_toolbar_joins_copy_and_hide(self):
+        from tests.helpers import assert_balanced_html
+
+        html = self._html()
+        assert_balanced_html(html)
+        page_head, _, panel = html.partition('id="secret-view-panel"')
+        assert "toggle-edit-mode" in page_head
+        assert "History" in page_head
+        assert "secret-show-btn" in panel
+        assert ">Show</button>" in panel
+        assert 'id="plain-view"' in panel
+        assert 'class="input w-full"' in panel
+        assert "Last accessed" in panel
+        assert "<th>Field</th>" in panel
+        assert "Copy key" not in panel
+        assert "Copy value" not in panel
+
+    def test_metadata_tab_system_fields_are_a_table(self):
+        from tests.helpers import assert_balanced_html
+
+        html = self._html(active_tab="meta")
+        assert_balanced_html(html)
+        assert "Custom fields" in html
+        assert "<th>Field</th>" in html
+        assert "Last accessed" in html
+        assert "Last accessed by" in html
+        assert ">Created</td>" in html
 
 
 class TestSlice3History:
@@ -171,6 +239,6 @@ class TestSlice3JS:
         c = store.app.test_client()
         secrets = c.get("/static/secrets.js").data
         assert b"__corvusBulkConfirm" in secrets
-        assert b"input.secret-value[readonly]" in secrets
+        assert b"textarea.secret-value[readonly]" in secrets
         dialogs = c.get("/static/dialogs.js").data
         assert b"__corvusBulkConfirm" in dialogs
