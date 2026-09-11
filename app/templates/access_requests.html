@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Requests - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-3xl font-bold tracking-tight">Requests</h1>
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+  <h1 class="text-3xl font-bold tracking-tight">Requests{% if requests %} <span class="badge badge-soft">{{ requests|length }}</span>{% endif %}</h1>
 </div>
-<p class="text-sm opacity-70">
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">
   Pending requests to reveal secret values for projects you administer.
   Only pending requests are listed. Open a project’s <strong>Requests</strong> tab for full history.
 </p>

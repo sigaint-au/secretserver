@@ -1,31 +1,20 @@
 {% extends "base.html" %}
 {% block title %}My profile - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">My profile</h1>
 </div>
-<p class="text-sm opacity-70">Manage your account and access.</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Manage your account and access.</p>
 
-<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Profile sections">
-<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
-  {% set profile_tabs = [
-    ('Account', [('account', 'Account'), ('security', 'Security')]),
-    ('Membership', [('myaccess', 'My access'), ('teams', 'Teams'), ('projects', 'Projects')]),
-    ('Activity', [('activity', 'Activity')]),
-  ] %}
-  {% for group_label, tabs in profile_tabs %}
-  <li class="menu-title">{{ group_label }}</li>
-  {% for tab_id, tab_label in tabs %}
-  <li><a hx-get="{{ url_for('profile', tab=tab_id) }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab=tab_id) }}"
-     class="page-subnav-link{% if active_tab == tab_id %} menu-active{% endif %}"{% if active_tab == tab_id %} aria-current="page"{% endif %}
-  >{{ tab_label }}</a></li>
+<div class="tabs tabs-border mt-4 overflow-x-auto" role="tablist" aria-label="Profile sections">
+  {% set profile_tabs = [('account', 'Account'), ('security', 'Security'), ('myaccess', 'My access'), ('teams', 'Teams'), ('projects', 'Projects'), ('activity', 'Activity')] %}
+  {% for tab_id, tab_label in profile_tabs %}
+  <a role="tab" hx-get="{{ url_for('profile', tab=tab_id) }}" hx-target="#profile-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('profile', tab=tab_id) }}"
+     class="tab{% if active_tab == tab_id %} tab-active{% endif %}"{% if active_tab == tab_id %} aria-selected="true"{% endif %}
+  >{{ tab_label }}</a>
   {% endfor %}
-  {% endfor %}
-</ul>
-</nav>
-<div class="flex min-w-0 flex-1 flex-col gap-4" id="profile-panel" tabindex="-1">
-{% include "partials/profile_panel.html" %}
 </div>
+<div class="mt-4 flex min-w-0 flex-col gap-4" id="profile-panel" tabindex="-1">
+{% include "partials/profile_panel.html" %}
 </div>
 {% endblock %}

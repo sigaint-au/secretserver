@@ -8,18 +8,18 @@
 ] %}
 {% include "partials/breadcrumb.html" %}
 
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">New project</h1>
 </div>
-<p class="text-sm opacity-70">{{ team.name }}</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">{{ team.name }}</p>
 
 <form method="post" action="{{ url_for('create_project', team_id=team.id) }}" class="flex flex-col gap-4"
       data-confirm="Create with an HSM-wrapped key? The HSM must stay available for future access."
       data-confirm-if="input[name=encryption][value=hsm]">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Basics</h2></div>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="card-title">Basics</h2></div>
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-1 sm:col-span-2">
         <label class="label" for="new-project-name"><span>Name</span></label>
@@ -32,12 +32,12 @@
                placeholder="optional" autocomplete="off" class="input">
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Encryption</h2></div>
-    <fieldset>
-      <legend class="sr-only">Encryption</legend>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="card-title">Encryption</h2></div>
+    <div role="radiogroup" aria-label="Encryption">
       <div class="grid gap-4 sm:grid-cols-3">
         <label class="rounded-box border border-base-300 flex cursor-pointer items-start gap-2 p-4" for="enc-managed">
           <input type="radio" id="enc-managed" name="encryption" class="radio" value="managed" {% if encryption == 'managed' %}checked{% endif %}>
@@ -80,8 +80,9 @@
         {% endif %}
         {% endif %}
       </div>
-    </fieldset>
-  </section>
+    </div>
+  </div>
+</section>
 
   <p class="flex flex-wrap items-center gap-2 pt-2">
     <a class="btn btn-ghost" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Cancel</a>

@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">LDAP authentication</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">LDAP authentication</h2>
   <p class="text-sm opacity-70">
     Directory login alongside local accounts. Groups are read on each sign-in.
     Use <code class="font-mono">ldaps://</code> or StartTLS. Plain <code class="font-mono">ldap://</code> without TLS is refused.
@@ -13,8 +13,8 @@
       Enable LDAP login
     </label>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Connection</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Connection</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="ldap-url"><span>Server URL</span></label>
@@ -27,10 +27,10 @@
           StartTLS after connect
         </label>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Service bind</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Service bind</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="ldap-bind-dn"><span>Bind DN</span></label>
@@ -43,10 +43,10 @@
                  placeholder="{% if settings.ldap_bind_password_set %}•••••••• (leave blank to keep){% else %}optional for anonymous bind{% endif %}" class="input">
         </div>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">User lookup</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">User lookup</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="ldap-user-base"><span>Search base</span></label>
@@ -74,10 +74,10 @@
           <input type="text" name="ldap_name_attr" id="ldap-name-attr" value="{{ settings.ldap_name_attr or 'displayName' }}" class="input">
         </div>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Groups</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Groups</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="flex items-center gap-2 sm:col-span-2" for="ldap-memberof">
           <input type="checkbox" id="ldap-memberof" name="ldap_use_memberof" class="checkbox" value="1"
@@ -97,7 +97,7 @@
           <span class="text-xs opacity-70"><code class="font-mono">{dn}</code> is the user’s DN</span>
         </div>
       </div>
-    </fieldset>
+    </div>
 
     {% if ldap_test %}
     <p class="flex flex-wrap items-center gap-2">
@@ -117,10 +117,11 @@
       <button type="submit" name="action" value="ldap" class="btn btn-neutral">Save LDAP settings</button>
     </p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">LDAP group → roles</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">LDAP group → roles</h2>
   <p class="text-sm opacity-70">
     Map directory groups to roles. Matching groups sync global admin on login.
   </p>
@@ -146,7 +147,10 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="text-sm opacity-70">No role maps yet.</p>
+  {% set icon = 'teams' %}
+  {% set title = 'No role maps yet' %}
+  {% set text = 'Add the first mapping with the form below.' %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
   <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -164,4 +168,5 @@
     </div>
     <button type="submit" class="btn btn-neutral">Add map</button>
   </form>
+</div>
 </section>

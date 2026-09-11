@@ -34,7 +34,7 @@
   {% endif %}
 </div>
 <div id="webhook-results">
-<section class="flex min-w-0 flex-col gap-4">
+<div class="flex min-w-0 flex-col gap-4">
 {% if webhooks %}
 <div class="overflow-x-auto"><table class="table">
   <thead>
@@ -68,5 +68,5 @@
 {% set icon = 'settings' %}{% set title = 'No webhooks yet' %}{% set text = 'Add a webhook to push events to an external endpoint.' %}
 {% include "partials/empty_state.html" %}
 {% endif %}
-</section>
+</div>
 </div>

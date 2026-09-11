@@ -1,7 +1,8 @@
 /* Sidebar navigation: collapsible group persistence, mobile drawer a11y,
-   subnav highlight. Groups render as daisyUI menu <details>/<summary>.
+   tab highlight. Groups render as daisyUI menu <details>/<summary>;
+   resource sections render as daisyUI tabs ([role=tablist] > [role=tab]).
    Hooks: [data-side-group], #side-toggle, #side-backdrop, #app-sidebar,
-   a[data-nav-link], .page-subnav-link/.page-subnav. */
+   a[data-nav-link], [role=tablist]. */
 "use strict";
 
 /* Remember open/closed sidebar groups across full-page navigation.
@@ -119,23 +120,23 @@
   sync();
 })();
 
-/* Subnav highlight follows hx-get navigation; the server re-renders panels
-   but not the subnav, so this is cosmetic — server state stays canonical. */
+/* Tab highlight follows hx-get navigation; the server re-renders panels
+   but not the tablist, so this is cosmetic — server state stays canonical. */
 document.addEventListener("click", function (evt) {
   var link =
     evt.target && evt.target.closest
-      ? evt.target.closest(".page-subnav-link")
+      ? evt.target.closest('[role="tab"][hx-get]')
       : null;
-  if (!link || !link.hasAttribute("hx-get")) return;
-  var nav = link.closest(".page-subnav");
+  if (!link) return;
+  var nav = link.closest('[role="tablist"]');
   if (!nav) return;
   Array.prototype.forEach.call(
-    nav.querySelectorAll(".page-subnav-link"),
+    nav.querySelectorAll('[role="tab"]'),
     function (el) {
-      el.classList.remove("menu-active");
-      el.removeAttribute("aria-current");
+      el.classList.remove("tab-active");
+      el.removeAttribute("aria-selected");
     }
   );
-  link.classList.add("menu-active");
-  link.setAttribute("aria-current", "page");
+  link.classList.add("tab-active");
+  link.setAttribute("aria-selected", "true");
 });

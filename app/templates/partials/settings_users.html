@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Platform users</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Platform users</h2>
   <p class="text-sm opacity-70">
     Disabling blocks sign-in and revokes sessions.
     Password reset issues a one-time link (emailed when SMTP is configured).
@@ -95,6 +95,10 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="text-sm opacity-70">No users found.</p>
+  {% set icon = 'teams' %}
+  {% set title = 'No users found' %}
+  {% set text = 'No users match this view.' %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>

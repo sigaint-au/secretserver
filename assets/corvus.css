@@ -1,13 +1,14 @@
-/* Corvus daisyUI bundle input (Tailwind CSS v4).
-   Rebuild with: sh scripts/build-css.sh
+/* Corvus "Night vault" daisyUI bundle input (Tailwind CSS v4).
+   Rebuild with: make ui-css  (or: sh scripts/build-css.sh)
    Output (committed, served self-hosted): app/static/vendor/daisyui.min.css
-   Uses daisyUI's built-in light (default) and dark themes; the explicit
-   light/dark toggle (app/static/theme.js) sets data-theme and persists the
-   choice in localStorage, falling back to prefers-color-scheme.
-   All UI styling is daisyUI 5 + Tailwind utilities, no custom CSS. */
+   Default theme is daisyUI `lofi` (set as data-theme on <html>);
+   the dark companion is daisyUI `business`, reached only through the
+   Alpine theme-controller toggle (persisted in localStorage by
+   app/static/theme.js, falling back to prefers-color-scheme).
+   One accent (the theme primary). No custom palette, no custom CSS. */
 @import "tailwindcss";
 @source "../app/templates";
 @source "../app/static";
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes: lofi --default, business;
 }

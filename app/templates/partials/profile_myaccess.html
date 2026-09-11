@@ -1,7 +1,7 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">My access</h2>
+      <h2 class="card-title">My access</h2>
       <p class="text-sm opacity-70">How your access is granted.</p>
     </div>
     <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
@@ -68,4 +68,5 @@
     {% else %}No {{ my_access_scope_label|lower }} bindings reference you or your groups. Ask a team owner or admin to grant access.{% endif %}
   </p>
   {% endif %}
+</div>
 </section>

@@ -1,15 +1,16 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Short-lived token</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Short-lived token</h2>
   <p class="text-sm opacity-70">You sign in on the CLI with a
     <code class="font-mono">corvus login</code> command.
     Each token lasts a short time, so make a new command each time you sign in.</p>
   <p class="flex flex-wrap items-center gap-2 pt-2">
     <button type="button" class="btn btn-outline" data-open-dialog="cli-login-dlg">Generate login command</button>
   </p>
+</div>
 </section>
 
 {% if new_pat %}
-<div class="token-once alert" role="status">
+<div class="token-once alert alert-warning" role="status">
   <strong>New token (copy now)</strong>
   <pre id="new-pat-value" class="font-mono text-sm">{{ new_pat }}</pre>
   <p class="flex flex-wrap items-center gap-2">
@@ -19,8 +20,8 @@
 </div>
 {% endif %}
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Personal access tokens</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Personal access tokens</h2>
   <p class="text-sm opacity-70">Long-lived <code class="font-mono">pat_…</code> tokens for CLI. Exchange via <code class="font-mono">/api/token</code>.</p>
   <form method="post" action="{{ url_for('create_personal_token') }}" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -68,10 +69,11 @@
     </tbody>
   </table></div>
   {% endif %}
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Two-factor authentication</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Two-factor authentication</h2>
   {% if totp_enabled %}
   <p class="text-sm">
     <span class="badge badge-soft">Enabled</span>
@@ -109,11 +111,12 @@
   </p>
   <p class="flex flex-wrap items-center gap-2 pt-2"><a class="btn btn-outline" href="{{ url_for('totp_setup') }}">Set up 2FA</a></p>
   {% endif %}
+</div>
 </section>
 
 {% if user.auth_source == 'local' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Change password</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Change password</h2>
   <p class="text-sm opacity-70">Signs out other devices.</p>
   <form method="post" action="{{ url_for('change_password') }}" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -131,21 +134,23 @@
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Update password</button></p>
   </form>
+</div>
 </section>
 {% else %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Password</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Password</h2>
   <p class="text-sm opacity-70">
     {% if user.auth_source == 'oidc' %}Managed by OIDC SSO.
     {% elif user.auth_source == 'ldap' %}Managed in the LDAP directory.
     {% else %}Managed by your identity provider.{% endif %}
   </p>
+</div>
 </section>
 {% endif %}
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Active sessions</h2>
+    <h2 class="card-title">Active sessions</h2>
     {% if active_sessions and active_sessions|length > 1 %}
     <form method="post" action="{{ url_for('revoke_other_sessions') }}" class="inline"
           data-confirm="Sign out all other devices?">
@@ -196,4 +201,5 @@
   {% else %}
   <p class="text-sm opacity-70">No active sessions recorded for this account.</p>
   {% endif %}
+</div>
 </section>

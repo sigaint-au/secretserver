@@ -8,7 +8,7 @@
   (group.name, none),
 ] %}
 {% include "partials/breadcrumb.html" %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <div class="flex flex-wrap items-center gap-2">
     <h1 class="text-3xl font-bold tracking-tight">{{ group.name }}</h1>
     <span class="badge badge-soft">{{ group.source }}</span>
@@ -24,8 +24,8 @@
 </p>
 
 {% if is_admin %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Settings</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Settings</h2>
   <form method="post" action="{{ url_for('update_team_group', team_id=team.id, group_id=group.id) }}" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <div class="grid gap-1">
@@ -41,19 +41,20 @@
     {% endif %}
     <button type="submit" class="btn btn-neutral">Save</button>
   </form>
+</div>
 </section>
 {% endif %}
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Members</h2>
+    <h2 class="card-title">Members</h2>
     <form method="get" action="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}"
           class="flex flex-wrap items-center gap-2" role="search">
-      <fieldset class="join">
+      <div class="join">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ search_q or '' }}" id="group-members-q"
                placeholder="Search" autocomplete="off" aria-label="Search members" class="input join-item">
-      </fieldset>
+      </div>
       {% if search_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('team_group_detail', team_id=team.id, group_id=group.id) }}">Clear search</a>
       {% endif %}
@@ -96,6 +97,7 @@
   {% else %}
   <p class="text-sm opacity-70">{% if search_q %}No members match “{{ search_q }}”.{% else %}No members in this group yet.{% endif %}</p>
   {% endif %}
+</div>
 </section>
 
 {% if is_admin %}

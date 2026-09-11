@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Projects - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
+<section class="card card-border bg-base-100"><div class="card-body gap-6 p-6">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+  <h1 class="text-3xl font-bold tracking-tight">Projects{% if team and projects_pager %} <span class="badge badge-soft">{{ projects_pager.total }}</span>{% endif %}</h1>
   {% if team %}
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('projects_list') }}" class="flex flex-wrap items-center gap-2" role="search">
@@ -14,7 +15,7 @@
       {% endif %}
     </form>
     {% if can_create_project %}
-    <a class="btn btn-neutral btn-sm" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('new_project_wizard', team_id=team.id) }}">Add project</a>
     {% endif %}
   </div>
   {% endif %}
@@ -45,12 +46,11 @@
 {% include "partials/empty_state.html" %}
 {% endif %}
 {% else %}
-<p class="text-sm opacity-70">Team <span class="badge badge-soft">{{ team.name }}</span>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Team <span class="badge badge-soft">{{ team.name }}</span>
   · <a class="link" href="{{ url_for('team_detail', team_id=team.id, tab='access') }}">Manage access</a>
 </p>
-<section class="flex min-w-0 flex-col gap-4">
   {% if projects %}
-  <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-sm"><table class="table table-zebra table-pin-rows">
+  <div class="overflow-x-auto"><table class="table table-pin-rows">
     <thead>
       <tr>
         <th>Name</th>
@@ -102,6 +102,7 @@
 {% include "partials/empty_state.html" %}
 {% endif %}
 {% endif %}
+</div>
 </section>
 
 {% endif %}

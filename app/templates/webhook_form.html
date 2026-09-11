@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ heading }} - Webhooks - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">{{ heading }}</h1>
   <div class="flex flex-wrap items-center gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ back }}">← Back</a>
@@ -11,8 +11,8 @@
 
 <div class="flex min-w-0 flex-col gap-4">
   {% if mode == 'edit' and deliveries is defined %}
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Recent deliveries</h2></div>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="card-title">Recent deliveries</h2></div>
     {% if deliveries %}
     <div class="overflow-x-auto"><table class="table">
       <thead><tr><th>When</th><th>Event</th><th>Result</th><th>Took</th></tr></thead>
@@ -32,9 +32,12 @@
       </tbody>
     </table></div>
     {% else %}
-    <p class="text-sm opacity-70">No deliveries yet.</p>
+    {% set title = 'No deliveries yet' %}
+    {% set text = 'Delivery attempts for this webhook will appear here.' %}
+    {% include "partials/empty_state.html" %}
     {% endif %}
-  </section>
+  </div>
+</section>
   {% endif %}
 
   <form method="post" class="flex flex-col gap-4" data-require-one="events"
@@ -46,8 +49,8 @@
     <input type="hidden" name="scope_id" value="{{ scope_id or '' }}">
     {% endif %}
 
-    <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend class="fieldset-legend">Endpoint</legend>
+    <div class="rounded-box border border-base-300 p-4">
+      <h3 class="font-bold">Endpoint</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1">
           <label class="label" for="webhook-name"><span>Name</span></label>
@@ -72,10 +75,10 @@
         </div>
         {% endif %}
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend class="fieldset-legend">Events</legend>
+    <div class="rounded-box border border-base-300 p-4">
+      <h3 class="font-bold">Events</h3>
       {% set selected = webhook.events if webhook else [] %}
       <div class="flex flex-col gap-4">
         {% for group, events in WEBHOOK_EVENTS.items() %}
@@ -93,10 +96,10 @@
         </div>
         {% endfor %}
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend class="fieldset-legend">Options</legend>
+    <div class="rounded-box border border-base-300 p-4">
+      <h3 class="font-bold">Options</h3>
       <label class="flex items-center gap-2" for="webhook-ssl-verify">
         <input type="checkbox" id="webhook-ssl-verify" name="ssl_verify" class="checkbox"
                {% if mode == 'create' or webhook.ssl_verify %}checked{% endif %}>
@@ -108,7 +111,7 @@
         Active
       </label>
       {% endif %}
-    </fieldset>
+    </div>
 
     <p id="wh-events-error" hidden role="alert" class="alert alert-error" data-require-error>
       Select at least one event before saving.

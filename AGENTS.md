@@ -1,6 +1,6 @@
 # Corvus
 
-Self-hosted secrets server: Flask + HTMX + oat.ink UI, Postgres RLS, kustomize deploy.
+Self-hosted secrets server: Flask + HTMX + Alpine + DaisyUI/Tailwind (Night-vault theme), Postgres RLS, kustomize deploy.
 
 ## Layout
 - `app/` Python package (routes, domain, templates)

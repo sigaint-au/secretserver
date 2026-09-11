@@ -451,7 +451,7 @@ class TestAuth:
             r = self.client.get('/profile')
         assert r.status_code == 200
         assert b'My profile' in r.data
-        assert b'Copy login command' not in r.data
+        assert b'Copy login command' in r.data
         assert b'?tab=account' in r.data
         assert b'?tab=security' in r.data
         assert b'?tab=myaccess' in r.data

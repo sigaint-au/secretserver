@@ -227,7 +227,7 @@ function restoreAccessBusy(form) {
     return mins / 60 + " hours";
   }
 
-  /* Classification swatches delegate to the color-picker include. */
+  /* Classification swatches delegate to classification.js (window.applyPreset). */
   document.addEventListener("click", function (evt) {
     var sw =
       evt.target && evt.target.closest

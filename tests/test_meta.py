@@ -178,7 +178,7 @@ class TestTeamMetaRoutes:
 
 
 class TestTeamMetaTemplates:
-    def test_team_subnav_has_meta_link(self):
+    def test_team_tabs_has_meta_link(self):
         src = (REPO_ROOT / "app" / "templates" / "team.html").read_text()
         assert "tab='meta'" in src or 'tab="meta"' in src
         # The metadata form lives in the tab partial included above.
@@ -243,8 +243,8 @@ class TestProjectMetaRoutes:
     def test_project_meta_template_and_registration(self):
         from tests.helpers import routes_module_src
 
-        subnav = (REPO_ROOT / "app" / "templates" / "project.html").read_text()
-        assert "tab='meta'" in subnav
+        page = (REPO_ROOT / "app" / "templates" / "project.html").read_text()
+        assert "tab='meta'" in page
         content = (REPO_ROOT / "app" / "templates" / "partials" / "project_content.html").read_text()
         assert "project_meta.html" in content
         meta_partial = (REPO_ROOT / "app" / "templates" / "partials" / "project_meta.html").read_text()

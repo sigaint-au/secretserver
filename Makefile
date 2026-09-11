@@ -30,6 +30,9 @@ test:      ## Run unit tests (mocked DB — no Postgres needed)
 test-live: ## Run live integration tests (requires running stack)
 	pytest -m live
 
+ui-css:    ## Rebuild vendored DaisyUI bundle from assets/corvus.css
+	sh scripts/build-css.sh
+
 docs-build: ## Build the docs site (strict) with the Sigaint theme
 	scripts/docs-build.sh
 

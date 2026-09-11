@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Teams - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-3xl font-bold tracking-tight">Teams</h1>
+<section class="card card-border bg-base-100"><div class="card-body gap-6 p-6">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+  <h1 class="text-3xl font-bold tracking-tight">Teams <span class="badge badge-soft">{{ teams|length }}</span></h1>
   <div class="flex flex-wrap items-center gap-2">
     <form method="get" action="{{ url_for('teams') }}" class="flex flex-wrap items-center gap-2" role="search">
       {% with input_value=search_q, input_id='teams-q', aria_label='Search teams' %}
@@ -13,16 +14,15 @@
       {% endif %}
     </form>
     {% if can_create_team %}
-    <button type="button" class="btn btn-outline btn-sm"
+    <button type="button" class="btn btn-primary btn-sm"
             data-open-dialog="create-team-dlg">Add team</button>
     {% endif %}
   </div>
 </div>
-<p class="text-sm opacity-70">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Only global admins can create teams.{% endif %}</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Teams own projects. Access is managed via role bindings.{% if not can_create_team and not teams %} Only global admins can create teams.{% endif %}</p>
 
-<section class="flex min-w-0 flex-col gap-4">
 {% if teams %}
-<div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-sm"><table class="table table-zebra table-pin-rows">
+<div class="overflow-x-auto"><table class="table table-pin-rows">
   <thead><tr><th>Name</th><th>Role</th><th>Projects</th></tr></thead>
   <tbody>
   {% for t in teams %}
@@ -54,7 +54,7 @@
           <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13A4 4 0 0 1 16 11"/>
         </svg>
       </div>
-      <h2 class="text-lg font-bold">Welcome to {{ app_name }}</h2>
+      <h2 class="card-title">Welcome to {{ app_name }}</h2>
       <p class="py-2 opacity-70">Corvus keeps your team's secrets encrypted and access controlled. Get started in three steps.</p>
       <ul class="steps steps-vertical">
         <li class="step step-neutral">
@@ -77,7 +77,7 @@
         </li>
       </ul>
       <p class="py-2">
-        <button type="button" class="btn btn-neutral" data-open-dialog="create-team-dlg">Create your first team</button>
+        <button type="button" class="btn btn-primary" data-open-dialog="create-team-dlg">Create your first team</button>
       </p>
     </div>
   </div>
@@ -90,6 +90,7 @@
 {% endif %}
 {% endif %}
 {% endif %}
+</div>
 </section>
 
 {% if can_create_team %}

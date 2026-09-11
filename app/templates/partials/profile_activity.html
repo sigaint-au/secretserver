@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Pinned secrets</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Pinned secrets</h2>
   {% if pins %}
   <div class="overflow-x-auto"><table class="table">
     <thead>
@@ -26,12 +26,13 @@
   {% else %}
   <p class="text-sm opacity-70">Pin a secret from a project's secrets list.</p>
   {% endif %}
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">Recently accessed</h2>
+      <h2 class="card-title">Recently accessed</h2>
       <p class="text-sm opacity-70">Secrets you opened recently.</p>
     </div>
     <form method="get" action="{{ url_for('profile') }}" class="flex flex-wrap items-center gap-2" role="search">
@@ -73,4 +74,5 @@
   {% else %}
   <p class="text-sm opacity-70">{% if activity_q %}No recent activity matches “{{ activity_q }}”.{% else %}No recent secret access yet.{% endif %}</p>
   {% endif %}
+</div>
 </section>

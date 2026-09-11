@@ -1,30 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Roles - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">Roles</h1>
 </div>
-<p class="text-sm opacity-70">
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">
   Named sets of permissions (verbs × resources). Assign them under
   <a class="link" href="{{ url_for('rbac_bindings') }}">Role bindings</a>.
 </p>
 
-<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Roles sections">
-<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
+<div class="tabs tabs-border mt-4 overflow-x-auto" role="tablist" aria-label="Roles sections">
   {% set roles_tabs = [('builtin', 'Built-in', builtin_roles|length, active_tab == 'builtin'), ('custom', 'Custom', custom_roles|length, active_tab == 'custom' or active_tab == 'create')] %}
   {% for tab_id, tab_label, tab_count, tab_on in roles_tabs %}
-  <li><a hx-get="{{ url_for('rbac_roles', tab=tab_id) }}" hx-target="#roles-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('rbac_roles', tab=tab_id) }}"
-     class="page-subnav-link{% if tab_on %} menu-active{% endif %}"{% if tab_on %} aria-current="page"{% endif %}
+  <a role="tab" hx-get="{{ url_for('rbac_roles', tab=tab_id) }}" hx-target="#roles-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('rbac_roles', tab=tab_id) }}"
+     class="tab{% if tab_on %} tab-active{% endif %}"{% if tab_on %} aria-selected="true"{% endif %}
   >{{ tab_label }}
     <span class="badge badge-soft badge-sm">{{ tab_count }}</span>
-  </a></li>
+  </a>
   {% endfor %}
-</ul>
-</nav>
-<div class="flex min-w-0 flex-1 flex-col gap-4" id="roles-panel" tabindex="-1">
+</div>
+<div class="mt-4 flex min-w-0 flex-col gap-4" id="roles-panel" tabindex="-1">
 
 {% include "partials/roles_panel.html" %}
-</div>
 </div>
 {% endblock %}

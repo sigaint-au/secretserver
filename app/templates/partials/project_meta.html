@@ -1,5 +1,5 @@
-<section>
-  <h2 class="text-lg font-bold">Project metadata</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Project metadata</h2>
   <p class="text-sm opacity-70">Metadata here appears on every secret in the project. Keys defined on the team are inherited and cannot be changed here.</p>
   {% if can_admin %}
   <form method="post" action="{{ url_for('upsert_project_meta', project_id=project_id) }}" class="flex flex-wrap items-end gap-4"
@@ -47,4 +47,5 @@
   {% set text = 'Metadata here appears on every secret in the project.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>

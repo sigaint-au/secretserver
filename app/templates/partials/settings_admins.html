@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Global admins</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Global admins</h2>
   <p class="text-sm opacity-70">Global admins can access every team, every project, and all server settings.</p>
   {% set admin_users = users|selectattr('is_global_admin')|list %}
   {% if admin_users %}
@@ -31,7 +31,10 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="text-sm opacity-70">No global admins found.</p>
+  {% set icon = 'teams' %}
+  {% set title = 'No global admins found' %}
+  {% set text = 'Promote a user with the form below.' %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
   <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -43,4 +46,5 @@
     </div>
     <button type="submit" class="btn btn-neutral">Make global admin</button>
   </form>
+</div>
 </section>

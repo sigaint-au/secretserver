@@ -1,6 +1,6 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Teams</h2>
+    <h2 class="card-title">Teams</h2>
     <a href="{{ url_for('teams') }}" class="link text-sm opacity-70">All teams →</a>
   </div>
   {% if teams %}
@@ -33,11 +33,12 @@
   {% else %}
   <p class="text-sm opacity-70">You are not a member of any teams yet.</p>
   {% endif %}
+</div>
 </section>
 
 {% if pending_joins %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Pending join requests</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Pending join requests</h2>
   <p class="text-sm opacity-70">Waiting for a team owner or admin to approve.</p>
   <div class="overflow-x-auto"><table class="table">
     <thead>
@@ -57,5 +58,6 @@
     {% endfor %}
     </tbody>
   </table></div>
+</div>
 </section>
 {% endif %}

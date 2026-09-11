@@ -6,10 +6,10 @@
   ('Import preview', none),
 ] %}
 {% include "partials/breadcrumb.html" %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">Import preview</h1>
 </div>
-<p class="text-sm opacity-70">
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">
   Project <strong>{{ project.name }}</strong>:
   <strong>{{ n_creates }}</strong> create{{ 's' if n_creates != 1 }},
   <strong>{{ n_updates }}</strong> update{{ 's' if n_updates != 1 }}.

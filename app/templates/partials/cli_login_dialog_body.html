@@ -1,17 +1,10 @@
-{# Dialog body after the token is minted (swapped into #cli-login-dlg). #}
-<div class="modal-box">
-<form method="dialog">
-  <h3 id="cli-login-dlg-title" class="text-lg font-bold">Login command</h3>
-  <p class="py-4">Paste this into a shell. The token expires in {{ minutes }} minutes.</p>
-  <div class="mockup-code overflow-x-auto">
-    <pre id="cli-login-command">{{ command }}</pre>
-  </div>
-  <div class="py-2">
-    <button type="button" class="copy-btn btn btn-ghost btn-sm" data-copy-target="cli-login-command"
-            data-clear-seconds="{{ clipboard_clear_seconds|default(30) }}">Copy command</button>
-  </div>
-  <div class="modal-action">
-    <button value="ok" class="btn btn-neutral">Done</button>
-  </div>
-</form>
+{# Dialog panel after the token is minted (swapped into #cli-login-dlg-panel). #}
+<h3 id="cli-login-dlg-title" class="text-lg font-bold">Login command</h3>
+<p class="py-4 text-sm text-base-content/60">Paste this into a shell. The token expires in {{ minutes }} minutes.</p>
+<label class="sr-only" for="cli-login-command">Login command</label>
+<textarea id="cli-login-command" class="textarea w-full font-mono text-sm" rows="4" readonly>{{ command }}</textarea>
+<div class="modal-action">
+  <button type="button" class="copy-btn btn btn-neutral" data-copy-target="cli-login-command"
+          data-clear-seconds="{{ clipboard_clear_seconds|default(30) }}">Copy command</button>
+  <button type="button" class="btn btn-ghost" data-close-dialog="cli-login-dlg">Done</button>
 </div>

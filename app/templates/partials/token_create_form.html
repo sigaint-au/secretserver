@@ -4,7 +4,7 @@
 {% set default_name = default_name|default('machine') %}
 {% set return_tab = return_tab|default(none) %}
 {% set compact = compact|default(false) %}
-<section id="{{ form_id }}-card">
+<div id="{{ form_id }}-card">
   {% if compact %}
   <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="text-base font-bold">Machine account for ESO</h3></div>
   <p class="text-sm opacity-70">Create a reveal token and name the keys the cluster will pull.</p>
@@ -19,8 +19,8 @@
     {% if return_tab %}<input type="hidden" name="return_tab" value="{{ return_tab }}">{% endif %}
     <input type="hidden" name="scope_keys" value="" data-scope-hidden>
 
-    <fieldset class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend>Token</legend>
+    <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+      <h2 class="card-title">Token</h2>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="grid gap-1">Name
           <input type="text" name="name" value="{{ default_name }}" placeholder="e.g. eso-prod" required autocomplete="off" class="input">
@@ -40,7 +40,8 @@
                  placeholder="{% if default_token_days %}{{ default_token_days }} (team default){% else %}Never{% endif %}" class="input">
         </label>
       </div>
-    </fieldset>
+    </div>
+</section>
 
     <div data-scope-panel>
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -100,4 +101,4 @@
       <button type="submit" class="btn btn-neutral">Create machine account</button>
     </p>
   </form>
-</section>
+</div>

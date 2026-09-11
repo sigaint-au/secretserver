@@ -1,8 +1,8 @@
 {% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
 {% endif %}{% if active_tab == 'builtin' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Built-in roles</h2>
+    <h2 class="card-title">Built-in roles</h2>
     {% if can_edit %}
     <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
@@ -34,13 +34,14 @@
   {% set text = 'Built-in roles could not be loaded.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>
 {% endif %}
 
 {% if active_tab == 'custom' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Custom roles</h2>
+    <h2 class="card-title">Custom roles</h2>
     {% if can_edit %}
     <a class="btn btn-outline btn-sm" href="{{ url_for('rbac_roles', tab='create') }}">+ New role</a>
     {% endif %}
@@ -89,13 +90,14 @@
   {% endif %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>
 {% endif %}
 
 {% if active_tab == 'create' and can_edit %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">New custom role</h2>
+    <h2 class="card-title">New custom role</h2>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('rbac_roles', tab='custom') }}">Back to roles</a>
   </div>
   <form method="post" action="{{ url_for('rbac_roles_create') }}" class="flex flex-col gap-4" id="role-create-form">
@@ -103,8 +105,8 @@
     <input type="hidden" name="tab" value="custom">
     <input type="hidden" name="mode" id="create-mode" value="form">
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Details</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Details</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1">
           <label class="label" for="role-create-name"><span>Name</span></label>
@@ -120,15 +122,15 @@
           <input type="text" id="role-create-desc" name="description" placeholder="Optional summary" autocomplete="off" class="input">
         </div>
       </div>
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Assignable at scopes</legend>
+      <div class="flex flex-col gap-2">
+        <h3 class="font-bold">Assignable at scopes</h3>
         <div class="grid gap-2 sm:grid-cols-3">
           {% for scope in scope_kinds|default(['team', 'project', 'folder', 'secret', 'cluster']) %}
           <label class="flex items-center gap-2" for="role-scope-{{ scope }}"><input type="checkbox" id="role-scope-{{ scope }}" name="scopes" class="checkbox" value="{{ scope }}"{% if scope == 'team' %} checked{% endif %}> {{ scope|capitalize }}</label>
           {% endfor %}
         </div>
-      </fieldset>
-    </fieldset>
+      </div>
+    </div>
 
       <div role="tablist" class="tabs tabs-box role-mode-tabs" data-mode-input="create-mode">
         <button type="button" class="tab tab-active" data-mode="form" id="mode-form-btn"
@@ -142,8 +144,8 @@
           Pick a resource and its verbs for one rule. Use YAML for multiple rules.
         </p>
         <div class="grid gap-4 sm:grid-cols-2">
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend">Resource</legend>
+          <div class="flex flex-col gap-2">
+            <h3 class="font-bold">Resource</h3>
             <div class="grid gap-2">
               {% for res in resources %}
               <label class="flex items-center gap-2" for="role-res-{{ res }}">
@@ -153,9 +155,9 @@
               </label>
               {% endfor %}
             </div>
-          </fieldset>
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend">Verbs</legend>
+          </div>
+          <div class="flex flex-col gap-2">
+            <h3 class="font-bold">Verbs</h3>
             <div class="grid gap-2">
               {% for v in verbs %}
               <label class="flex items-center gap-2" for="role-verb-{{ v }}">
@@ -165,7 +167,7 @@
               </label>
               {% endfor %}
             </div>
-          </fieldset>
+          </div>
         </div>
       </div>
 
@@ -197,6 +199,7 @@ verbs: *
       <a class="btn btn-ghost" href="{{ url_for('rbac_roles', tab='custom') }}">Cancel</a>
     </p>
   </form>
+</div>
 </section>
 {% elif active_tab == 'create' %}
 <p class="text-sm opacity-70">Only global admins can create roles.</p>

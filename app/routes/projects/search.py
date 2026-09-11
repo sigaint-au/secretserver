@@ -212,6 +212,68 @@ def global_search():
 
 
 @authz.login_required
+def search_suggest():
+    """HTMX fragment of palette hits for the current query.
+
+    Caps each group so the command palette stays short. Empty ``q`` returns
+    a hint, not a database round-trip.
+
+    Example:
+        GET /search/suggest?q=prod
+    """
+    q = (request.args.get("q") or "").strip()
+    teams, projects, secrets = [], [], []
+    limit = 6
+    if q:
+        like = f"%{q}%"
+        with db.as_user(session["user_id"]) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, name FROM api.teams
+                WHERE name ILIKE %s
+                ORDER BY name
+                LIMIT %s
+                """,
+                (like, limit),
+            )
+            teams = cur.fetchall() or []
+            cur.execute(
+                """
+                SELECT p.id, p.name, t.name AS team_name, t.id AS team_id
+                FROM api.projects p
+                JOIN api.teams t ON t.id = p.team_id
+                WHERE p.name ILIKE %s
+                ORDER BY t.name, p.name
+                LIMIT %s
+                """,
+                (like, limit),
+            )
+            projects = cur.fetchall() or []
+            cur.execute(
+                """
+                SELECT s.id, s.key, s.project_id, p.name AS project_name,
+                       t.name AS team_name
+                FROM api.secrets s
+                JOIN api.projects p ON p.id = s.project_id
+                JOIN api.teams t ON t.id = p.team_id
+                WHERE s.deleted_at IS NULL
+                  AND (s.key ILIKE %s OR s.note ILIKE %s OR p.name ILIKE %s)
+                ORDER BY t.name, p.name, s.key
+                LIMIT %s
+                """,
+                (like, like, like, limit),
+            )
+            secrets = cur.fetchall() or []
+    return render_template(
+        "partials/search_palette_results.html",
+        q=q,
+        teams=teams,
+        projects=projects,
+        secrets=secrets,
+    )
+
+
+@authz.login_required
 def access_requests_inbox():
     """List pending secret reveal requests the current user can approve.
 

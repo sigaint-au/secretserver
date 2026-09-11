@@ -22,7 +22,7 @@
 } %}
 {% if pager and pager.total > 0 %}
 <nav class="flex flex-wrap items-center gap-4" aria-label="Pagination">
-  <span class="text-sm opacity-70">
+  <span class="text-sm text-base-content/60">
     Showing {{ pager.start }}–{{ pager.end }} of {{ pager.total }}{% if not (pager.total > pager.per_page) and (pager.q or pager.project or pager.kind or pager.due or pager.access_mode or pager.folder or pager.actor or pager.action or pager.since or pager.until) %} matching filters{% endif %}
   </span>
   {% if pager.total > pager.per_page %}

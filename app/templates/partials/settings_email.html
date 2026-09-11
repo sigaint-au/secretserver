@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Email (SMTP)</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Email (SMTP)</h2>
   <p class="text-sm opacity-70">
     Outbound mail for password reset links and optional login alerts.
     When SMTP is disabled or incomplete, password resets still create a token
@@ -74,10 +74,11 @@
     </p>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save email settings</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Send test email</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Send test email</h2>
   <p class="text-sm opacity-70">Uses the saved SMTP settings. Save before testing if you changed them.</p>
   <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -90,4 +91,5 @@
     </div>
     <button type="submit" class="btn btn-neutral">Send test</button>
   </form>
+</div>
 </section>

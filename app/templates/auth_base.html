@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lofi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/daisyui.min.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='vendor/alpine.min.js') }}" defer></script>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body x-data class="bg-base-200 font-sans">
+  <a class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-base-100 focus:p-2" href="#main-content">Skip to content</a>
+  {% include "partials/classification_banner.html" %}
+
+  {% set show_login_banner = login_banner and login_banner.enabled %}
+  <div class="grid min-h-screen grid-cols-1{% if show_login_banner %} lg:grid-cols-2{% endif %}">
+    {% if show_login_banner %}
+    {% include "partials/auth_brand_panel.html" %}
+    {% endif %}
+
+    <div class="flex flex-col justify-center gap-6 p-4 sm:p-6">
+      <main id="main-content" class="card bg-base-100 mx-auto w-full max-w-md shadow-sm">
+        <div class="card-body gap-6">
+          <div class="flex items-center justify-between gap-2">
+            <a class="flex items-center gap-2 text-lg tracking-tight" href="{{ url_for('login') }}">
+              <span class="bg-primary text-primary-content flex size-9 items-center justify-center rounded-box">
+                {% include "partials/brand_logo.html" %}
+              </span>
+              <span>
+                {{ brand_name or 'Corvus' }}
+                {% if brand_tagline %}<span class="block text-xs font-medium uppercase text-base-content/60">{{ brand_tagline }}</span>{% endif %}
+              </span>
+            </a>
+            {% include "partials/theme_toggle.html" %}
+          </div>
+
+          {% include "partials/flash_messages.html" %}
+
+          {% include "partials/confirm_dialog.html" %}
+
+          {% block body %}{% endblock %}
+        </div>
+      </main>
+      {% block extra %}{% endblock %}
+    </div>
+  </div>
+  <datalist id="user-suggest-list"></datalist>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+<script src="{{ url_for('static', filename='forms.js') }}" defer></script>
+<script src="{{ url_for('static', filename='dialogs.js') }}" defer></script>
+</body>
+</html>

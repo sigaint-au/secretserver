@@ -1,22 +1,25 @@
-{# CLI login dialog. Opened from the profile security tab.
-   On open it shows a "Generate command" button; submitting swaps in the
-   freshly minted command + Copy button via cli_login_command. #}
+{# CLI login dialog. Opened from the top-nav account menu and the profile
+   security tab. Lives outside the sidebar so it is not clipped or recolored
+   by drawer-side / text-neutral-content. Generating swaps #cli-login-dlg-panel. #}
 <dialog id="cli-login-dlg" closedby="any" class="modal" aria-labelledby="cli-login-dlg-title">
-  <div class="modal-box">
-  <form method="post"
-        action="{{ url_for('cli_login_command') }}"
-        hx-post="{{ url_for('cli_login_command') }}"
-        hx-target="#cli-login-dlg"
-        hx-swap="innerHTML"
-        id="cli-login-dlg-form">
-    <h3 id="cli-login-dlg-title" class="text-lg font-bold">CLI login command</h3>
-    <p class="py-4">Generate a short-lived token and a ready-to-paste <code>corvus login</code> command.</p>
-    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <div class="modal-action">
-      <button type="button" class="btn btn-outline" data-close-dialog="cli-login-dlg">Cancel</button>
-      <button type="submit" class="btn btn-neutral">Generate command</button>
+  <div class="modal-box max-w-2xl text-base-content">
+    <div id="cli-login-dlg-panel">
+      <form method="post"
+            action="{{ url_for('cli_login_command') }}"
+            hx-post="{{ url_for('cli_login_command') }}"
+            hx-target="#cli-login-dlg-panel"
+            hx-swap="innerHTML"
+            id="cli-login-dlg-form">
+        <h3 id="cli-login-dlg-title" class="text-lg font-bold">CLI login command</h3>
+        <p class="py-4 text-sm text-base-content/60">Generate a short-lived token and a ready-to-paste
+          <code class="font-mono">corvus login</code> command.</p>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" data-close-dialog="cli-login-dlg">Cancel</button>
+          <button type="submit" class="btn btn-neutral" data-busy="Generating…">Generate command</button>
+        </div>
+      </form>
     </div>
-  </form>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
 </dialog>

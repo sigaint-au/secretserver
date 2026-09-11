@@ -4,9 +4,9 @@
 {% if access_pending is defined %}{% with n=access_pending %}{% include "partials/nav_access_badge.html" %}{% endwith %}{% endif %}
 {% if grant_minutes is defined %}{% if grant_minutes < 60 %}{% set grant_lab = grant_minutes ~ ' minutes' %}{% elif grant_minutes == 60 %}{% set grant_lab = '1 hour' %}{% elif grant_minutes == 1440 %}{% set grant_lab = '1 day' %}{% else %}{% set grant_lab = (grant_minutes // 60) ~ ' hours' %}{% endif %}{% endif %}
 <div id="project-requests">
-<section>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Reveal requests</h2>
+    <h2 class="card-title">Reveal requests</h2>
   </div>
   <p class="text-sm opacity-70">Pending and recent reveal-approval requests for this project.</p>
   {% if access_requests %}
@@ -95,5 +95,6 @@
     No access requests yet.
   </p>
   {% endif %}
+</div>
 </section>
 </div>

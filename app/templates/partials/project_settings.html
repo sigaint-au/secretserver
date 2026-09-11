@@ -1,13 +1,13 @@
 {% if can_admin %}
-<section>
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">General</h2>
-  <p class="text-sm opacity-70">Applied to new secrets created in this project.</p>
+<div class="flex flex-col gap-6">
+  <div>
+    <h2 class="card-title">General</h2>
+    <p class="mt-1 max-w-3xl text-sm text-base-content/60">Applied to new secrets created in this project.</p>
   </div>
-  <form method="post" action="{{ url_for('update_project_settings', project_id=project.id) }}" data-dirty-guard>
+  <form method="post" action="{{ url_for('update_project_settings', project_id=project.id) }}" data-dirty-guard class="flex flex-col gap-6">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <fieldset class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend>Project</legend>
+    <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+      <h2 class="card-title">Project</h2>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="grid gap-1 sm:col-span-2">Description
           <input type="text" name="description" maxlength="500"
@@ -16,9 +16,10 @@
           <span class="text-xs opacity-70">Shown at the top of this project alongside its name.</span>
         </label>
       </div>
-    </fieldset>
-    <fieldset class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-      <legend>Reveal access</legend>
+    </div>
+</section>
+    <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+      <h2 class="card-title">Reveal access</h2>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="flex items-center gap-2 sm:col-span-2">
           <input type="checkbox" name="require_reveal_approval" class="checkbox" value="1"
@@ -44,24 +45,26 @@
           <strong>Restricted</strong> starts them locked to role bindings only.
         </span>
       </div>
-    </fieldset>
-    <p class="flex flex-wrap items-center gap-2 pt-2">
-      <button type="submit" class="btn btn-neutral">Save changes</button>
+    </div>
+</section>
+    <p class="flex flex-wrap items-center gap-2">
+      <button type="submit" class="btn btn-primary">Save changes</button>
     </p>
   </form>
-</section>
+</div>
 {% endif %}
 {% if can_settings %}
-<section>
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Encryption</h2>
-    <p class="text-sm opacity-70">Which key protects this project's secrets at rest.</p>
+<div class="flex flex-col gap-6">
+  <div>
+    <h2 class="card-title">Encryption</h2>
+    <p class="mt-1 max-w-3xl text-sm text-base-content/60">Which key protects this project's secrets at rest.</p>
   </div>
 
-  <div class="flex flex-wrap items-center gap-4">
-    <div>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <strong>
+        <h3 class="font-bold">Current key</h3>
+        <p class="mt-1 font-bold">
           {% if project_crypto %}
             {% if project_crypto.key_provider == 'hsm' %}
               HSM-wrapped key{% if project_crypto.hsm_slot_name %} · {{ project_crypto.hsm_slot_name }}{% endif %}
@@ -71,8 +74,8 @@
           {% else %}
             Server-wide key
           {% endif %}
-        </strong>
-        <span class="text-sm opacity-70">
+        </p>
+        <p class="max-w-3xl text-sm text-base-content/60">
           {% if project_crypto %}
             {% if project_crypto.hsm_slot_id is none and project_crypto.key_provider == 'hsm' %}no slot assigned · {% endif %}
             {% if project_crypto.kms_key_ref %}{{ project_crypto.kms_key_ref }} · {% endif %}
@@ -81,43 +84,43 @@
           {% else %}
             New secrets use the server-wide key until you adopt a project key
           {% endif %}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge {% if project_crypto and not project_master_rows %}badge-soft badge-success{% elif project_master_rows %}badge-soft badge-warning{% else %}badge-soft{% endif %}">
+          {% if project_crypto and not project_master_rows %}In sync{% elif project_master_rows %}{{ project_master_rows }} pending{% else %}Server key{% endif %}
         </span>
+        {% if can_manage_keys and project_crypto and project_master_rows %}
+        <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
+              class="inline"
+              data-confirm="Re-encrypt {{ project_master_rows }} secret(s) with the project key?">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="action" value="adopt">
+          <input type="hidden" name="provider" value="{{ project_crypto.key_provider or 'local' }}">
+          {% if project_crypto.key_provider == 'hsm' and project_crypto.hsm_slot_id %}
+          <input type="hidden" name="hsm_slot" value="{{ project_crypto.hsm_slot_id }}">
+          {% endif %}
+          <button type="submit" class="btn btn-sm">Re-encrypt {{ project_master_rows }}</button>
+        </form>
+        {% endif %}
       </div>
     </div>
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="badge {% if project_crypto and not project_master_rows %}badge-soft badge-success{% elif project_master_rows %}badge-soft badge-warning{% else %}badge-soft{% endif %}">
-        {% if project_crypto and not project_master_rows %}In sync{% elif project_master_rows %}{{ project_master_rows }} pending{% else %}Server key{% endif %}
-      </span>
-      {% if can_manage_keys and project_crypto and project_master_rows %}
-      <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
-            class="inline"
-            data-confirm="Re-encrypt {{ project_master_rows }} secret(s) with the project key?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-        <input type="hidden" name="action" value="adopt">
-        <input type="hidden" name="provider" value="{{ project_crypto.key_provider or 'local' }}">
-        {% if project_crypto.key_provider == 'hsm' and project_crypto.hsm_slot_id %}
-        <input type="hidden" name="hsm_slot" value="{{ project_crypto.hsm_slot_id }}">
-        {% endif %}
-        <button type="submit" class="btn btn-sm">Re-encrypt {{ project_master_rows }}</button>
-      </form>
-      {% endif %}
-    </div>
   </div>
+</section>
 
   {% if hsm_available and project_crypto and project_crypto.key_provider == 'local' and can_manage_keys %}
-  <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <div>
-      <strong>Upgrade to hardware security (HSM)</strong>
-      <p class="text-sm opacity-70">Re-wraps this project's key with an external PKCS#11 HSM token. The server re-encrypts every secret under the new HSM KEK.</p>
-    </div>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <h3 class="font-bold">Upgrade to hardware security (HSM)</h3>
+    <p class="max-w-3xl text-sm text-base-content/60">Re-wraps this project's key with an external PKCS#11 HSM token. The server re-encrypts every secret under the new HSM KEK.</p>
     <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
+          class="flex flex-col items-start gap-4"
           data-dirty-guard
           data-confirm="Migrate this project to an HSM-wrapped key? All secrets will be re-encrypted. The HSM must remain available for all future access.">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="action" value="migrate">
       <input type="hidden" name="provider" value="hsm">
       {% if hsm_slots %}
-      <label class="grid gap-1">
+      <label class="grid w-full max-w-md gap-1">
         <span class="text-sm opacity-70">Target slot</span>
         <select name="target_slot" class="select">
           {% for s in hsm_slots %}
@@ -129,11 +132,12 @@
       <button type="submit" class="btn btn-outline btn-sm">Migrate to HSM</button>
     </form>
   </div>
+</section>
   {% endif %}
 
   {% if can_manage_keys and not project_crypto %}
   <form method="post" action="{{ url_for('project_crypto_action', project_id=project.id) }}"
-        class="crypto-adopt"
+        class="crypto-adopt flex flex-col gap-6"
         data-dirty-guard
         x-data="{ provider: 'local' }"
         data-confirm="Create an HSM-wrapped project key and re-encrypt secrets onto it?"
@@ -141,8 +145,8 @@
         data-confirm-if="input[name=provider][value=hsm]">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="action" value="adopt">
-    <fieldset>
-      <legend>Key provider</legend>
+    <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+      <h2 class="card-title">Key provider</h2>
       <label class="flex items-center gap-2">
         <input type="radio" name="provider" class="radio" value="local" checked x-model="provider">
         <span>
@@ -159,7 +163,8 @@
         </span>
       </label>
       {% endif %}
-    </fieldset>
+    </div>
+</section>
     {% if hsm_slots %}
     <label data-hsm-slot hidden x-bind:hidden="provider !== 'hsm'">HSM slot
       <select name="hsm_slot" class="select">
@@ -169,23 +174,22 @@
       </select>
     </label>
     {% endif %}
-    <p class="flex flex-wrap items-center gap-2 pt-2">
-      <button type="submit" class="btn btn-neutral">Adopt project key</button>
+    <p class="flex flex-wrap items-center gap-2">
+      <button type="submit" class="btn btn-primary">Adopt project key</button>
     </p>
   </form>
   {% endif %}
-</section>
+</div>
 {% endif %}
 {% if can_delete %}
-<section>
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Danger zone</h2>
-  </div>
-  <p class="text-sm opacity-70">Delete this project and all secrets, audit history, and machine tokens. Irreversible.</p>
+<section class="card card-border border-error/40 bg-base-100 shadow-sm" aria-labelledby="project-danger-zone-title"><div class="card-body gap-4 p-6">
+  <h2 class="card-title text-error" id="project-danger-zone-title">Danger zone</h2>
+  <p class="max-w-3xl text-sm text-base-content/60">Delete this project and all secrets, audit history, and machine tokens. Irreversible.</p>
   <form method="post" action="{{ url_for('delete_project', project_id=project.id) }}"
         data-confirm="Delete project “{{ project.name }}” and all its data? This cannot be undone.">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <button type="submit" class="btn btn-error">Delete project</button>
   </form>
+</div>
 </section>
 {% endif %}

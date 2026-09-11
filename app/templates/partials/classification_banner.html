@@ -1,0 +1,6 @@
+{# Classification marking. Background/text colours are admin-selected hex. #}
+{% if classification and classification.enabled %}
+<div class="flex w-full items-center justify-center px-4 py-2 text-center text-sm font-semibold uppercase tracking-widest"
+     style="background-color: {{ classification.color }}; color: {{ classification.fg }};"
+     role="status">{{ classification.text }}</div>
+{% endif %}

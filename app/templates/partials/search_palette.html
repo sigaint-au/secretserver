@@ -1,0 +1,30 @@
+{# Command palette dialog. Opened by [data-open-dialog=search-palette],
+   Ctrl/Cmd+K, or /. Results swap into #palette-results via HTMX. #}
+<dialog id="search-palette" closedby="any" class="modal" aria-labelledby="palette-title">
+  <div class="modal-box max-w-2xl text-base-content flex flex-col gap-4">
+    <h2 id="palette-title" class="sr-only">Search</h2>
+    <form method="get" action="{{ url_for('global_search') }}" id="palette-form">
+      <label class="input w-full!">
+        <svg class="h-4 w-4 shrink-0 text-base-content/60" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="search" id="palette-q" name="q" class="grow min-w-0"
+               placeholder="Search secrets, teams, and projects…"
+               autocomplete="off" aria-label="Search"
+               aria-controls="palette-results"
+               value="{{ request.args.get('q','') if request.endpoint == 'global_search' else '' }}"
+               hx-get="{{ url_for('search_suggest') }}"
+               hx-trigger="input delay:200ms, search"
+               hx-target="#palette-results"
+               hx-swap="innerHTML">
+      </label>
+    </form>
+    <div id="palette-results" class="max-h-96 overflow-y-auto">
+      <p class="text-sm text-base-content/60">Type to search teams, projects, and secrets.</p>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+</dialog>

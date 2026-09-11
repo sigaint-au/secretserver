@@ -1,22 +1,9 @@
-{# Brand panel for auth split-screens: indigo feature column. #}
-<aside class="from-primary to-secondary text-primary-content hidden flex-col justify-center gap-6 bg-gradient-to-br p-10 lg:flex" aria-label="About Corvus">
-  <div>
-    {% include "partials/brand_logo.html" %}
-    <p class="text-3xl font-bold tracking-tight">{{ brand_name or 'Corvus' }}</p>
-    {% if brand_tagline %}<p class="opacity-80">{{ brand_tagline }}</p>{% endif %}
+{# Login-banner column for the auth split screen. Shown only when enabled. #}
+<aside id="login-banner" class="flex flex-col justify-center bg-base-300 p-8" role="status">
+  <div class="mx-auto flex w-full max-w-md flex-col gap-4">
+    <p class="whitespace-pre-wrap">{{ login_banner.text }}</p>
+    {% if login_banner.has_link %}
+    <a class="link" href="{{ login_banner.link_url }}" rel="noopener noreferrer">{{ login_banner.link_text }}</a>
+    {% endif %}
   </div>
-  <ul class="flex flex-col gap-4">
-    <li>
-      <strong class="block">Self-hosted</strong>
-      <span class="opacity-80">Secrets stay on your infrastructure, encrypted at rest.</span>
-    </li>
-    <li>
-      <strong class="block">Scoped access</strong>
-      <span class="opacity-80">Teams, projects, and per-secret roles decide who can reveal.</span>
-    </li>
-    <li>
-      <strong class="block">Audited</strong>
-      <span class="opacity-80">Every reveal is logged with actor and timestamp.</span>
-    </li>
-  </ul>
 </aside>

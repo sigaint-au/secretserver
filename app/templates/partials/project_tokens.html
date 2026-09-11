@@ -1,7 +1,7 @@
-<section>
+<div class="flex flex-col gap-4">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class="flex flex-wrap items-center gap-2">
-      <h2 class="text-lg font-bold">Machine accounts</h2>
+      <h2 class="card-title">Machine accounts</h2>
     </div>
   </div>
   <p class="text-sm opacity-70">
@@ -16,7 +16,7 @@
   {% endif %}
 
   {% if new_token %}
-  <div class="token-once alert" role="status">
+  <div class="token-once alert alert-warning" role="status">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <strong>Machine token (copy now, shown once)</strong>
       <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
@@ -26,7 +26,7 @@
   </div>
   {% endif %}
 
-  <section class="flex min-w-0 flex-col gap-4">
+  <div class="flex min-w-0 flex-col gap-4">
     <h3 class="text-base font-bold">Active tokens</h3>
     {% if tokens %}
     <div class="overflow-x-auto">
@@ -98,7 +98,10 @@
     </table>
     </div>
     {% else %}
-    <p class="text-sm opacity-70">No machine accounts yet.</p>
+    {% set icon = 'key' %}
+    {% set title = 'No machine accounts yet' %}
+    {% set text = 'Use the form above to create the first token.' %}
+    {% include "partials/empty_state.html" %}
     {% endif %}
-  </section>
-</section>
+  </div>
+</div>

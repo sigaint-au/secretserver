@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Machine accounts - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
-  <h1 class="text-3xl font-bold tracking-tight">Machine accounts</h1>
+<section class="card card-border bg-base-100"><div class="card-body gap-6 p-6">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+  <h1 class="text-3xl font-bold tracking-tight">Machine accounts{% if machines_pager %} <span class="badge badge-soft">{{ machines_pager.total }}</span>{% endif %}</h1>
 </div>
 {% if not team %}
 {% if nav_teams %}
@@ -21,10 +22,13 @@
   </form>
 </div>
 {% else %}
-<p class="text-sm opacity-70">No teams yet. Ask a team administrator to invite you, or contact your administrator for access.</p>
+{% set icon = 'teams' %}
+{% set title = 'No teams yet' %}
+{% set text = 'Ask a team administrator to invite you, or contact your administrator for access.' %}
+{% include "partials/empty_state.html" %}
 {% endif %}
 {% else %}
-<p class="text-sm opacity-70">Machine accounts for team <strong>{{ team.name }}</strong>.</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Machine accounts for team <strong>{{ team.name }}</strong>.</p>
 <form method="get" action="{{ url_for('machines_list') }}" class="flex flex-wrap items-center gap-2" role="search"
       hx-get="{{ url_for('machines_list') }}"
       hx-target="#machines-results"
@@ -46,4 +50,6 @@
 </form>
 {% include "partials/machines_results.html" %}
 {% endif %}
+</div>
+</section>
 {% endblock %}

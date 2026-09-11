@@ -1,4 +1,4 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <h2>Account</h2>
   <dl class="grid gap-2">
     <div class="grid gap-1 sm:grid-cols-3">
@@ -38,10 +38,11 @@
       <dd class="opacity-70 sm:col-span-2">{{ user.created_at or '-' }}</dd>
     </div>
   </dl>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Login alert emails</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Login alert emails</h2>
   <p class="text-sm opacity-70">Email you when this account signs in successfully.</p>
   {% if not login_alerts.allowed %}
   <p class="text-sm opacity-70">Login alerts are turned off by an administrator.</p>
@@ -67,10 +68,11 @@
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save</button></p>
   </form>
   {% endif %}
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Groups</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Groups</h2>
   <p class="text-sm opacity-70">
     Team groups you belong to (manual, LDAP, or OIDC). Useful when debugging access.
   </p>
@@ -108,10 +110,11 @@
   {% else %}
   <p class="text-sm opacity-70">You are not a member of any groups.</p>
   {% endif %}
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">At a glance</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">At a glance</h2>
   <div class="stats stats-vertical sm:stats-horizontal border border-base-300">
     <div class="stat">
       <span class="stat-value">{{ stats.teams }}</span>
@@ -136,4 +139,5 @@
     </div>
     {% endif %}
   </div>
+</div>
 </section>

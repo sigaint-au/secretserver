@@ -15,7 +15,7 @@
 {% include "partials/breadcrumb.html" %}
 {% endif %}
 
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">Role bindings</h1>
 </div>
 
@@ -71,9 +71,9 @@
   </p>
 </form>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Bindings{% if scope_label %} <span class="opacity-70">· {{ scope_label }}{% if bindings %} ({{ bindings|length }}){% endif %}</span>{% endif %}</h2>
+    <h2 class="card-title">Bindings{% if scope_label %} <span class="opacity-70">· {{ scope_label }}{% if bindings %} ({{ bindings|length }}){% endif %}</span>{% endif %}</h2>
     {% if can_edit and (scope_id or scope_kind == 'cluster') %}
     <a class="btn btn-outline btn-sm" href="#add-binding">+ Add binding</a>
     {% endif %}
@@ -129,19 +129,20 @@
   {% if not can_edit and (scope_id or scope_kind == 'cluster') %}
   <p class="pt-2 text-sm opacity-70">View only. Team or project admins can add or remove bindings here.</p>
   {% endif %}
+</div>
 </section>
 
 {% if can_edit and (scope_id or scope_kind == 'cluster') %}
-<section id="add-binding">
+<div id="add-binding">
 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Add binding</h2>
+  <h2 class="card-title">Add binding</h2>
   <form method="post" action="{{ url_for('rbac_bindings_create') }}" class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="scope_kind" value="{{ scope_kind }}">
     <input type="hidden" name="scope_id" value="{{ scope_id or '' }}">
 
-    <fieldset class="fieldset" x-data="{ kind: 'User' }">
-      <legend class="fieldset-legend">Who</legend>
+    <div class="flex flex-col gap-2" x-data="{ kind: 'User' }">
+      <h3 class="font-bold">Who</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="rbac-subject-kind"><span>Subject type</span></label>
@@ -170,10 +171,10 @@
           <input type="text" name="subject_sa" id="rbac-subject-sa" placeholder="Machine account UUID" autocomplete="off" class="input">
         </div>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Role</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Role</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="rbac-role-name"><span>Grant</span></label>
@@ -199,13 +200,13 @@
           </select>
         </div>
       </div>
-    </fieldset>
+    </div>
 
     <p class="flex flex-wrap items-center gap-2 pt-2">
       <button type="submit" class="btn btn-neutral">Create binding</button>
     </p>
   </form>
 </div>
-</section>
+</div>
 {% endif %}
 {% endblock %}

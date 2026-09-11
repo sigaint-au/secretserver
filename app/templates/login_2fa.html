@@ -1,30 +1,27 @@
-{% extends "base.html" %}
+{% extends "auth_base.html" %}
 {% block title %}Two-factor authentication - {{ app_name }}{% endblock %}
-{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-4xl shadow-xl{% endblock %}
 {% block body %}
-<div class="grid grid-cols-1 lg:grid-cols-2">
-  <div class="p-6 sm:p-10">
-    <h1 class="text-3xl font-bold tracking-tight">Two-factor authentication</h1>
-    <p class="mt-2 text-sm opacity-70">
-      Enter the 6-digit code from your authenticator app
-      {% if email %}for <strong>{{ email }}</strong>{% endif %},
-      or a recovery code.
-    </p>
-    <form method="post" class="mt-4 flex flex-col gap-3">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div class="flex flex-col gap-1">
-        <label class="label" for="2fa-code"><span>Authentication code</span></label>
-        <input class="input input-lg w-full text-center font-mono tracking-widest" type="text" id="2fa-code" name="code" required autocomplete="one-time-code"
-               inputmode="numeric" pattern="[0-9A-Za-z\- ]{6,20}"
-               placeholder="123456 or xxxx-xxxx" autofocus>
-      </div>
-      <button type="submit" class="btn btn-primary w-full">Verify code</button>
-    </form>
-    <form method="post" action="{{ url_for('logout') }}" class="mt-2 inline">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <button type="submit" class="btn btn-ghost w-full">Log out</button>
-    </form>
-  </div>
-  {% include "partials/auth_brand_panel.html" %}
+<div>
+  <h1 class="text-2xl font-bold tracking-tight">Two-factor authentication</h1>
+  <p class="mt-2 text-sm text-base-content/60">
+    Enter the 6-digit code from your authenticator app
+    {% if email %}for <strong>{{ email }}</strong>{% endif %},
+    or a recovery code.
+  </p>
+  <form method="post" class="mt-4 flex flex-col gap-3">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="grid gap-1">
+      <label class="label" for="2fa-code">Authentication code</label>
+      <input class="input input-lg w-full text-center font-mono tracking-widest" type="text" id="2fa-code" name="code" required autocomplete="one-time-code"
+             inputmode="numeric" pattern="[0-9A-Za-z\- ]{6,20}"
+             placeholder="123456 or xxxx-xxxx" autofocus>
+      <p class="label">6-digit code or a recovery code</p>
+    </div>
+    <button type="submit" class="btn btn-primary w-full" data-busy="Verifying…">Verify code</button>
+  </form>
+  <form method="post" action="{{ url_for('logout') }}" class="mt-2">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" class="btn btn-ghost w-full">Log out</button>
+  </form>
 </div>
 {% endblock %}

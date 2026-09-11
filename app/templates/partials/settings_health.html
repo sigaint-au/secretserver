@@ -1,6 +1,6 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Server health</h2>
+    <h2 class="card-title">Server health</h2>
   </div>
   <div class="overflow-x-auto">
     <table class="table">
@@ -9,12 +9,13 @@
       </tbody>
     </table>
   </div>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">PostgreSQL</h2>
+      <h2 class="card-title">PostgreSQL</h2>
       <p class="text-sm opacity-70">Admin connection used by settings, schema, and audit.</p>
     </div>
     <form method="post">
@@ -31,12 +32,13 @@
     {% endif %}
     <code class="font-mono">{{ health_probe.postgres.detail }}</code>
   </div>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">Redis</h2>
+      <h2 class="card-title">Redis</h2>
       <p class="text-sm opacity-70">Optional shared cache for DEK wrappers and OIDC discovery.</p>
     </div>
     <form method="post">
@@ -55,12 +57,13 @@
     {% endif %}
     <code class="font-mono">{{ health_probe.redis.detail }}</code>
   </div>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">HSM slots</h2>
+      <h2 class="card-title">HSM slots</h2>
       <p class="text-sm opacity-70">PKCS#11 tokens holding project key-encryption keys.</p>
     </div>
     <form method="post">
@@ -94,4 +97,5 @@
   {% else %}
   <p class="text-sm opacity-70">No HSM slots configured.</p>
   {% endif %}
+</div>
 </section>

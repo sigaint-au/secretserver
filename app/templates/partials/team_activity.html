@@ -1,15 +1,15 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">Activity</h2>
+      <h2 class="card-title">Activity</h2>
       <p class="text-sm opacity-70">Membership, invites, LDAP maps, and team settings changes.</p>
     </div>
     <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="activity">
-      <fieldset class="join">
+      <div class="join">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ activity_q or '' }}" id="team-activity-q" placeholder="Search activity" aria-label="Search activity" class="input join-item">
-      </fieldset>
+      </div>
       {% if activity_q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='activity') }}">Clear search</a>{% endif %}
     </form>
   </div>
@@ -34,4 +34,5 @@
   {% else %}
   <p class="text-sm opacity-70">{% if activity_q %}No activity matches “{{ activity_q }}”.{% else %}No activity yet.{% endif %}</p>
   {% endif %}
+</div>
 </section>

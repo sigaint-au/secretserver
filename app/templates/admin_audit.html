@@ -1,26 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Auditing - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-3xl font-bold tracking-tight">Auditing</h1></div>
-<p class="text-sm opacity-70">Global admins only. Review access, secret activity, role changes, and audit records.</p>
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3"><h1 class="text-3xl font-bold tracking-tight">Auditing</h1></div>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Global admins only. Review access, secret activity, role changes, and audit records.</p>
 
-<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Auditing sections">
-<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
+<div class="tabs tabs-border mt-4 overflow-x-auto" role="tablist" aria-label="Auditing sections">
   {% set audit_tabs = [('access', 'Grants export'), ('roles', 'Role changes'), ('activity', 'Secret activity'), ('logins', 'Sign-in failures'), ('export', 'Export & retention')] %}
   {% for tab_id, tab_label in audit_tabs %}
-  <li><a href="{{ url_for('admin_audit', tab=tab_id) }}"
-     class="page-subnav-link{% if active_tab == tab_id %} menu-active{% endif %}"{% if active_tab == tab_id %} aria-current="page"{% endif %}
-  >{{ tab_label }}</a></li>
+  <a role="tab" href="{{ url_for('admin_audit', tab=tab_id) }}"
+     class="tab{% if active_tab == tab_id %} tab-active{% endif %}"{% if active_tab == tab_id %} aria-selected="true"{% endif %}
+  >{{ tab_label }}</a>
   {% endfor %}
-</ul>
-</nav>
-<div class="flex min-w-0 flex-1 flex-col gap-4">
+</div>
+<div class="mt-4 flex min-w-0 flex-col gap-4">
 
 {% if active_tab == 'access' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Access review</h2>
+    <h2 class="card-title">Access review</h2>
     <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='csv', q=search_q or None, scope=access_scope or None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_access_export', format='json', q=search_q or None, scope=access_scope or None) }}">Export JSON</a>
@@ -96,12 +93,13 @@
     {% endif %}
   </p>
   {% endif %}
+</div>
 </section>
 
 {% elif active_tab == 'roles' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Role-change audit</h2>
+    <h2 class="card-title">Role-change audit</h2>
     <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='org', role_actions=role_actions, q=search_q or None, actor=audit_actor or None, since=audit_since or None, until=audit_until or None) }}">Export JSON</a>
@@ -184,12 +182,13 @@
     {% endif %}
   </p>
   {% endif %}
+</div>
 </section>
 
 {% elif active_tab == 'activity' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Secret activity</h2>
+    <h2 class="card-title">Secret activity</h2>
     <div class="flex flex-wrap items-center gap-2">
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='csv', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export CSV</a>
       <a class="btn btn-outline btn-sm" href="{{ url_for('admin_audit_export', format='json', source='secret', q=search_q or None, actor=audit_actor or None, action=audit_action or None, ip=audit_ip or None, since=audit_since or None, until=audit_until or None, hide_reveals='1' if hide_reveals else None) }}">Export JSON</a>
@@ -281,12 +280,13 @@
     {% endif %}
   </p>
   {% endif %}
+</div>
 </section>
 
 {% elif active_tab == 'logins' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Sign-in failures</h2>
+    <h2 class="card-title">Sign-in failures</h2>
   </div>
   <p class="text-sm opacity-70">
     Failed sign-in attempts by email and IP. Use to spot brute-force patterns against accounts.
@@ -342,12 +342,13 @@
     {% endif %}
   </p>
   {% endif %}
+</div>
 </section>
 
 {% elif active_tab == 'export' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Audit export</h2>
+    <h2 class="card-title">Audit export</h2>
   </div>
   <p class="text-sm opacity-70">
     Export secret activity and org (membership) audit logs as CSV or JSON for evidence packs.
@@ -398,10 +399,11 @@
     </div>
     <button type="submit" class="btn btn-neutral">Download export</button>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Retention</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Retention</h2>
   <p class="text-sm opacity-70">
     Configure how long audit rows are kept. Set to <strong>0</strong> to keep forever.
     Purge permanently deletes rows older than the retention window (cannot be undone).
@@ -434,8 +436,8 @@
     <input type="hidden" name="action" value="purge">
     <button type="submit" class="btn btn-error">Purge old audit rows now</button>
   </form>
+</div>
 </section>
 {% endif %}
-</div>
 </div>
 {% endblock %}

@@ -24,6 +24,7 @@ from .detail import (
 from .search import (
     access_requests_inbox,
     global_search,
+    search_suggest,
 )
 
 __all__ = ["register", "expires_status", "parse_secret_pairs", "secret_due_status"]
@@ -32,6 +33,7 @@ __all__ = ["register", "expires_status", "parse_secret_pairs", "secret_due_statu
 def register(app):
     """Register project listing, lifecycle, settings, and access routes."""
     app.get("/search")(global_search)
+    app.get("/search/suggest")(search_suggest)
     app.get("/access-requests")(access_requests_inbox)
     app.get("/projects")(projects_list)
     app.get("/projects/<uuid:project_id>")(project_detail)

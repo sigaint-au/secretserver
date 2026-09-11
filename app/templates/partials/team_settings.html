@@ -3,11 +3,11 @@
       class="flex flex-col gap-4">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <h2 class="text-lg font-bold">Access</h2>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <h2 class="card-title">Access</h2>
     <p class="text-sm opacity-70">Defaults for machine tokens and reveal requests.</p>
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Machine tokens</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Machine tokens</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1">
           <label class="label" for="team-token-days"><span>Default expiry (days)</span></label>
@@ -18,21 +18,22 @@
           <span class="text-xs opacity-70">Blank means tokens do not expire unless set per token.</span>
         </div>
       </div>
-    </fieldset>
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Reveal requests</legend>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Reveal requests</h3>
       <label class="flex items-center gap-2" for="team-allow-reveal">
         <input type="checkbox" id="team-allow-reveal" name="allow_reveal_requests" class="checkbox" value="1"
                {% if team.allow_reveal_requests is not defined or team.allow_reveal_requests %}checked{% endif %}>
         Members can request a time-limited reveal
       </label>
       <span class="text-xs opacity-70">Viewers still see names. Owners and admins approve the value.</span>
-    </fieldset>
-  </section>
+    </div>
+  </div>
+</section>
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm"
+  <section class="card card-border bg-base-100"
            x-data="{ override: {{ 'true' if team.classification_enabled is not none else 'false' }} }">
-    <h2 class="text-lg font-bold">Classification banner</h2>
+    <h2 class="card-title">Classification banner</h2>
     <p class="text-sm opacity-70">Optional override of the server banner while this team is selected.</p>
     <label class="flex items-center gap-2" for="class-override">
       <input type="checkbox" name="use_classification_override" id="class-override" class="checkbox" value="1"
@@ -43,14 +44,14 @@
     <div id="team-banner-fields"
          {% if team.classification_enabled is none %}hidden{% endif %}
          x-bind:hidden="!override">
-      <fieldset class="fieldset"
-                {% if team.classification_enabled is none %}disabled{% endif %}
-                x-bind:disabled="!override">
-        <legend class="fieldset-legend">Banner</legend>
+      <div class="flex flex-col gap-2">
+        <h3 class="font-bold">Banner</h3>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="flex items-center gap-2 sm:col-span-2" for="classification_enabled">
             <input type="checkbox" name="classification_enabled" id="classification_enabled" class="checkbox" value="1"
                    {% if team.classification_enabled %}checked{% endif %}
+                   {% if team.classification_enabled is none %}disabled{% endif %}
+                   x-bind:disabled="!override"
                    @change="window.updatePreview && window.updatePreview()">
             Show banner
           </label>
@@ -59,6 +60,8 @@
             <input type="text" name="classification_text" id="classification_text" maxlength="120"
                    value="{{ team.classification_text or classification.text or 'OFFICIAL' }}"
                    placeholder="OFFICIAL - SENSITIVE"
+                   {% if team.classification_enabled is none %}disabled{% endif %}
+                   x-bind:disabled="!override"
                    @input="window.updatePreview && window.updatePreview()" class="input">
           </div>
           <div class="grid gap-1">
@@ -70,6 +73,8 @@
               <input type="text" name="classification_color" id="classification_color"
                      value="{{ team.classification_color or classification.color or '#677381' }}"
                      pattern="#[0-9A-Fa-f]{6}"
+                     {% if team.classification_enabled is none %}disabled{% endif %}
+                     x-bind:disabled="!override"
                      @input="window.syncColor && window.syncColor('classification_color'); window.updatePreview && window.updatePreview()" class="input" aria-label="Background colour hex">
             </div>
           </div>
@@ -82,6 +87,8 @@
               <input type="text" name="classification_fg" id="classification_fg"
                      value="{{ team.classification_fg or classification.fg or '#ffffff' }}"
                      pattern="#[0-9A-Fa-f]{6}"
+                     {% if team.classification_enabled is none %}disabled{% endif %}
+                     x-bind:disabled="!override"
                      @input="window.syncColor && window.syncColor('classification_fg'); window.updatePreview && window.updatePreview()" class="input" aria-label="Text colour hex">
             </div>
           </div>
@@ -97,19 +104,20 @@
           <button type="button" class="swatch btn btn-circle btn-sm border border-base-300 bg-blue-700" data-bg="#1565c0" title="Blue" data-fg="#ffffff" aria-label="Blue preset"></button>
           <button type="button" class="swatch btn btn-circle btn-sm border border-base-300 bg-white" data-bg="#ffffff" title="White" data-fg="#000000" aria-label="White preset"></button>
         </div>
-        <div class="rounded-box border border-base-300 p-2 text-center font-bold" id="team-banner-preview">
+        <div class="rounded-box p-2 text-center font-semibold" id="team-banner-preview" data-classification-preview
+             style="background-color: {{ team.classification_color or classification.color or '#677381' }}; color: {{ team.classification_fg or classification.fg or '#ffffff' }};">
           {{ team.classification_text or classification.text or 'Preview' }}
         </div>
-      </fieldset>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
   <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save settings</button></p>
 </form>
-{% set _preview_id = 'team-banner-preview' %}
-{% include "partials/color_picker_js.html" %}
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Directory groups</h2>
+
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Directory groups</h2>
   <p class="text-sm opacity-70">
     Map identity provider groups to a team role. Matching users are added when they sign in.
     For long-lived grants, use
@@ -117,8 +125,8 @@
     instead.
   </p>
 
-  <fieldset class="fieldset">
-    <legend class="fieldset-legend">LDAP{% if not ldap_enabled %} <span class="badge badge-soft">off</span>{% endif %}</legend>
+  <div class="flex flex-col gap-2">
+    <h3 class="font-bold">LDAP{% if not ldap_enabled %} <span class="badge badge-soft">off</span>{% endif %}</h3>
     {% if not ldap_enabled %}
     <p class="text-sm opacity-70">LDAP login is disabled in server settings.</p>
     {% endif %}
@@ -165,10 +173,10 @@
       </div>
       <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Add LDAP map</button></p>
     </form>
-  </fieldset>
+  </div>
 
-  <fieldset class="fieldset">
-    <legend class="fieldset-legend">OIDC / SSO{% if not oidc_enabled %} <span class="badge badge-soft">off</span>{% endif %}</legend>
+  <div class="flex flex-col gap-2">
+    <h3 class="font-bold">OIDC / SSO{% if not oidc_enabled %} <span class="badge badge-soft">off</span>{% endif %}</h3>
     {% if not oidc_enabled %}
     <p class="text-sm opacity-70">OIDC login is disabled in server settings.</p>
     {% endif %}
@@ -215,12 +223,13 @@
       </div>
       <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Add OIDC map</button></p>
     </form>
-  </fieldset>
+  </div>
+</div>
 </section>
 
 {% if is_owner %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Ownership</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Ownership</h2>
   <p class="text-sm opacity-70">Transfer ownership: the chosen user becomes owner and you become admin.</p>
   <form method="post" action="{{ url_for('transfer_team_ownership', team_id=team.id) }}"
         class="flex flex-col gap-4"
@@ -235,6 +244,7 @@
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Transfer ownership</button></p>
   </form>
+</div>
 </section>
 
 <details class="collapse collapse-arrow border border-error">

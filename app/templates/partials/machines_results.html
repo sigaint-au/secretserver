@@ -1,10 +1,10 @@
 {# Machine accounts results panel: table + pager (swapped via HTMX).
    The search form lives in machines.html, outside this swap target. #}
 <div id="machines-results">
-  <section class="flex min-w-0 flex-col gap-4">
+  <div class="flex min-w-0 flex-col gap-4">
     {% if tokens %}
-    <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-sm">
-    <table class="table table-zebra table-pin-rows">
+    <div class="overflow-x-auto">
+    <table class="table table-pin-rows">
       <thead><tr><th>Name</th><th>Description</th><th>Project</th><th>Machine account ID</th><th>Prefix</th><th>Role</th><th>Last used</th><th>Created</th><th>Expires</th></tr></thead>
       <tbody>
       {% for t in tokens %}
@@ -31,12 +31,15 @@
     {% include "partials/pager.html" %}
     {% endwith %}
     {% elif search_q or q %}
-    <p class="text-sm opacity-70">No machine accounts match “{{ search_q or q }}”.</p>
+    {% set icon = 'search' %}
+    {% set title = 'No matching machine accounts' %}
+    {% set text = 'No machine accounts match “' ~ (search_q or q) ~ '”.' %}
+    {% include "partials/empty_state.html" %}
     {% else %}
     {% set icon = 'key' %}
     {% set title = 'No machine accounts' %}
     {% set text = 'Machine accounts are service credentials scoped to a project for automation and CI use. Open a project and use its Tokens tab to create one.' %}
     {% include "partials/empty_state.html" %}
     {% endif %}
-  </section>
+  </div>
 </div>

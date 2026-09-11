@@ -1,23 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Server settings - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-3xl font-bold tracking-tight">Server settings</h1></div>
-<p class="text-sm opacity-70">Global admins only. Changes apply immediately.</p>
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3"><h1 class="text-3xl font-bold tracking-tight">Server settings</h1></div>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Global admins only. Changes apply immediately.</p>
 
-<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Server settings sections">
-<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
+<div class="tabs tabs-border mt-4 overflow-x-auto" role="tablist" aria-label="Server settings sections">
   {% for cat_key, cat_label, subs in categories %}
-  <li class="menu-title">{{ cat_label }}</li>
   {% for sub_key, sub_label in subs %}
-  <li><a href="{{ url_for('server_settings', tab=sub_key) }}"
-     class="page-subnav-link{% if active_tab == sub_key %} menu-active{% endif %}"{% if active_tab == sub_key %} aria-current="page"{% endif %}
-  >{{ sub_label }}</a></li>
+  <a role="tab" href="{{ url_for('server_settings', tab=sub_key) }}" title="{{ cat_label }}"
+     class="tab{% if active_tab == sub_key %} tab-active{% endif %}"{% if active_tab == sub_key %} aria-selected="true"{% endif %}
+  >{{ sub_label }}</a>
   {% endfor %}
   {% endfor %}
-</ul>
-</nav>
-<div class="flex min-w-0 flex-1 flex-col gap-4">
+</div>
+<div class="mt-4 flex min-w-0 flex-col gap-4">
 
 {% if active_tab == 'general' %}{% include "partials/settings_general.html" %}
 {% elif active_tab == 'branding' %}{% include "partials/settings_branding.html" %}
@@ -38,6 +34,5 @@
 
 {% if active_tab == 'health' and health_probe %}{% include "partials/settings_health.html" %}
 {% endif %}
-</div>
 </div>
 {% endblock %}

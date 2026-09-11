@@ -7,9 +7,9 @@
 </div>
 {% endif %}
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Server-wide key</h2>
+    <h2 class="card-title">Server-wide key</h2>
   </div>
   <div class="overflow-x-auto">
     <table class="table">
@@ -34,11 +34,12 @@
       </tbody>
     </table>
   </div>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">HSM slots</h2>
+    <h2 class="card-title">HSM slots</h2>
     <a class="btn btn-outline btn-sm" href="{{ url_for('hsm_slot_new_wizard') }}">Add HSM slot</a>
   </div>
   {% if encryption.hsm_slots %}
@@ -129,18 +130,19 @@
     </button>
   </form>
   {% endif %}
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Project posture</h2>
+    <h2 class="card-title">Project posture</h2>
     <form method="get" action="{{ url_for('server_settings') }}" class="flex flex-wrap items-center gap-2" role="search">
       <input type="hidden" name="tab" value="encryption">
-      <fieldset class="join">
+      <div class="join">
         {% include "partials/search_icon.html" %}
         <input type="search" name="q" value="{{ encryption_q or '' }}" id="encryption-q"
                placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item">
-      </fieldset>
+      </div>
       {% if encryption_q %}
       <a class="btn btn-ghost btn-sm" href="{{ url_for('server_settings', tab='encryption') }}">Clear search</a>
       {% endif %}
@@ -223,4 +225,5 @@
     {% if encryption_q %}No projects match “{{ encryption_q }}”.{% else %}No projects yet.{% endif %}
   </p>
   {% endif %}
+</div>
 </section>

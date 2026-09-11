@@ -1,14 +1,14 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Projects</h2>
+    <h2 class="card-title">Projects</h2>
     <div class="flex flex-wrap items-center gap-2">
       <form method="get" action="{{ url_for('team_detail', team_id=team.id) }}" class="flex flex-wrap items-center gap-2" role="search">
         <input type="hidden" name="tab" value="projects">
-        <fieldset class="join">
+        <div class="join">
           {% include "partials/search_icon.html" %}
           <input type="search" name="q" value="{{ search_q or '' }}" id="team-projects-q"
                  placeholder="Search" autocomplete="off" aria-label="Search projects" class="input join-item">
-        </fieldset>
+        </div>
         {% if search_q %}
         <a class="btn btn-ghost btn-sm" href="{{ url_for('team_detail', team_id=team.id, tab='projects') }}">Clear search</a>
         {% endif %}
@@ -50,4 +50,5 @@
   {% else %}
   <p class="text-sm opacity-70">{% if search_q %}No projects match “{{ search_q }}”.{% else %}No projects yet.{% endif %}</p>
   {% endif %}
+</div>
 </section>

@@ -1,0 +1,42 @@
+{# HTMX fragment for the command palette. Empty q is a hint, not an error. #}
+{% if not q %}
+<p class="text-sm text-base-content/60">Type to search teams, projects, and secrets.</p>
+{% elif not teams and not projects and not secrets %}
+<p class="text-sm text-base-content/60">Nothing matched “{{ q }}”.</p>
+{% else %}
+<ul class="menu w-full p-0">
+  {% if teams %}
+  <li class="menu-title">Teams</li>
+  {% for t in teams %}
+  <li>
+    <a href="{{ url_for('team_detail', team_id=t.id) }}">{{ t.name }}</a>
+  </li>
+  {% endfor %}
+  {% endif %}
+  {% if projects %}
+  <li class="menu-title">Projects</li>
+  {% for p in projects %}
+  <li>
+    <a href="{{ url_for('project_detail', project_id=p.id) }}">
+      {{ p.name }}
+      <span class="ms-auto text-base-content/60">{{ p.team_name }}</span>
+    </a>
+  </li>
+  {% endfor %}
+  {% endif %}
+  {% if secrets %}
+  <li class="menu-title">Secrets</li>
+  {% for s in secrets %}
+  <li>
+    <a href="{{ url_for('secret_view', project_id=s.project_id, secret_id=s.id) }}">
+      <code class="font-mono">{{ s.key }}</code>
+      <span class="ms-auto text-base-content/60">{{ s.project_name }}</span>
+    </a>
+  </li>
+  {% endfor %}
+  {% endif %}
+  <li>
+    <a href="{{ url_for('global_search', q=q) }}">View all results</a>
+  </li>
+</ul>
+{% endif %}

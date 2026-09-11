@@ -1,6 +1,6 @@
 <div id="team-members">
 {% if new_invite_url %}
-<div class="token-once alert" role="status">
+<div class="token-once alert alert-warning" role="status">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <strong>Invite link (copy now, shown once)</strong>
     <button type="button" class="link copy-btn" data-copy-target="new-invite-pre" data-clear-seconds="60">Copy link</button>
@@ -9,8 +9,8 @@
   <pre id="new-invite-pre" class="font-mono text-sm">{{ new_invite_url }}</pre>
 </div>
 {% endif %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Members</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Members</h2>
   <p class="text-sm opacity-70">People with a role on this team. Manage groups and advanced access rules under <a class="link" href="{{ url_for('team_detail', team_id=team.id, tab='access') if is_admin else '#' }}">Access</a>.</p>
   {% if is_admin %}
   <form method="post" action="{{ url_for('add_team_binding', team_id=team.id) }}" class="flex flex-wrap items-end gap-4"
@@ -85,11 +85,12 @@
     </div>
   </div>
   {% endif %}
+</div>
 </section>
 
 {% if is_admin and active_tab == 'members' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Invites &amp; join requests</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Invites &amp; join requests</h2>
   <p class="text-sm opacity-70">Share a link. Recipients sign in, request to join, and an owner approves.</p>
   <form method="post" action="{{ url_for('create_team_invite', team_id=team.id) }}" class="flex flex-wrap items-end gap-4"
         hx-post="{{ url_for('create_team_invite', team_id=team.id) }}"
@@ -169,6 +170,7 @@
   {% else %}
   <p class="text-sm opacity-70">No pending join requests.</p>
   {% endif %}
+</div>
 </section>
 {% endif %}
 </div>

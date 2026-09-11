@@ -38,6 +38,17 @@ class TestTeams:
         assert b'Platform' in r.data
         assert b'sidebar' in r.data
 
+    def test_list_teams_page_is_balanced(self):
+        """Single-card list page: heading/table branches must stay balanced
+        so the drawer survives (see project secrets drawer regression)."""
+        from tests.helpers import assert_balanced_html
+        tid = uuid4()
+        conn, _ = _conn(fetchall=[{'id': tid, 'name': 'Platform', 'role': 'team-owner', 'project_count': 2}])
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get('/teams')
+        assert r.status_code == 200
+        assert_balanced_html(r.data.decode())
+
     def test_create_team_empty_name(self):
         with patch.object(settings_svc, 'can_create_team', return_value=True):
             r = self.client.post('/teams', data={'name': '  '}, follow_redirects=False)

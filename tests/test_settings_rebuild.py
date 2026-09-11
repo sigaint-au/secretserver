@@ -64,11 +64,32 @@ class TestSlice6NoInlineJS:
         bad = [rel for rel in SLICE6 if "<script>" in (TEMPLATES / rel).read_text()]
         assert not bad, bad
 
-    def test_color_picker_kept_as_shared_helper(self):
-        # Retained deliberately: one shared include serving both banner
-        # forms; call sites no longer carry inline handlers.
-        src = (TEMPLATES / "partials" / "color_picker_js.html").read_text()
-        assert "applyPreset" in src
+    def test_color_picker_lives_in_static_js(self):
+        # One shared static helper serving both banner forms (no inline
+        # <script> in templates); globals kept for the swatch delegator
+        # and the Alpine @input hooks.
+        static = Path(__file__).resolve().parent.parent / "app" / "static"
+        src = (static / "classification.js").read_text()
+        assert "<script>" not in src
+        for marker in ("applyPreset", "syncColor", "updatePreview",
+                       "data-classification-preview", "htmx:after:swap"):
+            assert marker in src, marker
+        c = store.app.test_client()
+        r = c.get("/static/classification.js")
+        assert r.status_code == 200
+
+    def test_banner_previews_advertise_picker_hook(self):
+        from flask import render_template
+
+        with store.app.test_request_context("/settings"):
+            banner = render_template(
+                "partials/settings_banner.html",
+                settings={},
+                classification={},
+            )
+        assert "data-classification-preview" in banner
+        assert "<script>" not in banner
+        assert "text-center" in banner
 
 
 class TestSlice6Crypto:

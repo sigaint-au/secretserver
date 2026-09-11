@@ -1,25 +1,24 @@
-{% extends "base.html" %}
+{% extends "auth_base.html" %}
 {% block title %}Register - {{ app_name }}{% endblock %}
-{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-4xl shadow-xl{% endblock %}
 {% block body %}
-<div class="grid grid-cols-1 lg:grid-cols-2" x-data="{ show: false }">
-  <div class="p-6 sm:p-10">
-    <h1 class="text-3xl font-bold tracking-tight">Create account</h1>
+<div x-data="{ show: false }">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">Create account</h1>
     {% if setup_notice %}
     <p role="alert" class="alert alert-error mt-4">{{ setup_notice }}</p>
     {% endif %}
     <form method="post" class="mt-4 flex flex-col gap-3">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div class="flex flex-col gap-1">
-        <label class="label" for="register-name"><span>Name</span></label>
+      <div class="grid gap-1">
+        <label class="label" for="register-name">Name</label>
         <input class="input w-full" type="text" id="register-name" name="name" autocomplete="name">
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="label" for="register-email"><span>Account email</span></label>
+      <div class="grid gap-1">
+        <label class="label" for="register-email">Account email</label>
         <input class="input w-full" type="email" id="register-email" name="email" required autocomplete="username">
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="label" for="register-password"><span>Password</span></label>
+      <div class="grid gap-1">
+        <label class="label" for="register-password">Password</label>
         <div class="join w-full">
           <input class="input join-item min-w-0 flex-1" :type="show ? 'text' : 'password'"
                  id="register-password" name="password" required minlength="12" autocomplete="new-password">
@@ -27,17 +26,16 @@
                   :aria-pressed="show ? 'true' : 'false'" aria-controls="register-password"
                   x-text="show ? 'Hide' : 'Show'"></button>
         </div>
-        <span class="text-xs opacity-70">Minimum 12 characters.</span>
+        <p class="label">Minimum 12 characters.</p>
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="label" for="register-password-confirm"><span>Confirm password</span></label>
+      <div class="grid gap-1">
+        <label class="label" for="register-password-confirm">Confirm password</label>
         <input class="input w-full" :type="show ? 'text' : 'password'"
                id="register-password-confirm" name="password_confirm" required minlength="12" autocomplete="new-password">
       </div>
       <button type="submit" class="btn btn-primary w-full" data-busy="Creating account…">Create account</button>
     </form>
-    <p class="mt-4 text-sm opacity-70">Have an account? <a class="link" href="{{ url_for('login') }}">Sign in</a></p>
+    <p class="mt-4 text-sm text-base-content/60">Have an account? <a class="link" href="{{ url_for('login') }}">Sign in</a></p>
   </div>
-  {% include "partials/auth_brand_panel.html" %}
 </div>
 {% endblock %}

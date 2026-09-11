@@ -90,6 +90,9 @@ class TestCliLoginRoutes:
         assert 'corvus login --url https://secrets.example.com --token sso_secretvalue' in body
         assert 'cli-login-command' in body
         assert '60 minutes' in body
+        assert 'textarea' in body
+        assert 'mockup-code' not in body
+        assert 'text-base-content' in body
 
     def test_cli_login_command_requires_login(self):
         r = store.app.test_client().post('/login/command', follow_redirects=False)

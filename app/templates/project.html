@@ -7,28 +7,39 @@
   (project.name, none),
 ] %}
 {% include "partials/breadcrumb.html" %}
-<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-3xl font-bold tracking-tight">{{ project.name }}</h1></div>
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3"><h1 class="text-3xl font-bold tracking-tight">{{ project.name }}</h1></div>
 {% if project.description %}
-<p class="text-sm opacity-70">{{ project.description }} <span class="opacity-70">· Project ID: <code class="font-mono">{{ project.id }}</code></span></p>
-{% elif can_admin or can_settings %}
-<p class="text-sm opacity-70">
-  No description yet.
-  <a class="link" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
-     title="Add description in Settings" aria-label="Add description in Settings">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">{{ project.description }}
+  {% if can_admin or can_settings %}
+  <a class="btn btn-ghost btn-xs gap-1" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
+     title="Edit description in Settings" aria-label="Edit description in Settings">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M12 20h9"/>
       <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-    </svg>
+    </svg>Edit
   </a>
-  · Project ID: <code class="font-mono">{{ project.id }}</code>
+  {% endif %}
+  <span>· Project ID: <code class="font-mono">{{ project.id }}</code></span></p>
+{% elif can_admin or can_settings %}
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">
+  No description yet.
+  <a class="btn btn-ghost btn-xs gap-1" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
+     title="Add description in Settings" aria-label="Add description in Settings">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+    </svg>Edit
+  </a>
+  <span>· Project ID: <code class="font-mono">{{ project.id }}</code></span>
 </p>
 {% else %}
-<p class="text-sm opacity-70">Project ID: <code class="font-mono">{{ project.id }}</code></p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Project ID: <code class="font-mono">{{ project.id }}</code></p>
 {% endif %}
 
 {% if new_token and active_tab != 'tokens' %}
-<div class="token-once alert" role="status">
+<div class="token-once alert alert-warning" role="status">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <strong>Machine token (copy now, shown once)</strong>
     <button type="button" class="link copy-btn" data-copy-target="new-token-pre" data-clear-seconds="60">Copy token</button>
@@ -38,51 +49,45 @@
 </div>
 {% endif %}
 
-<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-<nav class="page-subnav lg:w-44 lg:shrink-0 lg:sticky lg:top-4" aria-label="Project sections">
-<ul class="menu menu-horizontal flex-wrap lg:menu-vertical w-full">
-  <li class="menu-title">Secrets</li>
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}"
-     class="page-subnav-link{% if active_tab == 'secrets' %} menu-active{% endif %}"{% if active_tab == 'secrets' %} aria-current="page"{% endif %}
-  >Secrets</a></li>
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='requests') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='requests') }}"
-     class="page-subnav-link{% if active_tab == 'requests' %} menu-active{% endif %}"{% if active_tab == 'requests' %} aria-current="page"{% endif %}
-  >Requests{% if access_pending_count %}<span class="badge badge-soft badge-sm" title="{{ access_pending_count }} pending">{{ access_pending_count }}</span>{% endif %}</a></li>
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='import') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='import') }}"
-     class="page-subnav-link{% if active_tab == 'import' %} menu-active{% endif %}"{% if active_tab == 'import' %} aria-current="page"{% endif %}
-  >Import / Export</a></li>
-  <li class="menu-title">Administration</li>
+<div class="tabs tabs-border mt-4 overflow-x-auto" role="tablist" aria-label="Project sections">
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='secrets') }}"
+     class="tab{% if active_tab == 'secrets' %} tab-active{% endif %}"{% if active_tab == 'secrets' %} aria-selected="true"{% endif %}
+  >Secrets</a>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='requests') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='requests') }}"
+     class="tab{% if active_tab == 'requests' %} tab-active{% endif %}"{% if active_tab == 'requests' %} aria-selected="true"{% endif %}
+  >Requests{% if access_pending_count %}<span class="badge badge-soft badge-sm" title="{{ access_pending_count }} pending">{{ access_pending_count }}</span>{% endif %}</a>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='import') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='import') }}"
+     class="tab{% if active_tab == 'import' %} tab-active{% endif %}"{% if active_tab == 'import' %} aria-selected="true"{% endif %}
+  >Import / Export</a>
   {% if can_admin %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='access') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}"
-     class="page-subnav-link{% if active_tab == 'access' %} menu-active{% endif %}"{% if active_tab == 'access' %} aria-current="page"{% endif %} title="Role bindings for this project"
-  >Access</a></li>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='access') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='access') }}"
+     class="tab{% if active_tab == 'access' %} tab-active{% endif %}"{% if active_tab == 'access' %} aria-selected="true"{% endif %} title="Role bindings for this project"
+  >Access</a>
   {% endif %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='audit') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"
-     class="page-subnav-link{% if active_tab == 'audit' %} menu-active{% endif %}"{% if active_tab == 'audit' %} aria-current="page"{% endif %}
-  >Activity</a></li>
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}"
-     class="page-subnav-link{% if active_tab == 'tokens' %} menu-active{% endif %}"{% if active_tab == 'tokens' %} aria-current="page"{% endif %}
-  >Machine accounts</a></li>
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}"
-     class="page-subnav-link{% if active_tab == 'integrations' %} menu-active{% endif %}"{% if active_tab == 'integrations' %} aria-current="page"{% endif %}
-  >Integrations</a></li>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='audit') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='audit') }}"
+     class="tab{% if active_tab == 'audit' %} tab-active{% endif %}"{% if active_tab == 'audit' %} aria-selected="true"{% endif %}
+  >Activity</a>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='tokens') }}"
+     class="tab{% if active_tab == 'tokens' %} tab-active{% endif %}"{% if active_tab == 'tokens' %} aria-selected="true"{% endif %}
+  >Machine accounts</a>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='integrations') }}"
+     class="tab{% if active_tab == 'integrations' %} tab-active{% endif %}"{% if active_tab == 'integrations' %} aria-selected="true"{% endif %}
+  >Integrations</a>
   {% if can_admin %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}"
-     class="page-subnav-link{% if active_tab == 'webhooks' %} menu-active{% endif %}"{% if active_tab == 'webhooks' %} aria-current="page"{% endif %}
-  >Webhooks</a></li>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='webhooks') }}"
+     class="tab{% if active_tab == 'webhooks' %} tab-active{% endif %}"{% if active_tab == 'webhooks' %} aria-selected="true"{% endif %}
+  >Webhooks</a>
   {% endif %}
   {% if can_settings %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='settings') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
-     class="page-subnav-link{% if active_tab == 'settings' %} menu-active{% endif %}"{% if active_tab == 'settings' %} aria-current="page"{% endif %}
-  >Settings</a></li>
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='settings') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='settings') }}"
+     class="tab{% if active_tab == 'settings' %} tab-active{% endif %}"{% if active_tab == 'settings' %} aria-selected="true"{% endif %}
+  >Settings</a>
   {% endif %}
-  <li><a hx-get="{{ url_for('project_detail', project_id=project.id, tab='meta') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='meta') }}"
-     class="page-subnav-link{% if active_tab == 'meta' %} menu-active{% endif %}"{% if active_tab == 'meta' %} aria-current="page"{% endif %}
-  >Metadata</a></li>
-</ul>
-</nav>
-<div class="flex min-w-0 flex-1 flex-col gap-4" id="project-panel" tabindex="-1">
-{% include "partials/project_content.html" %}
+  <a role="tab" hx-get="{{ url_for('project_detail', project_id=project.id, tab='meta') }}" hx-target="#project-panel" hx-swap="innerHTML transition:true" hx-push-url="true" href="{{ url_for('project_detail', project_id=project.id, tab='meta') }}"
+     class="tab{% if active_tab == 'meta' %} tab-active{% endif %}"{% if active_tab == 'meta' %} aria-selected="true"{% endif %}
+  >Metadata</a>
 </div>
+<div class="mt-4 flex min-w-0 flex-col gap-4" id="project-panel" tabindex="-1">
+{% include "partials/project_content.html" %}
 </div>
 {% endblock %}

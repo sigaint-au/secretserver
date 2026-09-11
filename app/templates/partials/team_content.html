@@ -9,8 +9,8 @@
 {% elif active_tab == 'activity' %}{% include "partials/team_activity.html" %}
 {% elif active_tab == 'settings' and is_admin %}{% include "partials/team_settings.html" %}
 {% elif active_tab == 'meta' %}
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Team metadata</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Team metadata</h2>
   <p class="text-sm opacity-70">Metadata here appears on every project and secret in the team.</p>
   {% if is_admin %}
   <form method="post" action="{{ url_for('upsert_team_meta', team_id=team.id) }}" class="flex flex-wrap items-end gap-4"
@@ -60,5 +60,6 @@
   {% set text = 'Metadata here appears on every project and secret in the team.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>
 {% endif %}

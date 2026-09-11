@@ -269,11 +269,6 @@ def nav_groups() -> list[dict]:
         {
             "key": "account", "label": "Organisation", "items": org_items,
         },
-        {
-            "key": "profile", "label": "Account",
-            "items": [item("My profile", "profile", ("profile",),
-                            icon="user")],
-        },
     ]
 
     claimed_eps = set(workspace_eps) | set(teams_eps) | {

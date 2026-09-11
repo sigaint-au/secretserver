@@ -1,18 +1,16 @@
-{% extends "base.html" %}
+{% extends "auth_base.html" %}
 {% block title %}Verify email - {{ app_name }}{% endblock %}
-{% block auth_card_class %}card bg-base-100 mx-auto w-full max-w-4xl shadow-xl{% endblock %}
 {% block body %}
-<div class="grid grid-cols-1 lg:grid-cols-2">
-  <div class="p-6 sm:p-10">
-    <h1 class="text-3xl font-bold tracking-tight">Verify your email</h1>
+<div>
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">Verify your email</h1>
     <p class="mt-2">We sent a verification link to <strong>{{ email }}</strong>.
       Open it to activate your account, then sign in.</p>
     <form method="post" action="{{ url_for('resend_verification') }}" class="mt-4">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <button type="submit" class="btn btn-ghost w-full">Resend verification email</button>
     </form>
-    <p class="mt-4 text-sm opacity-70"><a class="link" href="{{ url_for('login') }}">Back to sign in</a></p>
+    <p class="mt-4 text-sm text-base-content/60"><a class="link" href="{{ url_for('login') }}">Back to sign in</a></p>
   </div>
-  {% include "partials/auth_brand_panel.html" %}
 </div>
 {% endblock %}

@@ -30,6 +30,52 @@ def migrations_src() -> str:
     return "\n".join(f.read_text() for f in sorted(d.glob("*.sql")))
 
 
+def assert_balanced_html(html):
+    """Fail on misnested structural tags.
+
+    An unclosed <div> inside an HTMX-swapped panel nests the rest of the
+    page (including the app drawer) inside it, making the sidebar vanish.
+    Catches the branch-imbalance class of bug: a tag opened on every path
+    but closed on only some Jinja branches.
+    """
+    from html.parser import HTMLParser
+
+    structural = {"div", "section", "nav", "ul", "form", "table", "dialog",
+                  "header", "main", "aside", "thead", "tbody", "tr"}
+    void = {"input", "br", "hr", "img", "meta", "link"}
+
+    class Balance(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.stack = []
+            self.errors = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag in structural:
+                self.stack.append((tag, self.getpos()))
+
+        def handle_endtag(self, tag):
+            if tag in void or tag not in structural:
+                return
+            if self.stack and self.stack[-1][0] == tag:
+                self.stack.pop()
+            else:
+                names = [t for t, _ in self.stack]
+                if tag in names:
+                    while self.stack and self.stack[-1][0] != tag:
+                        bad, pos = self.stack.pop()
+                        self.errors.append(f"unclosed <{bad}> from {pos}")
+                    self.stack.pop()
+                else:
+                    self.errors.append(f"stray </{tag}> at {self.getpos()}")
+
+    check = Balance()
+    check.feed(html)
+    for tag, pos in check.stack:
+        check.errors.append(f"unclosed <{tag}> from {pos}")
+    assert not check.errors, check.errors[:5]
+
+
 def mock_conn(fetchone=_UNSET, fetchall=_UNSET, side_effect=None):
     """Build a mock DB connection/cursor pair used across unit tests."""
     cur = MagicMock()

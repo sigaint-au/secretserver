@@ -62,6 +62,46 @@ class TestNav:
         assert r.status_code == 200
         assert b'api' in r.data
 
+    def test_list_pages_are_balanced(self):
+        """Single-card list pages must stay structurally balanced in every
+        branch (see project secrets drawer regression)."""
+        from datetime import datetime, timezone
+        from tests.helpers import assert_balanced_html
+        pid, sid = uuid4(), uuid4()
+        past = datetime(2020, 1, 1, tzinfo=timezone.utc)
+
+        def team_first():
+            state = {'n': 0}
+
+            def fetchone():
+                state['n'] += 1
+                if state['n'] == 1:
+                    return {'id': self.tid, 'name': 'Ops'}
+                return {'n': 1}
+            return fetchone
+
+        pages = [
+            ('/projects', _conn(fetchone=team_first(),
+                                fetchall=[{'id': pid, 'name': 'api', 'description': 'prod',
+                                           'created_at': 'now', 'secret_count': 3}])),
+            ('/secrets', _conn(fetchone=team_first(),
+                               fetchall=[{'id': sid, 'key': 'DB_URL', 'note': '', 'kind': 'plain',
+                                          'updated_at': 'now', 'expires_at': None,
+                                          'access_mode': 'inherit', 'project_id': pid,
+                                          'project_name': 'api'},
+                                         {'id': pid, 'name': 'api'}])),
+            ('/machines', _conn(fetchone={'id': self.tid, 'name': 'Ops'},
+                                fetchall=[{'id': uuid4(), 'name': 'eso', 'token_prefix': 'ss_abc',
+                                           'created_at': 'now', 'project_id': pid,
+                                           'project_name': 'api'}])),
+        ]
+        for path, (conn, _cur) in pages:
+            with patch.object(db, 'as_user', return_value=conn), patch.object(
+                    nav, 'ensure_active_team', return_value=str(self.tid)):
+                r = self.client.get(path)
+            assert r.status_code == 200, path
+            assert_balanced_html(r.data.decode())
+
     def test_secrets_list(self):
         pid = uuid4()
         sid = uuid4()
@@ -207,4 +247,41 @@ class TestNav:
             r = self.client.post(f'/trash/secrets/{uuid4()}/purge', follow_redirects=False)
         assert r.status_code == 302
         assert '/trash' in r.location
+
+    def test_search_page_has_no_inline_search_field(self):
+        conn, _ = _conn(fetchall=[])
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get('/search?q=prod')
+        assert r.status_code == 200
+        html = r.data
+        assert b'aria-label="Global search"' not in html
+        assert b'partials/search_field.html' not in html
+        assert b'card-body gap-6' in html
+        assert b'flex flex-col gap-6' in html
+        assert b'role="tablist"' in html
+        assert b'Jump to' in html
+
+    def test_search_suggest_lists_hits(self):
+        tid, pid, sid = uuid4(), uuid4(), uuid4()
+        conn, cur = _conn()
+        cur.fetchall.side_effect = [
+            [{'id': tid, 'name': 'Platform'}],
+            [{'id': pid, 'name': 'api', 'team_name': 'Platform', 'team_id': tid}],
+            [{'id': sid, 'key': 'DB_URL', 'project_id': pid, 'project_name': 'api',
+              'team_name': 'Platform'}],
+        ]
+        with patch.object(db, 'as_user', return_value=conn):
+            r = self.client.get('/search/suggest?q=prod')
+        assert r.status_code == 200
+        html = r.get_data(as_text=True)
+        assert 'menu-title' in html
+        assert 'Platform' in html
+        assert 'DB_URL' in html
+        assert 'View all results' in html
+
+    def test_search_suggest_empty_q_is_hint(self):
+        r = self.client.get('/search/suggest')
+        assert r.status_code == 200
+        assert b'Type to search' in r.data
+        assert b'menu-title' not in r.data
 

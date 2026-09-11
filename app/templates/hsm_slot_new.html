@@ -7,18 +7,18 @@
 ] %}
 {% include "partials/breadcrumb.html" %}
 
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">{{ 'Edit' if slot_id else 'New' }} HSM slot</h1>
 </div>
-<p class="text-sm opacity-70">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">{{ 'Update' if slot_id else 'Add a' }} named PKCS#11 slot. The server opens a session against this module or token and stores the key-encryption key.</p>
 
 <form method="post" action="{{ url_for('hsm_slot_new_wizard') }}" class="flex flex-col gap-4" id="hsm-slot-form">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" id="hsm-slot-action" data-dialog-action value="">
   {% if slot_id %}<input type="hidden" name="slot_id" value="{{ slot_id }}">{% endif %}
 
-  <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Details</h2></div>
+  <section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="card-title">Details</h2></div>
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-1 sm:col-span-2">
         <label class="label" for="hsm-slot-name"><span>Name</span></label>
@@ -67,7 +67,8 @@
       </button>
       {% endif %}
     </p>
-  </section>
+  </div>
+</section>
 </form>
 {% if test_result is sameas false %}
 <dialog id="hsm-save-dialog" class="modal" closedby="any" aria-labelledby="hsm-save-dialog-title">

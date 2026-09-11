@@ -4,10 +4,11 @@
             form_id_prefix, help_html (optional), full_bindings_url (optional)
 #}
 {% set pref = form_id_prefix|default('access') %}
-<section class="access-rbac-panel rounded-box border border-base-300 bg-base-100 p-4 shadow-sm"
+<section class="access-rbac-panel card card-border bg-base-100"
          x-data="{ kind: 'User' }">
+<div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">{{ panel_title|default('Role bindings') }}</h2>
+    <h2 class="card-title">{{ panel_title|default('Role bindings') }}</h2>
     {% if full_bindings_url %}
     <a class="btn btn-ghost btn-sm" href="{{ full_bindings_url }}">All scopes</a>
     {% endif %}
@@ -22,8 +23,8 @@
         hx-post="{{ create_url }}" hx-target="{{ hx_target }}" hx-swap="innerHTML">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Who</legend>
+      <div class="flex flex-col gap-2">
+        <h3 class="font-bold">Who</h3>
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="grid gap-1">
             <label class="label" for="{{ pref }}-subject-kind"><span>Subject type</span></label>
@@ -52,10 +53,10 @@
             <input type="text" name="subject_sa" id="{{ pref }}-subject-sa" placeholder="machine account UUID" autocomplete="off" class="input">
           </div>
         </div>
-      </fieldset>
+      </div>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Role</legend>
+      <div class="flex flex-col gap-2">
+        <h3 class="font-bold">Role</h3>
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="grid gap-1 sm:col-span-2">
             <label class="label" for="{{ pref }}-role-name"><span>Grant</span></label>
@@ -70,7 +71,7 @@
         <p class="pt-2 text-xs opacity-70">
           Role descriptions shown in the dropdown titles and on the binding badges.
         </p>
-      </fieldset>
+      </div>
 
       <p class="flex flex-wrap items-center gap-2 pt-2">
         <button type="submit" class="btn btn-neutral">Add binding</button>
@@ -135,6 +136,10 @@
     </table>
   </div>
   {% else %}
-  <p class="text-sm opacity-70">{{ empty_message|default('No bindings at this scope yet.') }}</p>
+  {% set icon = 'teams' %}
+  {% set title = 'No bindings yet' %}
+  {% set text = empty_message|default('No bindings at this scope yet.') %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>

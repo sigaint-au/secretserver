@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">OIDC / SSO</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">OIDC / SSO</h2>
   <p class="text-sm opacity-70">
     Authorization-code login (Keycloak and other OIDC providers). Accounts are linked by
     <strong>email</strong> on first SSO sign-in; local password login stays available for break-glass.
@@ -13,8 +13,8 @@
       Enable OIDC login
     </label>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Provider</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Provider</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1 sm:col-span-2">
           <label class="label" for="oidc-issuer"><span>Issuer URL</span></label>
@@ -33,10 +33,10 @@
                  placeholder="{% if settings.oidc_client_secret_set %}•••••••• (leave blank to keep){% else %}confidential client secret{% endif %}" class="input">
         </div>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Sign-in UI</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Sign-in UI</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1">
           <label class="label" for="oidc-button-label"><span>Login button label</span></label>
@@ -48,10 +48,10 @@
           <span class="text-xs opacity-70">At least <code class="font-mono">openid</code> and <code class="font-mono">email</code></span>
         </div>
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Claims</legend>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-bold">Claims</h3>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-1">
           <label class="label" for="oidc-username-claim"><span>Username claim</span></label>
@@ -76,7 +76,7 @@
           and you trust its email claim.
         </span>
       </div>
-    </fieldset>
+    </div>
 
     {% if oidc_test %}
     <p class="flex flex-wrap items-center gap-2">
@@ -94,9 +94,10 @@
       <button type="submit" name="action" value="oidc" class="btn btn-neutral">Save OIDC settings</button>
     </p>
   </form>
+</div>
 </section>
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">OIDC group → roles</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">OIDC group → roles</h2>
   <p class="text-sm opacity-70">
     Map IdP groups (or realm roles) to server roles. Matching groups sync global admin on login.
   </p>
@@ -122,7 +123,10 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="text-sm opacity-70">No role maps yet.</p>
+  {% set icon = 'teams' %}
+  {% set title = 'No role maps yet' %}
+  {% set text = 'Add the first mapping with the form below.' %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
   <form method="post" class="flex flex-wrap items-end gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -140,9 +144,10 @@
     </div>
     <button type="submit" class="btn btn-neutral">Add map</button>
   </form>
+</div>
 </section>
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">OIDC client checklist</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">OIDC client checklist</h2>
   <p class="text-sm opacity-70">
     Works with any OpenID Connect provider (Keycloak, Authentik, Okta, Azure AD, etc.).
   </p>
@@ -161,4 +166,5 @@
     <li>ID token (or userinfo) should include the configured <strong>username</strong> and <strong>groups</strong> claims</li>
     <li>Optional: map IdP groups into a list claim named as in “Groups claim” (default <code class="font-mono">groups</code>)</li>
   </ul>
+</div>
 </section>

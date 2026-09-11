@@ -1,13 +1,18 @@
-/* Theme controller: explicit light/dark choice, applied before first paint.
-   Runs synchronously in <head>. Themes are the custom "corvus" (light)
-   and "corvus-dark" builds; legacy stored "light"/"dark" values migrate
-   forward. Hook: input[data-theme-toggle] (checked = dark). Persists in
-   localStorage under "corvus-theme"; falls back to prefers-color-scheme.
-   No cookies, no server round-trip. */
+/* Night-vault theme: explicit silk/business choice, applied before paint.
+   Runs synchronously in <head>. Default theme is daisyUI "lofi"
+   (also set as data-theme on <html>); "business" is the dark companion,
+   reached only through the Alpine theme-controller toggle. Legacy stored
+   values ("corvus", "corporate", "silk", "light" -> lofi; "corvus-dark", "dark" ->
+   "business") migrate forward. Hook: input[data-theme-toggle]
+   (checked = dark, carries the daisyUI theme-controller class so the CSS
+   :has() rule agrees). Persists in localStorage under "corvus-theme";
+   falls back to prefers-color-scheme. No cookies, no server round-trip.
+   Alpine (MutationObserver) auto-inits toggles arriving via HTMX swaps;
+   the htmx:after:swap hook below re-syncs their checked state. */
 (function () {
   var STORE_KEY = "corvus-theme";
-  var LIGHT = "corvus";
-  var DARK = "corvus-dark";
+  var LIGHT = "lofi";
+  var DARK = "business";
 
   function readStored() {
     try {
@@ -26,8 +31,8 @@
   }
 
   function normalize(saved) {
-    if (saved === DARK || saved === "dark") return DARK;
-    if (saved === LIGHT || saved === "light") return LIGHT;
+    if (saved === DARK || saved === "dark" || saved === "corvus-dark") return DARK;
+    if (saved === LIGHT || saved === "light" || saved === "corvus" || saved === "corporate" || saved === "silk") return LIGHT;
     return null;
   }
 

@@ -1,6 +1,6 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Projects</h2>
+    <h2 class="card-title">Projects</h2>
     <a href="{{ url_for('projects_list') }}" class="link text-sm opacity-70">All projects →</a>
   </div>
   {% if projects %}
@@ -35,6 +35,10 @@
     </tbody>
   </table></div>
   {% else %}
-  <p class="text-sm opacity-70">No projects available to you yet.</p>
+  {% set icon = 'folder' %}
+  {% set title = 'No projects yet' %}
+  {% set text = 'No projects available to you yet.' %}
+  {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>

@@ -1,10 +1,11 @@
 # Vendored frontend dependencies (self-hosted, no CDN).
-# Rebuild: see slice-1 notes. CSS compiled with Tailwind CSS v4 CLI:
-#   input.css -> `@import "tailwindcss"; @plugin "daisyui";`
-#   built from the repo root so Tailwind v4 auto-detects content in
-#   app/templates/ and app/static/.
+# Rebuild: `make ui-css` (or `sh scripts/build-css.sh`).
+# CSS compiled with Tailwind CSS v4 CLI from assets/corvus.css:
+#   `@import "tailwindcss"; @plugin "daisyui";`
+#   Tailwind v4 scans app/templates/ and app/static/ (@source), so rebuild
+#   after adding new DaisyUI component classes to templates.
 htmx.min.js: htmx.org 4.0.0 (npm htmx.org@4.0.0, dist/htmx.min.js)
 alpine.min.js: Alpine.js 3.17.2 (npm alpinejs@3.17.2, dist/cdn.min.js)
 daisyui.min.css: daisyUI 5.7.32 on Tailwind CSS 4.3.3 (npm daisyui@5.7.32, tailwindcss@4.3.3)
-  + custom "corvus" (light, default) and "corvus-dark" (prefersdark) themes
-  via @plugin "daisyui/theme"; see /tmp/corvus-vendor/input.css pattern
+  Night-vault theme: daisyUI `lofi` (default, on <html>) + `business`
+  (dark companion, via the Alpine theme-controller toggle only).

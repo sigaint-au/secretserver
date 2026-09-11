@@ -23,7 +23,8 @@ class TestUIShell:
         assert b"card-body" in r.data
         assert b'class="sidebar"' not in r.data
         assert b"Corvus" in r.data
-        assert b"logo.svg" in r.data
+        assert b"brand-logo" in r.data
+        assert b"fill=\"currentColor\"" in r.data
         assert b"vendor/daisyui.min.css" in r.data
         # A missing '>' on <script integrity="..."> swallows the rest of the
         # page (the browser treats body markup as the script element).
@@ -43,14 +44,18 @@ class TestUIShell:
         # the whole file a SyntaxError, so sidebar group persistence never runs
         # and clicking a nav item collapses every other <details> menu.
         c = store.app.test_client()
-        for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js", "theme.js"):
+        for name in ("app.js", "sidebar.js", "forms.js", "secrets.js", "dialogs.js", "theme.js",
+                       "classification.js", "search_palette.js"):
             r = c.get(f"/static/{name}")
             assert r.status_code == 200
             assert b"<script>" not in r.data
             assert b"</script>" not in r.data
         r = c.get("/static/sidebar.js")
         assert b"secretstore.sidebar.groups" in r.data
-        assert b"menu-active" in r.data
+        assert b"tab-active" in r.data
+        palette = c.get("/static/search_palette.js").data
+        assert b"search-palette" in palette
+        assert b"keydown" in palette
 
     def test_app_has_sidebar(self):
         c = store.app.test_client()
@@ -65,7 +70,7 @@ class TestUIShell:
             r = c.get("/teams")
         assert b"app-drawer" in r.data
         assert b"sidebar" in r.data
-        assert b"logo.svg" in r.data
+        assert b"brand-logo" in r.data
         assert b"x@y.z" in r.data
         assert b"Log out" in r.data
         assert b"Projects" in r.data
@@ -74,12 +79,14 @@ class TestUIShell:
         assert b"Machine accounts" in r.data
         assert b"Trash" in r.data
         assert b"side-team-select" in r.data
+        assert b"bg-base-100 text-base-content" in r.data
         assert b"Active team" not in r.data
         assert b"Server settings" not in r.data
 
     def test_shell_has_explicit_theme_toggle(self):
-        # The light/dark toggle is a daisyUI swap synced by theme.js
-        # (no backend involvement); it must render in both layouts.
+        # The lofi/business toggle is an Alpine theme-controller input
+        # synced by theme.js (no backend involvement); it must render in
+        # both layouts.
         c = store.app.test_client()
         with c.session_transaction() as s:
             s["user_id"] = str(uuid4())
@@ -93,11 +100,15 @@ class TestUIShell:
         assert r.status_code == 200
         assert b"theme.js" in r.data
         assert b"data-theme-toggle" in r.data
+        assert b"theme-controller" in r.data
         assert b"Toggle dark mode" in r.data
+        assert b'<html lang="en" data-theme="lofi">' in r.data
         anon = store.app.test_client()
         r_login = anon.get("/login")
         assert r_login.status_code == 200
         assert b"data-theme-toggle" in r_login.data
+        assert b"theme-controller" in r_login.data
+        assert b'<html lang="en" data-theme="lofi">' in r_login.data
 
     def test_global_admin_sees_settings_nav(self):
         c = store.app.test_client()
@@ -244,7 +255,7 @@ class TestUIShell:
             html = render_template("rbac_bindings.html", **base, bindings=[], can_edit=True)
         assert 'href="#add-binding">+ Add binding' in html
         assert "Add the first binding" in html
-        assert '<section id="add-binding">' in html
+        assert 'id="add-binding"' in html
         with store.app.test_request_context("/rbac/bindings"):
             ro = render_template("rbac_bindings.html", **base, bindings=[], can_edit=False)
         assert "Add the first binding" not in ro
@@ -457,15 +468,113 @@ class TestUIShell:
         with store.app.test_request_context("/machines"):
             html = render_template("machines.html", team=team, tokens=[token])
         assert "never" in html  # unused token reports "never"
-        assert 'class="table table-zebra' in html  # machine table is scrollable/responsive
+        assert 'class="table table-pin-rows' in html  # machine table is scrollable/responsive, unstriped
+        assert "table-zebra" not in html
 
-    def test_project_subnav_is_vertical_menu_not_tabs(self):
-        # Server-side page navigation is a vertical side menu of plain links
-        # (no fake tablist), so screen readers announce them as links, not
-        # broken tabs. Scope the check to the actual <nav class="page-subnav
-        # ..."> markup (not the shared <style> block, whose
-        # `.role-mode-tabs [role=tablist]` selector legitimately contains
-        # `role=` text).
+    def test_section_headers_are_card_titles(self):
+        # Section headers read as part of the card (DaisyUI card-title),
+        # not detached text-lg stacks. Emails are exempt (own styling).
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent.parent / "app" / "templates"
+        bad = []
+        for p in sorted(root.rglob("*.html")):
+            if "emails" in p.parts:
+                continue
+            if '<h2 class="text-lg font-bold">' in p.read_text():
+                bad.append(str(p.relative_to(root)))
+        assert not bad, bad
+
+    def test_no_fieldset_or_legend_in_templates(self):
+        # Form groups are cards (card-title) or plain groups (h3), never
+        # fieldset/legend. Emails are exempt (own styling).
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent.parent / "app" / "templates"
+        bad = []
+        for p in sorted(root.rglob("*.html")):
+            if "emails" in p.parts:
+                continue
+            src = p.read_text()
+            if "<fieldset" in src or "<legend" in src:
+                bad.append(str(p.relative_to(root)))
+        assert not bad, bad
+
+    def test_project_header_has_modern_description_edit(self):
+        # Page header: title row plus a readable description line; the
+        # description edit is a labeled ghost button, not a bare icon link.
+        from flask import render_template
+
+        project = {
+            "id": str(uuid4()),
+            "name": "App",
+            "team_id": str(uuid4()),
+            "team_name": "Acme",
+            "description": "Demo project",
+        }
+        with store.app.test_request_context("/projects/p?tab=settings"):
+            html = render_template(
+                "project.html", project=project, active_tab="settings",
+                can_admin=True, can_settings=True,
+            )
+        assert "text-base-content/60" in html
+        assert "Demo project" in html
+        assert "btn btn-ghost btn-xs" in html
+        assert "Edit description in Settings" in html
+        with store.app.test_request_context("/projects/p?tab=secrets"):
+            bare = render_template(
+                "project.html",
+                project={**project, "description": ""},
+                active_tab="secrets", can_admin=False, can_settings=False,
+            )
+        assert "No description yet." not in bare
+        assert "btn btn-ghost btn-xs" not in bare
+
+    def test_list_pages_wrap_heading_and_table_in_one_card(self):
+        # List pages render heading, filters, and results inside a single
+        # card; HTMX fragments carry the table but no card chrome (the page
+        # provides it), so swaps never nest cards.
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent.parent / "app" / "templates"
+        for rel in ("secrets.html", "machines.html", "shared_secrets.html",
+                    "trash.html", "teams.html", "projects.html"):
+            src = (root / rel).read_text()
+            assert src.count('<section class="card card-border') == 1, rel
+            assert "card-body gap-6" in src, rel
+        for rel in ("partials/secrets_results.html", "partials/machines_results.html",
+                    "partials/shared_results.html", "partials/trash_results.html",
+                    "partials/secrets.html"):
+            assert "card card-border" not in (root / rel).read_text(), rel
+
+    def test_section_nav_never_vanishes_in_gated_states(self):
+        # Pattern (secret version fix, extended): every tab page renders its
+        # tablist with at least one visible tab, even fully gated. Routes
+        # normalize the active tab; templates must never drop the nav itself.
+        from flask import render_template
+
+        pid, tid, fid = str(uuid4()), str(uuid4()), str(uuid4())
+        cases = [
+            ("project.html", dict(project={"id": pid, "name": "P", "team_id": tid, "team_name": "T"}, active_tab="webhooks", can_admin=False, can_settings=False)),
+            ("team.html", dict(team={"id": tid, "name": "T"}, active_tab="access", is_admin=False)),
+            ("folder_view.html", dict(project_id=pid, folder_id=fid, folder={"path": "a/b"}, project={"id": pid, "name": "P", "team_id": tid, "team_name": "T"}, active_tab="access", can_admin=False)),
+            ("rbac_roles.html", dict(builtin_roles=[], custom_roles=[], active_tab="builtin")),
+            ("profile.html", dict(active_tab="account",
+                                  user={"name": "A", "email": "a@ex.com", "auth_source": "local",
+                                        "is_global_admin": False, "created_at": ""},
+                                  login_alerts={"allowed": False}, groups=[],
+                                  stats={"teams": 0, "projects": 0, "secrets": 0, "pins": 0})),
+        ]
+        with store.app.test_request_context("/x"):
+            for tpl, ctx in cases:
+                html = render_template(tpl, **ctx)
+                assert 'role="tablist"' in html, tpl
+                assert 'role="tab"' in html, tpl
+
+    def test_project_sections_are_daisy_tabs(self):
+        # Night vault: ?tab= sections are DaisyUI tabs under the header
+        # (role=tablist), not a side rail. The query param still drives the
+        # active tab and HTMX still swaps the panel.
         from flask import render_template
 
         project = {
@@ -477,13 +586,13 @@ class TestUIShell:
         }
         with store.app.test_request_context("/projects/p?tab=secrets"):
             html = render_template("project.html", project=project, active_tab="secrets")
-        i = html.find('<nav class="page-subnav')
-        j = html.find("</nav>", i)
-        tabs = html[i:j] if i != -1 and j != -1 else ""
-        assert 'role="tablist"' not in tabs
-        assert 'role="tab"' not in tabs
-        assert '<ul class="menu menu-horizontal' in tabs
-        assert "lg:menu-vertical" in tabs
-        assert "page-subnav-link" in tabs
-        assert "page-subnav-link menu-active" in tabs
-        assert "tab-active" not in tabs
+        assert "page-subnav" not in html
+        assert "page-side" not in html
+        assert 'role="tablist"' in html
+        assert 'role="tab"' in html
+        assert "tabs-border" in html
+        assert "tab tab-active" in html
+        assert "tab=secrets" in html
+        assert "tab=meta" in html
+        assert 'hx-target="#project-panel"' in html
+        assert 'id="project-panel"' in html

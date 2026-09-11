@@ -27,6 +27,8 @@ SLICE5 = [
     "import_preview.html",
     "webhook_form.html",
     "search.html",
+    "partials/search_palette.html",
+    "partials/search_palette_results.html",
     "partials/profile_account.html",
     "partials/profile_activity.html",
     "partials/profile_myaccess.html",
@@ -68,7 +70,7 @@ class TestSlice5NoInlineJS:
 
 
 class TestSlice5Profile:
-    def test_subnav_renders_all_tabs(self):
+    def test_tabs_render_all_sections(self):
         html = _render(
             "profile.html",
             active_tab="account",

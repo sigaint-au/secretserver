@@ -1,8 +1,8 @@
 {% if oob_title is defined %}<title>{{ oob_title }} - {{ app_name }}</title>
 {% endif %}{% if active_tab == 'contents' %}
-<section>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h2 class="text-lg font-bold">Folders</h2>
+    <h2 class="card-title">Folders</h2>
     <div class="flex flex-wrap items-center gap-2">
       <button type="button" class="btn btn-outline btn-sm" data-open-dialog="create-subfolder-dlg">Add folder</button>
     </div>
@@ -37,9 +37,10 @@
   {% set text = 'Nested folders will appear here once created.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>
-<section>
-  <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold">Secrets</h2></div>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="card-title">Secrets</h2></div>
   {% if secrets %}
   <div class="overflow-x-auto"><table class="table"><thead><tr><th>Key</th><th>Kind</th><th>Updated</th></tr></thead><tbody>
   {% for secret in secrets %}<tr><td><a class="link" href="{{ url_for('secret_view', project_id=project_id, secret_id=secret.id) }}"><code class="font-mono">{{ (secret.key or '').split('/')[-1] }}</code></a></td><td><span class="badge badge-soft">{{ secret.kind or 'plain' }}</span></td><td class="opacity-70">{{ secret.updated_at|time_ago if secret.updated_at else '-' }}</td></tr>{% endfor %}
@@ -50,10 +51,11 @@
   {% set text = 'Create a secret at the project level with this folder path as its key prefix.' %}
   {% include "partials/empty_state.html" %}
   {% endif %}
+</div>
 </section>
 {% else %}
-<section>
-  <h2 class="text-lg font-bold">Access</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Access</h2>
   <p class="text-sm opacity-70">Inherited folders follow project and team roles. Restricted folders use the bindings below, plus project admins.</p>
   <form method="post" action="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}" class="flex flex-wrap items-end gap-4"
         hx-post="{{ url_for('update_folder_access', project_id=project_id, folder_id=folder_id) }}"
@@ -62,6 +64,7 @@
     <label class="grid gap-1">Access mode<select name="access_mode" class="select">{% for mode in access_modes %}<option value="{{ mode }}" {% if folder.access_mode == mode %}selected{% endif %}>{{ access_mode_labels.get(mode, mode) }}</option>{% endfor %}</select></label>
     <button type="submit" class="btn btn-neutral">Save settings</button>
   </form>
+</div>
 </section>
 {% set panel_title = 'Folder role bindings' %}
 {% set create_url = url_for('add_folder_access_binding', project_id=project_id, folder_id=folder_id) %}
@@ -73,10 +76,10 @@
 {% set empty_message = 'No folder-level bindings yet. Access follows project and team roles unless this folder is Restricted.' %}
 {% set help_html = 'Bind a user, group, or machine account to a folder role. Use <strong>Restricted</strong> mode so only these bindings apply.' %}
 {% include "partials/access_bindings_panel.html" %}
-<section>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">Effective access</h2>
+      <h2 class="card-title">Effective access</h2>
       <p class="text-sm opacity-70">Who can access this folder, and why.</p>
     </div>
     <form method="get" action="{{ url_for('folder_view', project_id=project_id, folder_id=folder_id) }}" class="flex flex-wrap items-center gap-2" role="search"
@@ -139,5 +142,6 @@
   <p class="text-sm opacity-70">{% if effective_access_q %}No access grants match “{{ effective_access_q }}”.{% else %}No access grants found for this folder.{% endif %}</p>
   {% endif %}
   </div>
+</div>
 </section>
 {% endif %}

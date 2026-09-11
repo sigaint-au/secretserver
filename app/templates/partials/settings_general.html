@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Server URL</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Server URL</h2>
   <p class="text-sm opacity-70">
     Public base URL of this application (no trailing slash). Used for OIDC redirect URIs
     and ESO / External Secrets Operator YAML defaults.
@@ -14,10 +14,11 @@
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save server URL</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Login banner</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Login banner</h2>
   <p class="text-sm opacity-70">
     Add the required disclosure notice and an optional link to your system-use policy.
   </p>
@@ -49,10 +50,11 @@
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save login banner</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Reveal &amp; clipboard</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Reveal &amp; clipboard</h2>
   <p class="text-sm opacity-70">
     Clipboard auto-clear and reveal auto-hide are per-device defaults; the scope
     of an approved reveal grant is server-wide.
@@ -82,10 +84,11 @@
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save reveal &amp; clipboard settings</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Account registration</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Account registration</h2>
   <p class="text-sm opacity-70">
     Control whether new local accounts can be created at <code class="font-mono">/register</code>.
     Existing users and LDAP login are unaffected.
@@ -100,10 +103,11 @@
     </label>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save registration setting</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Team creation</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Team creation</h2>
   <p class="text-sm opacity-70">
     When disabled, only global admins can create teams. Existing teams are unchanged.
   </p>
@@ -117,10 +121,11 @@
     </label>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save team creation setting</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Two-factor authentication</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Two-factor authentication</h2>
   <p class="text-sm opacity-70">
     Any user can enable TOTP. When enforced below, global admins must enroll and cannot disable 2FA.
   </p>
@@ -134,12 +139,13 @@
     </label>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save 2FA policy</button></p>
   </form>
+</div>
 </section>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div>
-      <h2 class="text-lg font-bold">Token expiry policy</h2>
+      <h2 class="card-title">Token expiry policy</h2>
       <p class="text-sm opacity-70">Set expiry requirements for newly issued personal access and machine tokens.</p>
     </div>
   </div>
@@ -148,8 +154,8 @@
     <input type="hidden" name="action" value="token_policy">
     <p id="token-policy-help" class="text-xs opacity-70">Maximum lifetime is measured in days and applies when an expiry is required. Lifetime fields are enabled only while the matching expiry requirement is on.</p>
     <div class="grid gap-4 sm:grid-cols-2">
-      <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-        <legend class="sr-only">Personal access tokens</legend>
+      <div class="rounded-box border border-base-300 p-4">
+        <h3 class="font-bold">Personal access tokens</h3>
         <label class="flex items-center gap-2" for="require-pat-expiry">
           <input type="checkbox" name="require_pat_expiry" id="require-pat-expiry" class="checkbox" value="1"
                  data-locks="max-pat-lifetime"
@@ -164,9 +170,9 @@
                  {% if settings.require_pat_expiry not in ('true', '1', 'yes', 'on') %}readonly{% endif %}
                  aria-label="Maximum personal access token lifetime in days" class="input">
         </div>
-      </fieldset>
-      <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-        <legend class="sr-only">Machine tokens</legend>
+      </div>
+      <div class="rounded-box border border-base-300 p-4">
+        <h3 class="font-bold">Machine tokens</h3>
         <label class="flex items-center gap-2" for="require-machine-token-expiry">
           <input type="checkbox" name="require_machine_token_expiry" id="require-machine-token-expiry" class="checkbox" value="1"
                  data-locks="max-machine-token-lifetime"
@@ -181,8 +187,9 @@
                  {% if settings.require_machine_token_expiry not in ('true', '1', 'yes', 'on') %}readonly{% endif %}
                  aria-label="Maximum machine token lifetime in days" class="input">
         </div>
-      </fieldset>
+      </div>
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save token policy</button></p>
   </form>
+</div>
 </section>

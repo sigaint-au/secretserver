@@ -1,5 +1,5 @@
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Classification banner</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Classification banner</h2>
   <p class="text-sm opacity-70">Shown at the top of every page when enabled.</p>
   <form method="post" id="banner-form" data-dirty-guard class="flex flex-col gap-4">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -54,10 +54,12 @@
       <button type="button" class="swatch btn btn-circle btn-sm border border-base-300 bg-blue-700" data-bg="#1565c0" title="Blue" data-fg="#ffffff" aria-label="Blue preset"></button>
       <button type="button" class="swatch btn btn-circle btn-sm border border-base-300 bg-white" data-bg="#ffffff" title="White" data-fg="#000000" aria-label="White preset"></button>
     </div>
-    <div class="rounded-box border border-base-300 p-2 text-center font-bold" id="banner-preview">
+    <div class="rounded-box p-2 text-center font-semibold" id="banner-preview" data-classification-preview
+         style="background-color: {{ settings.classification_color or '#677381' }}; color: {{ settings.classification_fg or '#ffffff' }};">
       {{ settings.classification_text or 'Preview' }}
     </div>
     <p class="flex flex-wrap items-center gap-2 pt-2"><button type="submit" class="btn btn-neutral">Save banner</button></p>
   </form>
+</div>
 </section>
-{% include "partials/color_picker_js.html" %}
+

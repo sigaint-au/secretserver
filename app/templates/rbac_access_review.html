@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Access review - {{ app_name }}{% endblock %}
 {% block body %}
-<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
   <h1 class="text-3xl font-bold tracking-tight">Access review</h1>
 </div>
-<p class="text-sm opacity-70">Who can perform a verb on a resource at a given scope (uses <code class="font-mono">api.can</code>).</p>
+<p class="mt-1 max-w-3xl text-sm text-base-content/60">Who can perform a verb on a resource at a given scope (uses <code class="font-mono">api.can</code>).</p>
 
 <form method="get" action="{{ url_for('rbac_access_review') }}" class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm" role="search"
       x-data="{ scope: '{{ scope_kind }}' }">
@@ -67,8 +67,8 @@
   </p>
 </form>
 
-<section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
-  <h2 class="text-lg font-bold">Subjects with access</h2>
+<section class="card card-border bg-base-100"><div class="card-body gap-4 p-6">
+  <h2 class="card-title">Subjects with access</h2>
   {% if not scope_id and scope_kind != 'cluster' %}
   <p class="text-sm opacity-70">Choose a team or project scope and run Review.</p>
   {% elif not results %}
@@ -91,5 +91,6 @@
     </table>
   </div>
   {% endif %}
+</div>
 </section>
 {% endblock %}
